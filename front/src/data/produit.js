@@ -3,14 +3,23 @@ import { getRequest } from "../lib/api-request.js";
 let ProduitData = {};
 
 /**
- * Tout le catalogue : GET /api/produits
+ * Le catalogue : GET /api/produits?categorie=…
  *
- * { produits: [ { id, nom, slug, categorie, prix, image, image_alt } ], total }
+ * categorie (slug) est facultatif : sans lui, tout le catalogue.
+ *
+ * { produits: [ { id, nom, slug, categorie, prix, image, image_alt } ], total,
+ *   categorie: { nom, slug } ou null }
  * image est le nom du fichier de l'image principale (dans public/images/produits/),
  * ou null si le produit n'en a pas.
  */
-ProduitData.fetchTous = async function () {
-  return getRequest("produits");
+ProduitData.fetchTous = async function (categorie) {
+  let uri = "produits";
+
+  if (categorie !== undefined) {
+    uri += `?categorie=${encodeURIComponent(categorie)}`;
+  }
+
+  return getRequest(uri);
 };
 
 /**

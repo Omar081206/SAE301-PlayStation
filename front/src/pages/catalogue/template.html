@@ -1,11 +1,14 @@
 <div>
-  <section class="bandeau-titre flex flex-col gap-1.75 px-7 py-7 text-texte-inverse lg:gap-2 lg:px-20 lg:py-12">
-    <p class="text-xs leading-4.5 font-medium lg:text-sm lg:leading-5.25">Click &amp; Collect · réservez en ligne, retirez en magasin</p>
-    <h1 class="text-bandeau-sm font-light md:text-bandeau-md lg:text-bandeau-lg">Tous les produits</h1>
-  </section>
+  <slot name="bandeau"></slot>
 
   <div class="px-7 py-7 lg:px-20 lg:py-8">
-    <slot name="message"></slot>
-    <slot name="grille"></slot>
+    <div class="flex flex-col gap-3.5 lg:flex-row lg:items-start lg:gap-8">
+      <slot name="filtre"></slot>
+
+      <div class="min-w-0 flex-1">
+        <slot name="message"></slot>
+        <slot name="grille"></slot>
+      </div>
+    </div>
   </div>
 </div>

@@ -1,39 +1,61 @@
+import { CategorieData } from "../../data/categorie.js";
 import { ProduitData } from "../../data/produit.js";
 import { htmlToFragment } from "../../lib/utils.js";
+import { BandeauView } from "../../ui/bandeau/index.js";
+import { FiltreCategoriesView } from "../../ui/filtre-categories/index.js";
 import { GrilleProduitsView } from "../../ui/grille-produits/index.js";
 import { MessageView } from "../../ui/message/index.js";
 import template from "./template.html?raw";
 
 /**
- * Page « Catalogue » : tous les produits de la boutique.
+ * Page « Catalogue » : tous les produits de la boutique (/), ou ceux d'une
+ * catégorie (/categorie/manettes).
  *
- * Le catalogue tient sur une page : il est chargé en une fois, sans tri ni
- * pagination.
+ * Le filtre est fait par le serveur : choisir une catégorie, c'est suivre un
+ * lien, et la page se recharge avec les produits de cette catégorie.
  */
 
 let M = {
-  catalogue: null, // dernière réponse de l'API : { produits, total }
+  catalogue: null, // dernière réponse de l'API : { produits, total, categorie }
+  categories: null, // menu des catégories : { categories, total }
   message: null, // { type, texte }, ou null
 };
 
 let C = {};
 
 /**
- * Demande le catalogue et range la réponse dans le modèle.
+ * Demande le catalogue, entier ou d'une catégorie, et range la réponse dans le modèle.
+ * slug (de la catégorie) est facultatif, voir data/produit.js.
  */
-C.charger = async function () {
+C.charger = async function (slug) {
   try {
-    M.catalogue = await ProduitData.fetchTous();
+    M.catalogue = await ProduitData.fetchTous(slug);
     M.message = null;
   } catch (erreur) {
     M.catalogue = null;
-    M.message = { type: "erreur", texte: `Impossible de charger le catalogue : ${erreur.message}` };
+
+    let texte = `Impossible de charger le catalogue : ${erreur.message}`;
+    if (erreur.statut === 404) texte = "Cette catégorie n'existe pas.";
+
+    M.message = { type: "erreur", texte };
   }
 };
 
-C.init = async function () {
+/**
+ * Demande les catégories du menu. Sans elles, le catalogue reste affiché.
+ */
+C.chargerCategories = async function () {
+  try {
+    M.categories = await CategorieData.fetchTous();
+  } catch (erreur) {
+    M.categories = null;
+  }
+};
+
+C.init = async function (slug) {
   M.message = null;
-  await C.charger();
+  await C.charger(slug);
+  await C.chargerCategories();
   return V.init();
 };
 
@@ -62,7 +84,21 @@ V.rafraichir = function () {
 V.createPageFragment = function () {
   let pageFragment = htmlToFragment(template);
 
+  // Le titre est celui de la catégorie affichée, s'il y en a une.
+  let titre = "Tous les produits";
+  if (M.catalogue !== null && M.catalogue.categorie !== null) {
+    titre = M.catalogue.categorie.nom;
+  }
+  pageFragment.querySelector('slot[name="bandeau"]').replaceWith(BandeauView.dom(titre));
+
   pageFragment.querySelector('slot[name="message"]').replaceWith(MessageView.dom(M.message));
+
+  let slotFiltre = pageFragment.querySelector('slot[name="filtre"]');
+  if (M.categories === null) {
+    slotFiltre.remove();
+  } else {
+    slotFiltre.replaceWith(FiltreCategoriesView.dom(M.categories));
+  }
 
   let slotGrille = pageFragment.querySelector('slot[name="grille"]');
   if (M.catalogue === null) {
@@ -75,6 +111,7 @@ V.createPageFragment = function () {
   return pageFragment;
 };
 
-export function CataloguePage() {
-  return C.init();
+// params : paramètres d'URL de la route, { slug } pour /categorie/:slug, vide pour /.
+export function CataloguePage(params) {
+  return C.init(params.slug);
 }

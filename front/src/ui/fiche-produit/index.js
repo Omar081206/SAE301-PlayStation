@@ -13,6 +13,7 @@ let FicheProduitView = {
       prix: formaterPrix(produit.prix),
       description: produit.description,
       categorie: produit.categorie,
+      categorieSlug: produit.categorie_slug,
     });
   },
 

@@ -6,10 +6,12 @@ namespace App\Controller;
 
 use App\Core\Request;
 use App\Core\Response;
+use App\Model\CategorieModel;
 use App\Model\ProduitModel;
 
 /**
- * Catalogue de la boutique : la liste de tous les produits, et la fiche de chacun.
+ * Catalogue de la boutique : la liste des produits, filtrée ou non par
+ * catégorie, et la fiche de chacun.
  *
  * Le catalogue tient sur une page (15 produits) : ni tri ni pagination.
  */
@@ -18,21 +20,40 @@ final class ProduitController
     /** Le modèle qui interroge la base, fourni à la construction. */
     private ProduitModel $produits;
 
-    public function __construct(ProduitModel $produits)
+    /** Le modèle des catégories, pour vérifier la catégorie demandée. */
+    private CategorieModel $categories;
+
+    public function __construct(ProduitModel $produits, CategorieModel $categories)
     {
-        $this->produits = $produits;
+        $this->produits   = $produits;
+        $this->categories = $categories;
     }
 
     /**
-     * GET /api/produits : tous les produits, avec leur nombre.
+     * GET /api/produits?categorie=… : les produits, avec leur nombre.
+     *
+     * Sans le paramètre categorie, tout le catalogue ; avec, les produits de
+     * cette catégorie, et la catégorie elle-même (pour le titre de la page).
      */
     public function index(Request $requete): void
     {
-        $produits = $this->produits->lister();
+        $slug      = $requete->parametre('categorie');
+        $categorie = null;
+
+        if ($slug !== null) {
+            $categorie = $this->categories->trouver($slug);
+
+            if ($categorie === null) {
+                Response::erreur('Catégorie introuvable', 404);
+            }
+        }
+
+        $produits = $this->produits->lister($slug);
 
         Response::json([
-            'produits' => $produits,
-            'total'    => count($produits),
+            'produits'  => $produits,
+            'total'     => count($produits),
+            'categorie' => $categorie,
         ]);
     }
 

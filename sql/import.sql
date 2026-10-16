@@ -6,7 +6,8 @@
 -- la colonne de gauche, puis importez ce fichier depuis l'onglet « Importer ».
 --
 -- Boutique : 15 produits en 4 catégories (3 manettes, 4 produits ailleurs). Chaque produit a une variante par
--- défaut, qui porte son prix et son stock, et une image principale (ordre 1) ;
+-- défaut, qui porte son prix et son stock (six produits ont aussi une variante
+-- de coloris « Noir »), et une image principale (ordre 1) ;
 -- les produits photographiés sous plusieurs angles ont une galerie.
 -- Les tables film et genre du starter restent en place tant que la page
 -- d'administration s'en sert.
@@ -193,10 +194,13 @@ CREATE TABLE produit (
 -- Une variante par défaut dès le départ : le panier et les commandes
 -- désignent toujours une variante, et les options viendront s'y greffer sans
 -- migration. Le stock ne peut pas être négatif (UNSIGNED).
+-- coloris : NULL pour un produit sans choix de couleur ; sinon, chaque coloris
+-- est une variante, avec son propre stock (la DualSense blanche, la noire…).
 -- ---------------------------------------------------------------------------
 CREATE TABLE variante (
     id         INT UNSIGNED      NOT NULL AUTO_INCREMENT,
     produit_id SMALLINT UNSIGNED NOT NULL,
+    coloris    VARCHAR(40)       NULL,
     prix       DECIMAL(8,2)      NOT NULL,
     stock      SMALLINT UNSIGNED NOT NULL DEFAULT 0,
 
@@ -215,20 +219,29 @@ CREATE TABLE variante (
 -- Images
 --
 -- fichier : nom du fichier dans front/public/images/produits/.
+-- variante_id : NULL pour les images du produit (son coloris par défaut) ;
+-- sinon, l'image montre ce coloris-là et ne sert qu'à lui.
 -- L'image d'ordre 1 est l'image principale, affichée dans le catalogue.
 -- ---------------------------------------------------------------------------
 CREATE TABLE image (
-    id         INT UNSIGNED      NOT NULL AUTO_INCREMENT,
-    produit_id SMALLINT UNSIGNED NOT NULL,
-    fichier    VARCHAR(160)      NOT NULL,
-    alt        VARCHAR(160)      NOT NULL,
-    ordre      TINYINT UNSIGNED  NOT NULL DEFAULT 1,
+    id          INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    produit_id  SMALLINT UNSIGNED NOT NULL,
+    variante_id INT UNSIGNED      NULL,
+    fichier     VARCHAR(160)      NOT NULL,
+    alt         VARCHAR(160)      NOT NULL,
+    ordre       TINYINT UNSIGNED  NOT NULL DEFAULT 1,
 
     PRIMARY KEY (id),
-    UNIQUE KEY uq_image_produit_ordre (produit_id, ordre),
+    UNIQUE KEY uq_image_ordre (produit_id, variante_id, ordre),
+    KEY idx_image_variante (variante_id),
 
     CONSTRAINT fk_image_produit
         FOREIGN KEY (produit_id) REFERENCES produit (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_image_variante
+        FOREIGN KEY (variante_id) REFERENCES variante (id)
         ON DELETE CASCADE
         ON UPDATE CASCADE
 ) ENGINE = InnoDB
@@ -264,22 +277,30 @@ INSERT INTO produit (id, categorie_id, nom, slug, description) VALUES
 
 -- Stocks choisis pour couvrir les trois états : en stock, bientôt épuisé
 -- (PlayStation Portal, DualSense Edge) et épuisé (PS5 Pro).
-INSERT INTO variante (produit_id, prix, stock) VALUES
-    ( 1, 549.99, 12),
-    ( 2, 499.99,  8),
-    ( 3, 799.99,  0),
-    ( 4, 219.99,  2),
-    ( 5,  74.99, 25),
-    ( 6, 239.99,  3),
-    ( 7,  84.99, 10),
-    ( 9, 149.99,  9),
-    (10, 219.99,  7),
-    (11,  39.99, 15),
-    (12,  29.99, 20),
-    (13,  79.99, 14),
-    (14,  69.99, 11),
-    (15,  79.99,  9),
-    (16,  49.99, 18);
+-- Les produits proposés en deux coloris ont une variante « Blanc » (celle des
+-- images du produit) et une variante « Noir », au même prix.
+INSERT INTO variante (id, produit_id, coloris, prix, stock) VALUES
+    ( 1,  1, NULL,    549.99, 12),
+    ( 2,  2, NULL,    499.99,  8),
+    ( 3,  3, NULL,    799.99,  0),
+    ( 4,  4, 'Blanc', 219.99,  2),
+    ( 5,  5, 'Blanc',  74.99, 25),
+    ( 6,  6, 'Blanc', 239.99,  3),
+    ( 7,  7, 'Blanc',  84.99, 10),
+    ( 8,  9, 'Blanc', 149.99,  9),
+    ( 9, 10, 'Blanc', 219.99,  7),
+    (10, 11, NULL,     39.99, 15),
+    (11, 12, NULL,     29.99, 20),
+    (12, 13, NULL,     79.99, 14),
+    (13, 14, NULL,     69.99, 11),
+    (14, 15, NULL,     79.99,  9),
+    (15, 16, NULL,     49.99, 18),
+    (16,  4, 'Noir',  219.99,  5),
+    (17,  5, 'Noir',   74.99, 18),
+    (18,  6, 'Noir',  239.99,  4),
+    (19,  7, 'Noir',   84.99,  6),
+    (20,  9, 'Noir',  149.99,  8),
+    (21, 10, 'Noir',  219.99,  0);
 
 INSERT INTO image (produit_id, fichier, alt, ordre) VALUES
     ( 1, 'console-ps5.webp',                              'Console PS5 blanche, posée à la verticale',             1),
@@ -335,3 +356,27 @@ INSERT INTO image (produit_id, fichier, alt, ordre) VALUES
     (12, 'telecommande-multimedia-3.webp',       'Télécommande multimédia, vue 3',       3),
     (12, 'telecommande-multimedia-4.webp',       'Télécommande multimédia, vue 4',       4);
 
+-- Images des coloris « Noir » : rattachées à leur variante, elles ne figurent
+-- ni dans le catalogue ni dans la galerie du coloris par défaut.
+INSERT INTO image (produit_id, variante_id, fichier, alt, ordre) VALUES
+    ( 4, 16, 'playstation-portal-noir.webp',             'PlayStation Portal, coloris noir',             1),
+    ( 4, 16, 'playstation-portal-noir-2.webp',           'PlayStation Portal, coloris noir, vue 2',      2),
+    ( 4, 16, 'playstation-portal-noir-3.webp',           'PlayStation Portal, coloris noir, vue 3',      3),
+    ( 4, 16, 'playstation-portal-noir-4.webp',           'PlayStation Portal, coloris noir, vue 4',      4),
+    ( 5, 17, 'manette-sans-fil-dualsense-noir.webp',     'Manette sans fil DualSense, coloris noir',     1),
+    ( 5, 17, 'manette-sans-fil-dualsense-noir-2.webp',   'Manette sans fil DualSense, coloris noir, vue 2', 2),
+    ( 5, 17, 'manette-sans-fil-dualsense-noir-3.webp',   'Manette sans fil DualSense, coloris noir, vue 3', 3),
+    ( 5, 17, 'manette-sans-fil-dualsense-noir-4.webp',   'Manette sans fil DualSense, coloris noir, vue 4', 4),
+    ( 6, 18, 'dualsense-edge-noir.webp',                 'DualSense Edge, coloris noir',                 1),
+    ( 6, 18, 'dualsense-edge-noir-2.webp',               'DualSense Edge, coloris noir, vue 2',          2),
+    ( 6, 18, 'dualsense-edge-noir-3.webp',               'DualSense Edge, coloris noir, vue 3',          3),
+    ( 6, 18, 'dualsense-edge-noir-4.webp',               'DualSense Edge, coloris noir, vue 4',          4),
+    ( 7, 19, 'dualsense-edition-limitee-gta-vi-noir.webp', 'DualSense Édition limitée GTA VI, coloris noir', 1),
+    ( 7, 19, 'dualsense-edition-limitee-gta-vi-noir-2.webp', 'DualSense Édition limitée GTA VI, coloris noir, vue 2', 2),
+    ( 7, 19, 'dualsense-edition-limitee-gta-vi-noir-3.webp', 'DualSense Édition limitée GTA VI, coloris noir, vue 3', 3),
+    ( 7, 19, 'dualsense-edition-limitee-gta-vi-noir-4.webp', 'DualSense Édition limitée GTA VI, coloris noir, vue 4', 4),
+    ( 9, 20, 'casque-pulse-elite-noir.webp',             'Casque PULSE Elite, coloris noir',             1),
+    ( 9, 20, 'casque-pulse-elite-noir-2.webp',           'Casque PULSE Elite, coloris noir, vue 2',      2),
+    ( 9, 20, 'casque-pulse-elite-noir-3.webp',           'Casque PULSE Elite, coloris noir, vue 3',      3),
+    ( 9, 20, 'casque-pulse-elite-noir-4.webp',           'Casque PULSE Elite, coloris noir, vue 4',      4),
+    (10, 21, 'ecouteurs-pulse-explore-noir.webp',        'Écouteurs PULSE Explore, coloris noir',        1);

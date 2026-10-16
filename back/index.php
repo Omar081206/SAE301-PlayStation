@@ -17,8 +17,10 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
 use App\Controller\AuthController;
+use App\Controller\CategorieController;
 use App\Controller\ProduitController;
 use App\Controller\StatsController;
+use App\Model\CategorieModel;
 use App\Model\FilmModel;
 use App\Model\ProduitModel;
 
@@ -61,9 +63,10 @@ try {
     // Les dépendances sont créées explicitement : le modèle reçoit la connexion,
     // le contrôleur reçoit le modèle. Aucune magie, tout est lisible ici.
     $controleurs = [
-        ProduitController::class => new ProduitController(new ProduitModel($pdo)),
-        AuthController::class    => new AuthController(),
-        StatsController::class   => new StatsController(new FilmModel($pdo)),
+        ProduitController::class   => new ProduitController(new ProduitModel($pdo), new CategorieModel($pdo)),
+        CategorieController::class => new CategorieController(new CategorieModel($pdo)),
+        AuthController::class      => new AuthController(),
+        StatsController::class     => new StatsController(new FilmModel($pdo)),
     ];
 
     $routes = require __DIR__ . '/src/routes.php';

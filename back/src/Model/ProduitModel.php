@@ -23,14 +23,16 @@ final class ProduitModel
     }
 
     /**
-     * Tous les produits du catalogue, regroupés par catégorie.
+     * Les produits du catalogue, regroupés par catégorie.
      *
      * Le prix affiché est le plus bas des variantes du produit, l'image celle
      * d'ordre 1 (image principale), ou null si le produit n'en a pas encore.
      *
+     * @param string|null $categorie Slug de la catégorie à afficher, ou null
+     *                               pour tout le catalogue.
      * @return array<int, array<string, mixed>>
      */
-    public function lister(): array
+    public function lister(?string $categorie): array
     {
         $sql = 'SELECT produit.id,
                        produit.nom,
@@ -43,11 +45,22 @@ final class ProduitModel
             INNER JOIN categorie ON categorie.id = produit.categorie_id
             INNER JOIN variante  ON variante.produit_id = produit.id
              LEFT JOIN image     ON image.produit_id = produit.id AND image.ordre = 1
+                                  AND image.variante_id IS NULL
+                 WHERE :categorie IS NULL OR categorie.slug = :categorie_slug
               GROUP BY produit.id, produit.nom, produit.slug, categorie.id, categorie.nom,
                        image.fichier, image.alt
               ORDER BY categorie.id, produit.id';
 
-        $lignes = $this->pdo->query($sql)->fetchAll();
+        $requetePreparee = $this->pdo->prepare($sql);
+
+        // Le même slug est lié deux fois : un paramètre nommé ne peut figurer
+        // qu'une fois dans une requête préparée.
+        $requetePreparee->bindValue(':categorie',      $categorie, PDO::PARAM_STR);
+        $requetePreparee->bindValue(':categorie_slug', $categorie, PDO::PARAM_STR);
+
+        $requetePreparee->execute();
+
+        $lignes = $requetePreparee->fetchAll();
 
         // MySQL renvoie les nombres sous forme de chaînes. On les convertit
         // ligne par ligne, pour que le JSON contienne bien des nombres.
@@ -69,7 +82,8 @@ final class ProduitModel
     }
 
     /**
-     * Un produit par son slug, avec toutes ses images, ou null s'il n'existe pas.
+     * Un produit par son slug, avec les images de son coloris par défaut, ou
+     * null s'il n'existe pas.
      *
      * Comme dans le catalogue, le prix est le plus bas des variantes.
      *
@@ -102,7 +116,7 @@ final class ProduitModel
         }
 
         $requeteImages = $this->pdo->prepare(
-            'SELECT fichier, alt FROM image WHERE produit_id = :id ORDER BY ordre'
+            'SELECT fichier, alt FROM image WHERE produit_id = :id AND variante_id IS NULL ORDER BY ordre'
         );
         $requeteImages->bindValue(':id', (int) $ligne['id'], PDO::PARAM_INT);
         $requeteImages->execute();
