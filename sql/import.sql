@@ -23,6 +23,7 @@ SET NAMES utf8mb4;
 
 -- Ordre inverse des clés étrangères : une table est supprimée avant celles
 -- dont elle dépend.
+DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS image;
 DROP TABLE IF EXISTS variante;
 DROP TABLE IF EXISTS produit;
@@ -380,3 +381,29 @@ INSERT INTO image (produit_id, variante_id, fichier, alt, ordre) VALUES
     ( 9, 20, 'casque-pulse-elite-noir-3.webp',           'Casque PULSE Elite, coloris noir, vue 3',      3),
     ( 9, 20, 'casque-pulse-elite-noir-4.webp',           'Casque PULSE Elite, coloris noir, vue 4',      4),
     (10, 21, 'ecouteurs-pulse-explore-noir.webp',        'Écouteurs PULSE Explore, coloris noir',        1);
+
+-- ---------------------------------------------------------------------------
+-- Utilisateurs
+--
+-- mot_de_passe : empreinte bcrypt produite par password_hash(), jamais le mot
+-- de passe lui-même. role : 'client' pour la boutique, 'admin' pour la zone
+-- d'administration.
+-- ---------------------------------------------------------------------------
+CREATE TABLE utilisateur (
+    id           INT UNSIGNED            NOT NULL AUTO_INCREMENT,
+    email        VARCHAR(180)            NOT NULL,
+    mot_de_passe VARCHAR(255)            NOT NULL,
+    role         ENUM('client', 'admin') NOT NULL DEFAULT 'client',
+    cree_le      DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_utilisateur_email (email)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+-- Comptes de test (voir README) : client@playstation.test / client1234 et
+-- admin@playstation.test / admin1234.
+INSERT INTO utilisateur (email, mot_de_passe, role) VALUES
+    ('client@playstation.test', '$2y$12$lJPa0JrD2Rw0ET8.r/Xp2umTobri5omSesmplBIX4zUn8xO8oFT2K', 'client'),
+    ('admin@playstation.test',  '$2y$12$1puRSW6uY8T6pxGogeWEw.H9ufh93afp.iNCoMHWoKjYw8jIC5CNy', 'admin');

@@ -147,7 +147,7 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | Route | Effet |
 |---|---|
 | `GET /api/films?page=2&tri=note&parPage=24` | une page du catalogue |
-| `POST /api/login` | connexion, corps JSON `{"login": …, "mdp": …}` |
+| `POST /api/login` | connexion, corps JSON `{"email": …, "mdp": …}` |
 | `POST /api/logout` | déconnexion |
 | `GET /api/admin/stats` | statistiques, réservées au rôle `admin` |
 
@@ -159,10 +159,14 @@ jamais besoin de lire les cookies, qui sont en `HttpOnly`.
 
 ## Comptes
 
-| Login | Mot de passe | Rôle |
+Comptes de test créés par `sql/import.sql` (mots de passe stockés en bcrypt) :
+
+| Adresse e-mail | Mot de passe | Rôle |
 |---|---|---|
-| `alice` | `azerty` | `user` |
-| `admin` | `motdepasse` | `admin` |
+| `client@playstation.test` | `client1234` | `client` |
+| `admin@playstation.test` | `admin1234` | `admin` |
+
+Un visiteur peut aussi créer son compte depuis la page `/connexion`.
 
 ## Si ça ne marche pas
 

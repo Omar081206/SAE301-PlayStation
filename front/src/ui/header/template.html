@@ -8,9 +8,17 @@
       <img src="{{logoPlayStation}}" alt="" width="41" height="32">
     </a>
 
-    <a href="/panier" data-link aria-label="{{libellePanier}}" class="relative block size-10">
-      <img src="{{iconePanier}}" alt="" width="24" height="24" class="absolute top-2 left-2">
-      <span data-role="compteur" class="absolute top-0 left-6 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-achat px-1 text-xs font-bold text-texte-inverse">{{nombre}}</span>
-    </a>
+    <div class="flex items-center gap-1.75 md:gap-4">
+      <!-- Le compte : un bouton à partir de md, une icône en dessous. -->
+      <a href="/connexion" data-link class="hidden rounded-full bg-action px-3 py-1 text-sm font-medium tracking-[0.025rem] text-texte-inverse md:block">{{libelleCompte}}</a>
+      <a href="/connexion" data-link aria-label="{{libelleCompte}}" class="flex size-11 items-center justify-center md:hidden">
+        <img src="{{iconeCompte}}" alt="" width="24" height="24">
+      </a>
+
+      <a href="/panier" data-link aria-label="{{libellePanier}}" class="relative block size-10">
+        <img src="{{iconePanier}}" alt="" width="24" height="24" class="absolute top-2 left-2">
+        <span data-role="compteur" class="absolute top-0 left-6 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-achat px-1 text-xs font-bold text-texte-inverse">{{nombre}}</span>
+      </a>
+    </div>
   </div>
 </header>

@@ -1,8 +1,10 @@
 import { Router } from "./lib/router.js";
+import { AuthData } from "./data/auth.js";
 import { RootLayout } from "./layouts/root/layout.js";
 import { CataloguePage } from "./pages/catalogue/page.js";
 import { ProduitPage } from "./pages/produit/page.js";
 import { PanierPage } from "./pages/panier/page.js";
+import { ConnexionPage } from "./pages/connexion/page.js";
 import { AdminPage } from "./pages/admin/page.js";
 import { The404Page } from "./pages/404/page.js";
 
@@ -15,10 +17,20 @@ router.addRoute("/", CataloguePage);
 router.addRoute("/categorie/:slug", CataloguePage);
 router.addRoute("/produit/:slug", ProduitPage);
 router.addRoute("/panier", PanierPage);
+router.addRoute("/connexion", ConnexionPage);
 router.addRoute("/admin", AdminPage);
 
 // En dernier : toute adresse qui ne correspond à aucune route.
 router.addRoute("*", The404Page);
+
+// L'état de connexion est demandé une fois, avant le premier affichage : le
+// header en a besoin dès le départ. Sans réponse du serveur, l'application
+// démarre comme si personne n'était connecté.
+try {
+  await AuthData.fetchSession();
+} catch (erreur) {
+  // Le header affichera « Connexion ».
+}
 
 // Démarrer le routeur
 router.start();

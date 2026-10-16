@@ -1,0 +1,14 @@
+<div class="px-7 py-7 lg:px-20 lg:py-8">
+  <!-- La fin du titre n'apparaît qu'à partir de lg, comme sur la maquette. -->
+  <h1 class="mb-5.25 text-produit-sm font-light md:text-produit-md lg:mb-6 lg:text-produit-lg">{{titre}}<span class="hidden lg:inline">{{suite}}</span></h1>
+
+  <slot name="message"></slot>
+  <slot name="onglets"></slot>
+
+  <div class="grid gap-6 lg:grid-cols-[repeat(2,minmax(0,32.5rem))]">
+    <slot name="connexion"></slot>
+    <slot name="inscription"></slot>
+  </div>
+
+  <slot name="compte"></slot>
+</div>

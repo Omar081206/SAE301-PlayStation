@@ -25,6 +25,7 @@ use App\Model\CategorieModel;
 use App\Model\FilmModel;
 use App\Model\PanierModel;
 use App\Model\ProduitModel;
+use App\Model\UtilisateurModel;
 
 // --- Chargement automatique des classes ------------------------------------
 // App\Core\Router  ->  back/src/Core/Router.php
@@ -68,7 +69,7 @@ try {
         ProduitController::class   => new ProduitController(new ProduitModel($pdo), new CategorieModel($pdo)),
         CategorieController::class => new CategorieController(new CategorieModel($pdo)),
         PanierController::class    => new PanierController(new PanierModel($pdo)),
-        AuthController::class      => new AuthController(),
+        AuthController::class      => new AuthController(new UtilisateurModel($pdo)),
         StatsController::class     => new StatsController(new FilmModel($pdo)),
     ];
 

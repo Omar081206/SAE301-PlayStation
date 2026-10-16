@@ -25,5 +25,7 @@ return [
     'POST /api/panier'      => [PanierController::class,    'index'],
     'POST /api/login'       => [AuthController::class,      'login'],
     'POST /api/logout'      => [AuthController::class,      'logout'],
+    'POST /api/inscription' => [AuthController::class,      'inscription'],
+    'GET  /api/session'     => [AuthController::class,      'session'],
     'GET  /api/admin/stats' => [StatsController::class,     'index'],
 ];
