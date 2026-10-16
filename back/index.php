@@ -71,7 +71,7 @@ try {
         ProduitController::class   => new ProduitController(new ProduitModel($pdo), new CategorieModel($pdo)),
         CategorieController::class => new CategorieController(new CategorieModel($pdo)),
         PanierController::class    => new PanierController(new PanierModel($pdo)),
-        CommandeController::class  => new CommandeController(new PanierModel($pdo), new CommandeModel($pdo)),
+        CommandeController::class  => new CommandeController(new PanierModel($pdo), new CommandeModel($pdo), new UtilisateurModel($pdo)),
         AuthController::class      => new AuthController(new UtilisateurModel($pdo)),
         StatsController::class     => new StatsController(new FilmModel($pdo)),
     ];

@@ -14,6 +14,11 @@ use App\Model\UtilisateurModel;
  * L'identité et le rôle de l'utilisateur connecté sont rangés en session,
  * côté serveur. Le client ne détient que l'identifiant de session, dans le
  * cookie PHPSESSID.
+ *
+ * Aucune réponse 401 : sur mmi.unilim.fr, tout l'espace web est protégé par
+ * l'authentification HTTP d'Apache, et un 401 venu de l'API ferait croire au
+ * navigateur que les identifiants de l'IUT sont refusés (il les redemande ou
+ * les oublie). Identifiants incorrects : 422 ; non connecté : 403.
  */
 final class AuthController
 {
@@ -45,7 +50,7 @@ final class AuthController
         // Même message que le compte existe ou non : la réponse ne doit pas
         // permettre de deviner quelles adresses sont inscrites.
         if ($compte === null || !password_verify($mdp, $compte['mot_de_passe'])) {
-            Response::erreur('Adresse e-mail ou mot de passe incorrect.', 401);
+            Response::erreur('Adresse e-mail ou mot de passe incorrect.', 422);
         }
 
         $this->ouvrirSession($compte['id'], $compte['email'], $compte['role']);
@@ -83,7 +88,13 @@ final class AuthController
      */
     public function session(): void
     {
-        if (!isset($_SESSION['utilisateur'])) {
+        if (!isset($_SESSION['id'])) {
+            Response::json(['connecte' => false, 'email' => null, 'role' => null]);
+        }
+
+        // Compte supprimé depuis l'ouverture de la session : on la ferme.
+        if (!$this->utilisateurs->existe((int) $_SESSION['id'])) {
+            $_SESSION = [];
             Response::json(['connecte' => false, 'email' => null, 'role' => null]);
         }
 

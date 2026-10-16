@@ -51,6 +51,19 @@ final class UtilisateurModel
     }
 
     /**
+     * Vrai si le compte existe toujours (une session peut survivre à la
+     * suppression de son compte, par exemple après une réimportation).
+     */
+    public function existe(int $id): bool
+    {
+        $requetePreparee = $this->pdo->prepare('SELECT 1 FROM utilisateur WHERE id = :id');
+        $requetePreparee->bindValue(':id', $id, PDO::PARAM_INT);
+        $requetePreparee->execute();
+
+        return $requetePreparee->fetchColumn() !== false;
+    }
+
+    /**
      * Crée un compte client et renvoie son identifiant.
      *
      * @param string $empreinte Empreinte du mot de passe (password_hash), jamais

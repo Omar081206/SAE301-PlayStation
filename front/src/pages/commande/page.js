@@ -57,7 +57,7 @@ C.handler_confirmer = async function () {
     M.envoiEnCours = false;
 
     // Session expirée entre l'affichage et le clic : retour à la connexion.
-    if (erreur.statut === 401) {
+    if (erreur.statut === 403) {
       naviguer(CONNEXION);
       return;
     }
