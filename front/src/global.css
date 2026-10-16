@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+/*
+  Le thème sombre s'active par la classe theme-dark posée sur <html>, et non
+  par le réglage du système : c'est ce que déclare cette variante. La boutique
+  n'a pas de thème sombre (la maquette n'en prévoit pas), mais la page
+  d'administration du starter utilise encore dark: ; la variante reste donc
+  déclarée, sans que rien ne pose la classe.
+*/
+@custom-variant dark (&:where(.theme-dark, .theme-dark *));
+
+/*
+  Tokens de la maquette Figma (variables du fichier « Maquettes PlayStation »).
+
+  Primitives : les valeurs brutes, déclarées une seule fois.
+*/
+:root {
+  --clr-blanc: #ffffff;
+  --clr-noir: #000000;
+  --clr-noir-12: #0000001f;
+  --clr-noir-32: #00000052;
+  --clr-noir-72: #000000b8;
+  --clr-bleu-ps: #0068bd;
+  --clr-bleu-logo: #0070d1;
+  --clr-bleu-nuit: #003697;
+  --clr-lavande: #f0f1fb;
+  --clr-orange: #d53b00;
+  --clr-vert: #007a62;
+  --clr-jaune: #fcc71d;
+  --clr-gris-nav: #1f1f1f;
+}
+
+/*
+  Sémantiques : le rôle de chaque couleur, exposé à Tailwind (bg-page,
+  text-texte-inverse, border-trait…). « inline » fait référencer la variable
+  plutôt que recopier sa valeur.
+*/
+@theme inline {
+  --color-page: var(--clr-blanc);
+  --color-barre-sony: var(--clr-noir);
+  --color-tuile: var(--clr-lavande);
+  --color-pied: var(--clr-bleu-nuit);
+  --color-texte: var(--clr-noir);
+  --color-texte-inverse: var(--clr-blanc);
+  --color-texte-attenue: var(--clr-noir-72);
+  --color-texte-nav: var(--clr-gris-nav);
+  --color-lien: var(--clr-bleu-ps);
+  --color-logo: var(--clr-bleu-logo);
+  --color-action: var(--clr-bleu-ps);
+  --color-achat: var(--clr-orange);
+  --color-desactive: var(--clr-noir-32);
+  --color-succes: var(--clr-vert);
+  --color-alerte: var(--clr-jaune);
+  --color-trait: var(--clr-noir-12);
+}
+
+/*
+  Typographie. Inter n'est pas chargée (pas de CDN) : elle s'applique si elle
+  est installée, sinon la police du système prend le relais.
+  Le titre du bandeau change de taille à chaque format de la maquette :
+  29 px (mobile), 43 px (tablette), 49 px (desktop).
+*/
+@theme {
+  --font-sans: Inter, system-ui, sans-serif;
+  --tracking-ps: -0.0125rem;
+
+  --text-bandeau-sm: 1.8125rem;
+  --text-bandeau-sm--line-height: 1.25;
+  --text-bandeau-md: 2.6875rem;
+  --text-bandeau-md--line-height: 1.25;
+  --text-bandeau-lg: 3.0625rem;
+  --text-bandeau-lg--line-height: 1.25;
+
+}
+
+/*
+  Bandeau de titre des pages de la boutique : le dégradé bleu PlayStation de la
+  maquette, du noir bleuté (gauche) au bleu vif (droite).
+*/
+@utility bandeau-titre {
+  background-image: linear-gradient(270deg, #007dea 0%, #003b9c 33%, #000f55 66%, #09101a 100%);
+}
+
+@layer base {
+  /* Menus déroulants et barres de défilement natifs, eux aussi en sombre. */
+  .theme-dark {
+    color-scheme: dark;
+  }
+
+  /* Un seul anneau de focus pour toute l'application, visible uniquement au
+     clavier : :focus-visible ne se déclenche pas sur un clic de souris. */
+  :where(a, button, select, input):focus-visible {
+    outline: 2px solid var(--color-action);
+    outline-offset: 2px;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
