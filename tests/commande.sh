@@ -53,7 +53,7 @@ PANIER='{"lignes":[{"variantId":5,"quantite":2},{"variantId":17,"quantite":1}]}'
 
 echo "1. Sans connexion, la commande est refusée"
 IFS=$'\t' read -r code corps <<< "$(api POST commande "$PANIER")"
-verifier "POST /commande non connecté" "$code" "401"
+verifier "POST /commande non connecté" "$code" "403"
 
 echo "2. Connexion du client de test"
 IFS=$'\t' read -r code corps <<< "$(api POST login '{"email":"client@playstation.test","mdp":"client1234"}')"

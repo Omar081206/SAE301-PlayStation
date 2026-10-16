@@ -8,6 +8,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Model\CommandeModel;
 use App\Model\PanierModel;
+use App\Model\UtilisateurModel;
 
 /**
  * Validation et consultation des commandes, réservées au client connecté.
@@ -15,6 +16,9 @@ use App\Model\PanierModel;
  * Le navigateur n'envoie que des identifiants de variantes et des quantités :
  * noms, prix et total sont relus en base au moment de la commande, puis
  * figés dans les lignes de commande.
+ *
+ * Non connecté : 403, et non 401 (voir AuthController : un 401 se confond
+ * avec l'authentification HTTP d'Apache sur mmi.unilim.fr).
  */
 final class CommandeController
 {
@@ -30,10 +34,30 @@ final class CommandeController
     /** Le modèle qui enregistre et relit les commandes. */
     private CommandeModel $commandes;
 
-    public function __construct(PanierModel $paniers, CommandeModel $commandes)
+    /** Le modèle des comptes, pour vérifier celui de la session. */
+    private UtilisateurModel $utilisateurs;
+
+    public function __construct(PanierModel $paniers, CommandeModel $commandes, UtilisateurModel $utilisateurs)
     {
-        $this->paniers   = $paniers;
-        $this->commandes = $commandes;
+        $this->paniers      = $paniers;
+        $this->commandes    = $commandes;
+        $this->utilisateurs = $utilisateurs;
+    }
+
+    /**
+     * Identifiant du client connecté. Répond 403 (et termine) si personne
+     * n'est connecté, ou si le compte de la session n'existe plus.
+     */
+    private function clientConnecte(string $message): int
+    {
+        $id = (int) ($_SESSION['id'] ?? 0);
+
+        if ($id === 0 || !$this->utilisateurs->existe($id)) {
+            $_SESSION = [];
+            Response::erreur($message, 403);
+        }
+
+        return $id;
     }
 
     /**
@@ -43,9 +67,7 @@ final class CommandeController
      */
     public function enregistrer(Request $requete): void
     {
-        if (!isset($_SESSION['id'])) {
-            Response::erreur('Connectez-vous pour valider votre commande.', 401);
-        }
+        $client = $this->clientConnecte('Connectez-vous pour valider votre commande.');
 
         $lignes = $requete->corps()['lignes'] ?? null;
 
@@ -94,9 +116,9 @@ final class CommandeController
             Response::erreur('Votre panier est vide.', 422);
         }
 
-        $numero = $this->commandes->creer((int) $_SESSION['id'], $aEnregistrer, round($total, 2));
+        $numero = $this->commandes->creer($client, $aEnregistrer, round($total, 2));
 
-        Response::json(['commande' => $this->commandes->trouver($numero, (int) $_SESSION['id'])], 201);
+        Response::json(['commande' => $this->commandes->trouver($numero, $client)], 201);
     }
 
     /**
@@ -104,9 +126,7 @@ final class CommandeController
      */
     public function detail(Request $requete): void
     {
-        if (!isset($_SESSION['id'])) {
-            Response::erreur('Connectez-vous pour consulter votre commande.', 401);
-        }
+        $client = $this->clientConnecte('Connectez-vous pour consulter votre commande.');
 
         $numero = $requete->parametre('numero');
 
@@ -114,7 +134,7 @@ final class CommandeController
             Response::erreur('Le paramètre numero est obligatoire', 400);
         }
 
-        $commande = $this->commandes->trouver($numero, (int) $_SESSION['id']);
+        $commande = $this->commandes->trouver($numero, $client);
 
         // Même réponse pour une commande inexistante et pour celle d'un autre
         // client : on ne révèle pas quels numéros existent.

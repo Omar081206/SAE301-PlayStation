@@ -30,7 +30,7 @@ C.charger = async function (numero) {
     M.commande = null;
 
     let texte = `Impossible de charger la commande : ${erreur.message}`;
-    if (erreur.statut === 401) texte = "Connectez-vous pour consulter votre commande.";
+    if (erreur.statut === 403) texte = "Connectez-vous pour consulter votre commande.";
     if (erreur.statut === 404) texte = "Cette commande est introuvable.";
 
     M.message = { type: "erreur", texte };

@@ -27,6 +27,7 @@ AuthData.retenir = function (session) {
  * Connexion : POST /api/login, corps { email, mdp }
  * En cas de succès, le serveur ouvre une session ; le cookie PHPSESSID qu'il
  * renvoie accompagnera ensuite chaque requête.
+ * 422 si l'adresse ou le mot de passe est incorrect.
  *
  * { connecte: true, email, role }
  */
