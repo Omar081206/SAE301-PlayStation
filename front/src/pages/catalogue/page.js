@@ -1,4 +1,5 @@
 import { CategorieData } from "../../data/categorie.js";
+import { PanierData } from "../../data/panier.js";
 import { ProduitData } from "../../data/produit.js";
 import { htmlToFragment } from "../../lib/utils.js";
 import { BandeauView } from "../../ui/bandeau/index.js";
@@ -18,6 +19,7 @@ import template from "./template.html?raw";
 let M = {
   catalogue: null, // dernière réponse de l'API : { produits, total, categorie }
   categories: null, // menu des catégories : { categories, total }
+  slug: undefined, // catégorie affichée, undefined pour tout le catalogue
   message: null, // { type, texte }, ou null
 };
 
@@ -52,8 +54,15 @@ C.chargerCategories = async function () {
   }
 };
 
+C.handler_ajouter = async function (variantId, nom) {
+  PanierData.ajouter(variantId);
+  M.message = { type: "succes", texte: `« ${nom} » a été ajouté au panier.` };
+  V.rafraichir();
+};
+
 C.init = async function (slug) {
   M.message = null;
+  M.slug = slug;
   await C.charger(slug);
   await C.chargerCategories();
   return V.init();
@@ -97,7 +106,7 @@ V.createPageFragment = function () {
   if (M.categories === null) {
     slotFiltre.remove();
   } else {
-    slotFiltre.replaceWith(FiltreCategoriesView.dom(M.categories));
+    slotFiltre.replaceWith(FiltreCategoriesView.dom({ ...M.categories, active: M.slug }));
   }
 
   let slotGrille = pageFragment.querySelector('slot[name="grille"]');
@@ -105,7 +114,7 @@ V.createPageFragment = function () {
     // Rien à afficher : on retire l'emplacement.
     slotGrille.remove();
   } else {
-    slotGrille.replaceWith(GrilleProduitsView.dom(M.catalogue.produits));
+    slotGrille.replaceWith(GrilleProduitsView.dom(M.catalogue.produits, { surAjout: C.handler_ajouter }));
   }
 
   return pageFragment;

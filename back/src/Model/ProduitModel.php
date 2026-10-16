@@ -27,6 +27,8 @@ final class ProduitModel
      *
      * Le prix affiché est le plus bas des variantes du produit, l'image celle
      * d'ordre 1 (image principale), ou null si le produit n'en a pas encore.
+     * variante_id est la variante par défaut (la première créée) : c'est elle
+     * qu'ajoute le bouton « Ajouter au panier ».
      *
      * @param string|null $categorie Slug de la catégorie à afficher, ou null
      *                               pour tout le catalogue.
@@ -38,6 +40,7 @@ final class ProduitModel
                        produit.nom,
                        produit.slug,
                        categorie.nom  AS categorie,
+                       MIN(variante.id)   AS variante_id,
                        MIN(variante.prix) AS prix,
                        image.fichier  AS image,
                        image.alt      AS image_alt
@@ -68,13 +71,14 @@ final class ProduitModel
 
         foreach ($lignes as $ligne) {
             $produits[] = [
-                'id'        => (int) $ligne['id'],
-                'nom'       => $ligne['nom'],
-                'slug'      => $ligne['slug'],
-                'categorie' => $ligne['categorie'],
-                'prix'      => (float) $ligne['prix'],
-                'image'     => $ligne['image'],
-                'image_alt' => $ligne['image_alt'],
+                'id'          => (int) $ligne['id'],
+                'nom'         => $ligne['nom'],
+                'slug'        => $ligne['slug'],
+                'categorie'   => $ligne['categorie'],
+                'variante_id' => (int) $ligne['variante_id'],
+                'prix'        => (float) $ligne['prix'],
+                'image'       => $ligne['image'],
+                'image_alt'   => $ligne['image_alt'],
             ];
         }
 
@@ -98,6 +102,7 @@ final class ProduitModel
                     produit.description,
                     categorie.nom  AS categorie,
                     categorie.slug AS categorie_slug,
+                    MIN(variante.id)   AS variante_id,
                     MIN(variante.prix) AS prix
                FROM produit
          INNER JOIN categorie ON categorie.id = produit.categorie_id
@@ -129,6 +134,7 @@ final class ProduitModel
             'description'    => $ligne['description'],
             'categorie'      => $ligne['categorie'],
             'categorie_slug' => $ligne['categorie_slug'],
+            'variante_id'    => (int) $ligne['variante_id'],
             'prix'           => (float) $ligne['prix'],
             'images'         => $requeteImages->fetchAll(),
         ];

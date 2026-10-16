@@ -1,0 +1,27 @@
+<li class="flex gap-2.5 border-b border-trait py-3.5 lg:items-center lg:gap-6 lg:py-4">
+  <a href="/produit/{{slug}}" data-link class="block size-18 shrink-0 overflow-hidden rounded-md bg-tuile-claire lg:size-24 lg:rounded-lg">
+    <img src="{{image}}" alt="{{alt}}" width="96" height="96" class="size-full object-contain">
+  </a>
+
+  <!-- En dessous de lg, le sous-total est à droite du nom ; à partir de lg,
+       il passe en dernière colonne, au-dessus de « Supprimer ». -->
+  <div class="flex min-w-0 flex-1 flex-col gap-1.75 lg:flex-row lg:items-center lg:gap-6">
+    <div class="flex items-start justify-between gap-1.75 lg:flex-1">
+      <a href="/produit/{{slug}}" data-link class="text-sm font-bold lg:text-base">{{nom}}</a>
+      <p class="shrink-0 text-sm font-bold lg:hidden">{{sousTotal}}</p>
+    </div>
+
+    <div class="flex items-center gap-2.5 lg:gap-6">
+      <div class="flex items-center rounded-full border-2 border-trait">
+        <button type="button" data-action="moins" aria-label="Retirer un exemplaire de {{nom}}" class="flex size-9 items-center justify-center font-medium disabled:text-desactive">−</button>
+        <span class="w-10 text-center font-semibold"><span class="sr-only">Quantité : </span>{{quantite}}</span>
+        <button type="button" data-action="plus" aria-label="Ajouter un exemplaire de {{nom}}" class="flex size-9 items-center justify-center font-medium disabled:text-desactive">+</button>
+      </div>
+
+      <div class="flex flex-col lg:w-27.5 lg:items-end lg:gap-2">
+        <p class="hidden font-bold lg:block">{{sousTotal}}</p>
+        <button type="button" data-action="supprimer" aria-label="Supprimer {{nom}} du panier" class="text-sm font-bold text-lien underline">Supprimer</button>
+      </div>
+    </div>
+  </div>
+</li>

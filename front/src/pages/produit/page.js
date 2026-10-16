@@ -1,3 +1,4 @@
+import { PanierData } from "../../data/panier.js";
 import { ProduitData } from "../../data/produit.js";
 import { htmlToFragment } from "../../lib/utils.js";
 import { FicheProduitView } from "../../ui/fiche-produit/index.js";
@@ -41,6 +42,12 @@ C.charger = async function (slug) {
 
 C.handler_changerImage = async function (position) {
   M.imageActive = position;
+  V.rafraichir();
+};
+
+C.handler_ajouter = async function (variantId, nom) {
+  PanierData.ajouter(variantId);
+  M.message = { type: "succes", texte: `« ${nom} » a été ajouté au panier.` };
   V.rafraichir();
 };
 
@@ -95,7 +102,7 @@ V.createPageFragment = function () {
     return pageFragment;
   }
 
-  let fiche = FicheProduitView.dom(M.produit);
+  let fiche = FicheProduitView.dom(M.produit, { surAjout: C.handler_ajouter });
   fiche.querySelector('slot[name="galerie"]').replaceWith(
     GalerieProduitView.dom(
       { images: M.produit.images, active: M.imageActive },

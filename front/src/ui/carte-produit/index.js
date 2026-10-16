@@ -1,9 +1,10 @@
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { formaterPrix } from "../../lib/format.js";
+import iconeAjout from "../../assets/ajout-panier.svg";
 import template from "./template.html?raw";
 
 // Carte d'un produit, tel que le renvoie l'API :
-// { id, nom, slug, categorie, prix, image, image_alt }
+// { id, nom, slug, categorie, variante_id, prix, image, image_alt }
 // L'image est un fichier de front/public/images/produits/, que Vite recopie
 // dans dist/ sous le chemin du projet.
 let CarteProduitView = {
@@ -15,11 +16,22 @@ let CarteProduitView = {
       prix: formaterPrix(produit.prix),
       image: import.meta.env.BASE_URL + "images/produits/" + produit.image,
       alt: produit.image_alt,
+      iconeAjout,
     });
   },
 
-  dom: function (produit) {
-    return htmlToFragment(CarteProduitView.html(produit));
+  /**
+   * @param {{variante_id: number, nom: string}} produit
+   * @param {{surAjout: (variantId: number, nom: string) => void}} actions
+   */
+  dom: function (produit, actions) {
+    let fragment = htmlToFragment(CarteProduitView.html(produit));
+
+    fragment
+      .querySelector('[data-action="ajouter"]')
+      .addEventListener("click", () => actions.surAjout(produit.variante_id, produit.nom));
+
+    return fragment;
   },
 };
 

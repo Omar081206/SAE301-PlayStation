@@ -1,0 +1,10 @@
+<div class="px-7 py-7 lg:px-20 lg:py-8">
+  <h1 class="mb-5.25 text-produit-sm font-light md:text-produit-md lg:mb-6 lg:text-produit-lg">{{titre}}</h1>
+
+  <slot name="message"></slot>
+
+  <div class="grid gap-5.25 lg:grid-cols-[1fr_25rem] lg:gap-12">
+    <slot name="lignes"></slot>
+    <slot name="resume"></slot>
+  </div>
+</div>

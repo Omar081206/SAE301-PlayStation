@@ -11,5 +11,9 @@
 
   <div class="flex min-h-8 items-center justify-between lg:min-h-10">
     <p class="text-base leading-5.25 lg:leading-6">{{prix}}</p>
+    <!-- relative z-10 : le bouton passe au-dessus du lien qui couvre la carte. -->
+    <button type="button" data-action="ajouter" aria-label="Ajouter {{nom}} au panier" class="relative z-10 flex size-8 items-center justify-center rounded-full bg-action lg:size-10">
+      <img src="{{iconeAjout}}" alt="" width="20" height="20" class="size-4 lg:size-5">
+    </button>
   </div>
 </article>

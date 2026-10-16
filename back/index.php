@@ -18,10 +18,12 @@ use App\Core\Response;
 use App\Core\Router;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
+use App\Controller\PanierController;
 use App\Controller\ProduitController;
 use App\Controller\StatsController;
 use App\Model\CategorieModel;
 use App\Model\FilmModel;
+use App\Model\PanierModel;
 use App\Model\ProduitModel;
 
 // --- Chargement automatique des classes ------------------------------------
@@ -65,6 +67,7 @@ try {
     $controleurs = [
         ProduitController::class   => new ProduitController(new ProduitModel($pdo), new CategorieModel($pdo)),
         CategorieController::class => new CategorieController(new CategorieModel($pdo)),
+        PanierController::class    => new PanierController(new PanierModel($pdo)),
         AuthController::class      => new AuthController(),
         StatsController::class     => new StatsController(new FilmModel($pdo)),
     ];
