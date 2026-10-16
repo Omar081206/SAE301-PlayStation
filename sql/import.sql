@@ -23,6 +23,8 @@ SET NAMES utf8mb4;
 
 -- Ordre inverse des clés étrangères : une table est supprimée avant celles
 -- dont elle dépend.
+DROP TABLE IF EXISTS ligne_commande;
+DROP TABLE IF EXISTS commande;
 DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS image;
 DROP TABLE IF EXISTS variante;
@@ -407,3 +409,66 @@ CREATE TABLE utilisateur (
 INSERT INTO utilisateur (email, mot_de_passe, role) VALUES
     ('client@playstation.test', '$2y$12$lJPa0JrD2Rw0ET8.r/Xp2umTobri5omSesmplBIX4zUn8xO8oFT2K', 'client'),
     ('admin@playstation.test',  '$2y$12$1puRSW6uY8T6pxGogeWEw.H9ufh93afp.iNCoMHWoKjYw8jIC5CNy', 'admin');
+
+-- ---------------------------------------------------------------------------
+-- Commandes
+--
+-- numero : PS-AAAAMMJJ-NNNN, construit à partir de l'identifiant juste après
+-- l'insertion (NULL le temps de la transaction, d'où une colonne NULL : une
+-- clé UNIQUE accepte plusieurs NULL). statut suit le retrait en magasin.
+-- total : somme des lignes, figée au moment de la commande.
+-- ---------------------------------------------------------------------------
+CREATE TABLE commande (
+    id             INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+    numero         VARCHAR(20)   NULL,
+    utilisateur_id INT UNSIGNED  NOT NULL,
+    statut         ENUM('en_cours', 'disponible', 'retiree', 'annulee') NOT NULL DEFAULT 'en_cours',
+    total          DECIMAL(10,2) NOT NULL,
+    cree_le        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_commande_numero (numero),
+    KEY idx_commande_utilisateur (utilisateur_id),
+    KEY idx_commande_statut (statut),
+    KEY idx_commande_date (cree_le),
+
+    CONSTRAINT fk_commande_utilisateur
+        FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+-- Lignes de commande
+--
+-- Le nom, le coloris et le prix unitaire sont recopiés au moment de la
+-- commande : un changement de prix ou de nom ultérieur ne modifie pas une
+-- commande passée. variante_id passe à NULL si la variante est supprimée.
+-- ---------------------------------------------------------------------------
+CREATE TABLE ligne_commande (
+    id            INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    commande_id   INT UNSIGNED      NOT NULL,
+    variante_id   INT UNSIGNED      NULL,
+    nom           VARCHAR(120)      NOT NULL,
+    coloris       VARCHAR(40)       NULL,
+    prix_unitaire DECIMAL(8,2)      NOT NULL,
+    quantite      SMALLINT UNSIGNED NOT NULL,
+
+    PRIMARY KEY (id),
+    KEY idx_ligne_commande (commande_id),
+    KEY idx_ligne_variante (variante_id),
+
+    CONSTRAINT fk_ligne_commande
+        FOREIGN KEY (commande_id) REFERENCES commande (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_ligne_variante
+        FOREIGN KEY (variante_id) REFERENCES variante (id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
