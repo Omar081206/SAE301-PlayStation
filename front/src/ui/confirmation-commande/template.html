@@ -1,0 +1,28 @@
+<div class="flex flex-col items-center gap-5.25 lg:gap-6">
+  <p class="flex size-18 items-center justify-center rounded-full bg-succes text-produit-lg font-bold text-texte-inverse" aria-hidden="true">✓</p>
+  <h1 class="text-center text-prix-md font-normal md:text-produit-md md:font-light lg:text-produit-lg">Merci, votre commande est enregistrée</h1>
+
+  <section class="flex w-full flex-col gap-3.5 rounded-xl p-7 shadow-panneau-sm md:shadow-panneau lg:max-w-160 lg:gap-4 lg:rounded-2xl lg:p-8">
+    <h2 class="text-prix-md font-normal lg:text-prix-lg lg:font-light">Commande n° {{numero}}</h2>
+
+    <p class="flex items-center justify-between">
+      <span>Statut</span>
+      <span class="rounded-xs px-2 py-1 text-xs leading-3 font-bold {{couleursStatut}}">{{statut}}</span>
+    </p>
+
+    <hr class="border-trait">
+
+    <ul class="flex flex-col gap-3">
+      <slot name="lignes"></slot>
+    </ul>
+
+    <p class="flex justify-between font-bold leading-6">
+      <span>Total TTC</span>
+      <span>{{total}}</span>
+    </p>
+
+    <hr class="border-trait">
+
+    <p class="text-sm leading-5.25 text-texte-attenue">Retrait en magasin : vous recevrez un e-mail quand votre commande sera « disponible ». Présentez ce numéro de commande au comptoir.</p>
+  </section>
+</div>

@@ -1,4 +1,5 @@
 import { AuthData } from "../../data/auth.js";
+import { naviguer, parametre } from "../../lib/navigation.js";
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { CompteConnecteView } from "../../ui/compte-connecte/index.js";
 import { FormulaireIdentificationView } from "../../ui/formulaire-identification/index.js";
@@ -12,6 +13,9 @@ import template from "./template.html?raw";
  *
  * Comme la page Administration, elle ne protège rien : c'est le serveur qui
  * accepte ou refuse, et la page affiche sa réponse.
+ *
+ * Une page réservée y envoie avec ?retour=/chemin : une fois connecté,
+ * l'utilisateur y est ramené.
  */
 
 let M = {
@@ -23,6 +27,22 @@ let M = {
 };
 
 let C = {};
+
+/**
+ * Après une connexion réussie : retour à la page demandée, s'il y en a une.
+ * Seul un chemin interne (« /… », pas « //autre-site ») est suivi.
+ * Renvoie vrai si la page change.
+ */
+C.retourner = function () {
+  let retour = parametre("retour");
+
+  if (retour === null || !retour.startsWith("/") || retour.startsWith("//")) {
+    return false;
+  }
+
+  naviguer(retour);
+  return true;
+};
 
 /**
  * Demande au serveur qui est connecté.
@@ -43,6 +63,7 @@ C.handler_connexion = async function (email, mdp) {
     M.session = await AuthData.login(email, mdp);
     M.erreurs = { connexion: null, inscription: null };
     M.message = { type: "succes", texte: "Vous êtes connecté." };
+    if (C.retourner()) return;
   } catch (erreur) {
     M.erreurs.connexion = erreur.message;
   }
@@ -57,6 +78,7 @@ C.handler_inscription = async function (email, mdp) {
     M.session = await AuthData.inscription(email, mdp);
     M.erreurs = { connexion: null, inscription: null };
     M.message = { type: "succes", texte: "Votre compte est créé : vous êtes connecté." };
+    if (C.retourner()) return;
   } catch (erreur) {
     M.erreurs.inscription = erreur.message;
   }

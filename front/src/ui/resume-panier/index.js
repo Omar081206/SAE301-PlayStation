@@ -2,8 +2,8 @@ import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { formaterPrix } from "../../lib/format.js";
 import template from "./template.html?raw";
 
-// Résumé du panier : le total TTC calculé par le serveur, et le bouton de
-// validation (branché avec la validation de commande, CMD-a).
+// Résumé du panier : le total TTC calculé par le serveur, et le lien vers la
+// validation de la commande.
 let ResumePanierView = {
   html: function (panier) {
     // Les valeurs sont mises en forme avant d'être passées au template.
