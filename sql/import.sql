@@ -6,7 +6,8 @@
 -- la colonne de gauche, puis importez ce fichier depuis l'onglet « Importer ».
 --
 -- Boutique : 15 produits en 4 catégories (3 manettes, 4 produits ailleurs). Chaque produit a une variante par
--- défaut, qui porte son prix et son stock, et une image principale (ordre 1).
+-- défaut, qui porte son prix et son stock, et une image principale (ordre 1) ;
+-- les produits photographiés sous plusieurs angles ont une galerie.
 -- Les tables film et genre du starter restent en place tant que la page
 -- d'administration s'en sert.
 --
@@ -296,4 +297,41 @@ INSERT INTO image (produit_id, fichier, alt, ordre) VALUES
     (14, 'astro-bot.jpg',                                'Jaquette du jeu Astro Bot',                             1),
     (15, 'marvels-spider-man-2.jpg',                     'Jaquette du jeu Marvel''s Spider-Man 2',                1),
     (16, 'gran-turismo-7.webp',                           'Jaquette du jeu Gran Turismo 7',                        1);
+
+-- Autres vues du même produit, pour la galerie de la fiche produit. Les
+-- coloris (fichiers -noir, -blanc) n'en font pas partie : ils serviront aux
+-- options de couleur.
+INSERT INTO image (produit_id, fichier, alt, ordre) VALUES
+    ( 1, 'console-ps5-2.webp',                   'Console PS5, vue 2',                   2),
+    ( 1, 'console-ps5-3.webp',                   'Console PS5, vue 3',                   3),
+    ( 1, 'console-ps5-4.webp',                   'Console PS5, vue 4',                   4),
+    ( 2, 'ps5-edition-numerique-2.webp',         'PS5 Édition numérique, vue 2',         2),
+    ( 2, 'ps5-edition-numerique-3.webp',         'PS5 Édition numérique, vue 3',         3),
+    ( 2, 'ps5-edition-numerique-4.webp',         'PS5 Édition numérique, vue 4',         4),
+    ( 3, 'ps5-pro-2.webp',                       'PS5 Pro, vue 2',                       2),
+    ( 3, 'ps5-pro-3.webp',                       'PS5 Pro, vue 3',                       3),
+    ( 3, 'ps5-pro-4.webp',                       'PS5 Pro, vue 4',                       4),
+    ( 4, 'playstation-portal-2.webp',            'PlayStation Portal, vue 2',            2),
+    ( 4, 'playstation-portal-3.webp',            'PlayStation Portal, vue 3',            3),
+    ( 4, 'playstation-portal-4.webp',            'PlayStation Portal, vue 4',            4),
+    ( 5, 'manette-sans-fil-dualsense-2.webp',    'Manette sans fil DualSense, vue 2',    2),
+    ( 5, 'manette-sans-fil-dualsense-3.webp',    'Manette sans fil DualSense, vue 3',    3),
+    ( 5, 'manette-sans-fil-dualsense-4.webp',    'Manette sans fil DualSense, vue 4',    4),
+    ( 6, 'dualsense-edge-2.webp',                'DualSense Edge, vue 2',                2),
+    ( 6, 'dualsense-edge-3.webp',                'DualSense Edge, vue 3',                3),
+    ( 6, 'dualsense-edge-4.webp',                'DualSense Edge, vue 4',                4),
+    ( 7, 'dualsense-edition-limitee-gta-vi-2.webp', 'DualSense Édition limitée GTA VI, vue 2', 2),
+    ( 7, 'dualsense-edition-limitee-gta-vi-3.webp', 'DualSense Édition limitée GTA VI, vue 3', 3),
+    ( 7, 'dualsense-edition-limitee-gta-vi-4.webp', 'DualSense Édition limitée GTA VI, vue 4', 4),
+    ( 9, 'casque-pulse-elite-2.webp',            'Casque PULSE Elite, vue 2',            2),
+    ( 9, 'casque-pulse-elite-3.webp',            'Casque PULSE Elite, vue 3',            3),
+    ( 9, 'casque-pulse-elite-4.webp',            'Casque PULSE Elite, vue 4',            4),
+    (10, 'ecouteurs-pulse-explore-2.webp',       'Écouteurs PULSE Explore, vue 2',       2),
+    (10, 'ecouteurs-pulse-explore-3.webp',       'Écouteurs PULSE Explore, vue 3',       3),
+    (10, 'ecouteurs-pulse-explore-4.webp',       'Écouteurs PULSE Explore, vue 4',       4),
+    (11, 'station-de-charge-dualsense-2.webp',   'Station de charge DualSense, vue 2',   2),
+    (11, 'station-de-charge-dualsense-3.webp',   'Station de charge DualSense, vue 3',   3),
+    (12, 'telecommande-multimedia-2.webp',       'Télécommande multimédia, vue 2',       2),
+    (12, 'telecommande-multimedia-3.webp',       'Télécommande multimédia, vue 3',       3),
+    (12, 'telecommande-multimedia-4.webp',       'Télécommande multimédia, vue 4',       4);
 

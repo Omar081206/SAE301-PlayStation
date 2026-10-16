@@ -9,7 +9,7 @@ use App\Core\Response;
 use App\Model\ProduitModel;
 
 /**
- * Catalogue de la boutique : la liste de tous les produits.
+ * Catalogue de la boutique : la liste de tous les produits, et la fiche de chacun.
  *
  * Le catalogue tient sur une page (15 produits) : ni tri ni pagination.
  */
@@ -36,4 +36,23 @@ final class ProduitController
         ]);
     }
 
+    /**
+     * GET /api/produit?slug=… : la fiche d'un produit.
+     */
+    public function detail(Request $requete): void
+    {
+        $slug = $requete->parametre('slug');
+
+        if ($slug === null || $slug === '') {
+            Response::erreur('Le paramètre slug est obligatoire', 400);
+        }
+
+        $produit = $this->produits->trouver($slug);
+
+        if ($produit === null) {
+            Response::erreur('Produit introuvable', 404);
+        }
+
+        Response::json(['produit' => $produit]);
+    }
 }

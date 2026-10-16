@@ -24,6 +24,7 @@
   --clr-bleu-logo: #0070d1;
   --clr-bleu-nuit: #003697;
   --clr-lavande: #f0f1fb;
+  --clr-lavande-claire: #f7f8fd;
   --clr-orange: #d53b00;
   --clr-vert: #007a62;
   --clr-jaune: #fcc71d;
@@ -39,6 +40,7 @@
   --color-page: var(--clr-blanc);
   --color-barre-sony: var(--clr-noir);
   --color-tuile: var(--clr-lavande);
+  --color-tuile-claire: var(--clr-lavande-claire);
   --color-pied: var(--clr-bleu-nuit);
   --color-texte: var(--clr-noir);
   --color-texte-inverse: var(--clr-blanc);
@@ -71,6 +73,27 @@
   --text-bandeau-lg: 3.0625rem;
   --text-bandeau-lg--line-height: 1.25;
 
+  /* Fiche produit : nom (29 / 34 / 39 px), prix (20 / 22 / 25 px) et
+     intertitre « Description » (24 / 27 / 31 px). */
+  --text-produit-sm: 1.8125rem;
+  --text-produit-sm--line-height: 1.25;
+  --text-produit-md: 2.125rem;
+  --text-produit-md--line-height: 1.25;
+  --text-produit-lg: 2.4375rem;
+  --text-produit-lg--line-height: 1.25;
+  --text-prix-sm: 1.25rem;
+  --text-prix-sm--line-height: 1.25;
+  --text-prix-md: 1.375rem;
+  --text-prix-md--line-height: 1.25;
+  --text-prix-lg: 1.5625rem;
+  --text-prix-lg--line-height: 1.25;
+  --text-intertitre-sm: 1.5rem;
+  --text-intertitre-md: 1.6875rem;
+  --text-intertitre-lg: 1.9375rem;
+
+  /* Ombre du panneau d'achat : plus courte sur mobile. */
+  --shadow-panneau-sm: 0 0.875rem 0.875rem 0 rgb(0 0 0 / 0.08);
+  --shadow-panneau: 0 0.25rem 1.5rem 0 rgb(0 0 0 / 0.16);
 }
 
 /*
@@ -79,6 +102,14 @@
 */
 @utility bandeau-titre {
   background-image: linear-gradient(270deg, #007dea 0%, #003b9c 33%, #000f55 66%, #09101a 100%);
+}
+
+/*
+  Fond de l'image principale de la fiche produit : un dégradé gris bleuté qui
+  met en valeur les produits blancs comme noirs.
+*/
+@utility fond-galerie {
+  background-image: linear-gradient(218deg, #09101a 10.714%, #252d37 25.357%, #7f8197 60.714%);
 }
 
 @layer base {

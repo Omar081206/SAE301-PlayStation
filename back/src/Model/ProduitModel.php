@@ -68,4 +68,55 @@ final class ProduitModel
         return $produits;
     }
 
+    /**
+     * Un produit par son slug, avec toutes ses images, ou null s'il n'existe pas.
+     *
+     * Comme dans le catalogue, le prix est le plus bas des variantes.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function trouver(string $slug): ?array
+    {
+        $requetePreparee = $this->pdo->prepare(
+            'SELECT produit.id,
+                    produit.nom,
+                    produit.slug,
+                    produit.description,
+                    categorie.nom  AS categorie,
+                    categorie.slug AS categorie_slug,
+                    MIN(variante.prix) AS prix
+               FROM produit
+         INNER JOIN categorie ON categorie.id = produit.categorie_id
+         INNER JOIN variante  ON variante.produit_id = produit.id
+              WHERE produit.slug = :slug
+           GROUP BY produit.id, produit.nom, produit.slug, produit.description,
+                    categorie.nom, categorie.slug'
+        );
+        $requetePreparee->bindValue(':slug', $slug, PDO::PARAM_STR);
+        $requetePreparee->execute();
+
+        $ligne = $requetePreparee->fetch();
+
+        if ($ligne === false) {
+            return null;
+        }
+
+        $requeteImages = $this->pdo->prepare(
+            'SELECT fichier, alt FROM image WHERE produit_id = :id ORDER BY ordre'
+        );
+        $requeteImages->bindValue(':id', (int) $ligne['id'], PDO::PARAM_INT);
+        $requeteImages->execute();
+
+        // MySQL renvoie des chaînes : on convertit avant le JSON.
+        return [
+            'id'             => (int) $ligne['id'],
+            'nom'            => $ligne['nom'],
+            'slug'           => $ligne['slug'],
+            'description'    => $ligne['description'],
+            'categorie'      => $ligne['categorie'],
+            'categorie_slug' => $ligne['categorie_slug'],
+            'prix'           => (float) $ligne['prix'],
+            'images'         => $requeteImages->fetchAll(),
+        ];
+    }
 }

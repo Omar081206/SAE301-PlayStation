@@ -1,0 +1,23 @@
+<div>
+  <a href="/" data-link class="mb-3.5 inline-block text-sm font-bold text-lien lg:mb-6">‹ Retour à {{categorie}}</a>
+
+  <div class="grid gap-5.25 lg:grid-cols-[1fr_32.5rem] lg:gap-x-12 lg:gap-y-4">
+    <slot name="galerie"></slot>
+
+    <!-- En mobile et tablette, le panneau d'achat et la description partagent
+         une même carte. En desktop, cette carte s'efface (lg:contents) : le
+         panneau passe à droite, la description sous la galerie. -->
+    <div class="flex flex-col gap-3.5 rounded-xl px-3.5 py-7 shadow-panneau-sm md:p-7 md:shadow-panneau lg:contents">
+      <div class="flex flex-col gap-3.5 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:gap-6 lg:self-start lg:rounded-2xl lg:p-8 lg:shadow-panneau">
+        <h1 class="text-produit-sm font-light md:text-produit-md lg:text-produit-lg">{{nom}}</h1>
+        <p class="text-prix-sm font-light md:text-prix-md lg:text-prix-lg">{{prix}}</p>
+        <button type="button" class="rounded-full bg-achat px-3.5 py-2.5 text-sm leading-3.5 font-bold text-texte-inverse lg:px-4 lg:py-3">Ajouter au panier</button>
+      </div>
+
+      <div class="flex flex-col gap-2.5 lg:col-start-1 lg:row-start-2 lg:gap-3">
+        <h2 class="text-intertitre-sm font-light md:text-intertitre-md lg:text-intertitre-lg">Description</h2>
+        <p class="text-sm leading-normal lg:text-base">{{description}}</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -11,6 +11,7 @@ let CarteProduitView = {
     // Les valeurs sont mises en forme avant d'être passées au template.
     return genericRenderer(template, {
       nom: produit.nom,
+      slug: produit.slug,
       prix: formaterPrix(produit.prix),
       image: import.meta.env.BASE_URL + "images/produits/" + produit.image,
       alt: produit.image_alt,
