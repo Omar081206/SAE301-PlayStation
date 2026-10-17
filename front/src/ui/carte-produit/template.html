@@ -1,6 +1,7 @@
 <article class="relative flex flex-col gap-2.5 rounded-md border-2 border-trait bg-page p-2.5 lg:gap-3 lg:rounded-lg lg:p-3">
-  <div class="flex h-32.5 items-center justify-center overflow-hidden rounded-md bg-tuile md:h-45 lg:h-60 lg:rounded-lg">
+  <div class="relative flex h-32.5 items-center justify-center overflow-hidden rounded-md bg-tuile md:h-45 lg:h-60 lg:rounded-lg">
     <img src="{{image}}" alt="{{alt}}" width="240" height="240" loading="lazy" decoding="async" class="size-full object-contain">
+    <p class="absolute top-2 left-2"><slot name="badge"></slot></p>
   </div>
 
   <!-- Le lien couvre toute la carte (after:inset-0) : un clic n'importe où

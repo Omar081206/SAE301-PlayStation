@@ -26,6 +26,7 @@ use App\Model\CategorieModel;
 use App\Model\CommandeModel;
 use App\Model\FilmModel;
 use App\Model\PanierModel;
+use App\Model\ParametreModel;
 use App\Model\ProduitModel;
 use App\Model\UtilisateurModel;
 
@@ -68,7 +69,7 @@ try {
     // Les dépendances sont créées explicitement : le modèle reçoit la connexion,
     // le contrôleur reçoit le modèle. Aucune magie, tout est lisible ici.
     $controleurs = [
-        ProduitController::class   => new ProduitController(new ProduitModel($pdo), new CategorieModel($pdo)),
+        ProduitController::class   => new ProduitController(new ProduitModel($pdo), new CategorieModel($pdo), new ParametreModel($pdo)),
         CategorieController::class => new CategorieController(new CategorieModel($pdo)),
         PanierController::class    => new PanierController(new PanierModel($pdo)),
         CommandeController::class  => new CommandeController(new PanierModel($pdo), new CommandeModel($pdo), new UtilisateurModel($pdo)),
