@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Core\Request;
 use App\Core\Response;
 use App\Model\CategorieModel;
+use App\Model\ParametreModel;
 use App\Model\ProduitModel;
 
 /**
@@ -14,19 +15,52 @@ use App\Model\ProduitModel;
  * catégorie, et la fiche de chacun.
  *
  * Le catalogue tient sur une page (15 produits) : ni tri ni pagination.
+ *
+ * L'état du stock (« en stock », « bientôt épuisé », « épuisé ») est calculé
+ * ici, à chaque requête, à partir du stock réel et du seuil de la table
+ * parametre. Les quantités elles-mêmes ne sont jamais envoyées au navigateur.
  */
 final class ProduitController
 {
+    /** Seuil « bientôt épuisé » utilisé si le paramètre est absent de la base. */
+    private const SEUIL_PAR_DEFAUT = 3;
+
     /** Le modèle qui interroge la base, fourni à la construction. */
     private ProduitModel $produits;
 
     /** Le modèle des catégories, pour vérifier la catégorie demandée. */
     private CategorieModel $categories;
 
-    public function __construct(ProduitModel $produits, CategorieModel $categories)
+    /** Le modèle des paramètres, pour le seuil « bientôt épuisé ». */
+    private ParametreModel $parametres;
+
+    public function __construct(ProduitModel $produits, CategorieModel $categories, ParametreModel $parametres)
     {
         $this->produits   = $produits;
         $this->categories = $categories;
+        $this->parametres = $parametres;
+    }
+
+    /**
+     * Seuil « bientôt épuisé » : un stock de 1 à ce seuil est « bientôt épuisé ».
+     */
+    private function seuil(): int
+    {
+        $valeur = $this->parametres->lire('seuil_bientot_epuise');
+
+        return $valeur === null ? self::SEUIL_PAR_DEFAUT : max(0, (int) $valeur);
+    }
+
+    /**
+     * État affiché pour un stock donné.
+     */
+    private function etatStock(int $stock, int $seuil): string
+    {
+        if ($stock <= 0) {
+            return 'epuise';
+        }
+
+        return $stock <= $seuil ? 'bientot_epuise' : 'en_stock';
     }
 
     /**
@@ -49,6 +83,13 @@ final class ProduitController
         }
 
         $produits = $this->produits->lister($slug);
+        $seuil    = $this->seuil();
+
+        // L'état remplace la quantité, qui reste côté serveur.
+        foreach ($produits as $position => $produit) {
+            $produits[$position]['etat_stock'] = $this->etatStock($produit['stock'], $seuil);
+            unset($produits[$position]['stock']);
+        }
 
         Response::json([
             'produits'  => $produits,
@@ -73,6 +114,17 @@ final class ProduitController
         if ($produit === null) {
             Response::erreur('Produit introuvable', 404);
         }
+
+        // Un état par variante, et celui de la variante par défaut (la
+        // première) pour le badge principal. Les quantités restent ici.
+        $seuil = $this->seuil();
+
+        foreach ($produit['variantes'] as $position => $variante) {
+            $produit['variantes'][$position]['etat_stock'] = $this->etatStock($variante['stock'], $seuil);
+            unset($produit['variantes'][$position]['stock']);
+        }
+
+        $produit['etat_stock'] = $produit['variantes'][0]['etat_stock'];
 
         Response::json(['produit' => $produit]);
     }

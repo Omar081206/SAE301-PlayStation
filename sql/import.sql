@@ -23,6 +23,7 @@ SET NAMES utf8mb4;
 
 -- Ordre inverse des clés étrangères : une table est supprimée avant celles
 -- dont elle dépend.
+DROP TABLE IF EXISTS parametre;
 DROP TABLE IF EXISTS ligne_commande;
 DROP TABLE IF EXISTS commande;
 DROP TABLE IF EXISTS utilisateur;
@@ -472,3 +473,24 @@ CREATE TABLE ligne_commande (
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+-- Paramètres de la boutique
+--
+-- Réglages modifiables sans toucher au code (l'administration pourra les
+-- changer). valeur est une chaîne : chaque contrôleur la convertit.
+-- ---------------------------------------------------------------------------
+CREATE TABLE parametre (
+    cle         VARCHAR(60)  NOT NULL,
+    valeur      VARCHAR(255) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+
+    PRIMARY KEY (cle)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+-- Avec un seuil de 3 : PS5 Pro épuisée, PlayStation Portal et DualSense Edge
+-- (coloris Blanc) bientôt épuisées, Écouteurs PULSE Explore noirs épuisés.
+INSERT INTO parametre (cle, valeur, description) VALUES
+    ('seuil_bientot_epuise', '3', 'Stock à partir duquel une variante est « Bientôt épuisé » (stock de 1 à ce seuil).');

@@ -28,7 +28,7 @@ final class ProduitModel
      * Le prix affiché est le plus bas des variantes du produit, l'image celle
      * d'ordre 1 (image principale), ou null si le produit n'en a pas encore.
      * variante_id est la variante par défaut (la première créée) : c'est elle
-     * qu'ajoute le bouton « Ajouter au panier ».
+     * qu'ajoute le bouton « Ajouter au panier », et stock est le sien.
      *
      * @param string|null $categorie Slug de la catégorie à afficher, ou null
      *                               pour tout le catalogue.
@@ -42,6 +42,11 @@ final class ProduitModel
                        categorie.nom  AS categorie,
                        MIN(variante.id)   AS variante_id,
                        MIN(variante.prix) AS prix,
+                       (SELECT defaut.stock
+                          FROM variante AS defaut
+                         WHERE defaut.produit_id = produit.id
+                      ORDER BY defaut.id
+                         LIMIT 1) AS stock,
                        image.fichier  AS image,
                        image.alt      AS image_alt
                   FROM produit
@@ -77,6 +82,7 @@ final class ProduitModel
                 'categorie'   => $ligne['categorie'],
                 'variante_id' => (int) $ligne['variante_id'],
                 'prix'        => (float) $ligne['prix'],
+                'stock'       => (int) $ligne['stock'],
                 'image'       => $ligne['image'],
                 'image_alt'   => $ligne['image_alt'],
             ];
@@ -86,8 +92,8 @@ final class ProduitModel
     }
 
     /**
-     * Un produit par son slug, avec les images de son coloris par défaut, ou
-     * null s'il n'existe pas.
+     * Un produit par son slug, avec les images de son coloris par défaut et ses
+     * variantes (stock compris), ou null s'il n'existe pas.
      *
      * Comme dans le catalogue, le prix est le plus bas des variantes.
      *
@@ -120,6 +126,22 @@ final class ProduitModel
             return null;
         }
 
+        $requeteVariantes = $this->pdo->prepare(
+            'SELECT id, coloris, stock FROM variante WHERE produit_id = :id ORDER BY id'
+        );
+        $requeteVariantes->bindValue(':id', (int) $ligne['id'], PDO::PARAM_INT);
+        $requeteVariantes->execute();
+
+        $variantes = [];
+
+        foreach ($requeteVariantes->fetchAll() as $variante) {
+            $variantes[] = [
+                'id'      => (int) $variante['id'],
+                'coloris' => $variante['coloris'],
+                'stock'   => (int) $variante['stock'],
+            ];
+        }
+
         $requeteImages = $this->pdo->prepare(
             'SELECT fichier, alt FROM image WHERE produit_id = :id AND variante_id IS NULL ORDER BY ordre'
         );
@@ -137,6 +159,7 @@ final class ProduitModel
             'variante_id'    => (int) $ligne['variante_id'],
             'prix'           => (float) $ligne['prix'],
             'images'         => $requeteImages->fetchAll(),
+            'variantes'      => $variantes,
         ];
     }
 }
