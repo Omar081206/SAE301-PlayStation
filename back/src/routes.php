@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controller\AdminCommandeController;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
 use App\Controller\CommandeController;
@@ -31,4 +32,5 @@ return [
     'POST /api/inscription' => [AuthController::class,      'inscription'],
     'GET  /api/session'     => [AuthController::class,      'session'],
     'GET  /api/admin/stats' => [StatsController::class,     'index'],
+    'POST /api/admin/commande/statut' => [AdminCommandeController::class, 'statut'],
 ];

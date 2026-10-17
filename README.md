@@ -162,13 +162,17 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `POST /api/commande` | validation de commande (client connecté), corps `{"lignes"}` |
 | `GET /api/commande?numero=…` | une commande du client connecté |
 | `GET /api/admin/stats` | statistiques du starter, réservées au rôle `admin` |
+| `POST /api/admin/commande/statut` | changement de statut d'une commande (rôle `admin`), corps `{"numero", "statut"}` ; l'annulation recrédite le stock |
 
 L'API ne répond jamais 401 : sur mmi.unilim.fr, l'espace web est déjà protégé
 par l'authentification HTTP d'Apache, et un 401 ferait redemander au
 navigateur les identifiants de l'IUT. Non connecté : 403 ; identifiants
 incorrects : 422.
 
-Test de bout en bout de la commande : `tests/commande.sh [URL du projet]`.
+Tests (curl, sans dépendance) : `tests/commande.sh`, `tests/stock.sh` et
+`tests/mouvements-stock.sh`, avec l'URL du projet en argument. Le dernier écrit
+en base (commandes annulées, journal) et vérifie la concurrence sur la dernière
+unité : avec `php -S`, lancer le serveur avec `PHP_CLI_SERVER_WORKERS=6`.
 
 ## Comptes
 

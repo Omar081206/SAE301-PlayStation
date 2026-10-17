@@ -7,7 +7,8 @@
 #   Sur mmi.unilim.fr (espace protégé par LDAP) : CURL_AUTH="login:motdepasse"
 #
 # Prérequis : sql/import.sql importé (comptes de test, variantes 5 et 17).
-# Le test crée deux commandes pour client@playstation.test.
+# Le test crée deux commandes pour client@playstation.test, puis les annule
+# (compte admin) : le stock qu'elles avaient pris est rendu.
 # Outils : curl et python3 (lecture du JSON), aucune dépendance à installer.
 # ---------------------------------------------------------------------------
 set -u
@@ -88,6 +89,12 @@ api POST logout '{}' > /dev/null
 api POST login '{"email":"admin@playstation.test","mdp":"admin1234"}' > /dev/null
 IFS=$'\t' read -r code corps <<< "$(api GET "commande?numero=$NUMERO1")"
 verifier "GET /commande d'un autre client" "$code" "404"
+
+echo "8. Remise en état : annulation des deux commandes (stock rendu)"
+for n in "$NUMERO1" "$NUMERO2"; do
+  IFS=$'\t' read -r code corps <<< "$(api POST admin/commande/statut "{\"numero\":\"$n\",\"statut\":\"annulee\"}")"
+  verifier "annulation de $n" "$code" "200"
+done
 
 echo
 if [ "$ECHECS" -eq 0 ]; then

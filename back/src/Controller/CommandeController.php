@@ -17,8 +17,8 @@ use App\Model\UtilisateurModel;
  * noms, prix et total sont relus en base au moment de la commande, puis
  * figés dans les lignes de commande.
  *
- * Une quantité supérieure au stock fait refuser la commande (409) : la
- * réservation et la décrémentation du stock relèvent de STK-a.
+ * Une quantité supérieure au stock fait refuser la commande (409). Le stock
+ * est décrémenté à l'enregistrement, dans la même transaction (CommandeModel).
  *
  * Non connecté : 403, et non 401 (voir AuthController : un 401 se confond
  * avec l'authentification HTTP d'Apache sur mmi.unilim.fr).
@@ -126,6 +126,12 @@ final class CommandeController
         }
 
         $numero = $this->commandes->creer($client, $aEnregistrer, round($total, 2));
+
+        // Stock épuisé entre la vérification ci-dessus et l'enregistrement
+        // (une autre commande est passée avant) : rien n'a été enregistré.
+        if ($numero === null) {
+            Response::erreur('Un article de votre commande vient d’être épuisé : vérifiez les quantités.', 409);
+        }
 
         Response::json(['commande' => $this->commandes->trouver($numero, $client)], 201);
     }
