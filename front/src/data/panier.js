@@ -59,18 +59,40 @@ PanierData.enregistrer = function (lignes) {
 /**
  * Ajoute un exemplaire d'une variante : une nouvelle ligne, ou une unité de
  * plus sur la ligne existante.
+ *
+ * Le serveur vérifie d'abord le stock (POST /api/panier) : on enregistre ce
+ * qu'il accorde. Renvoie l'ajustement de cette variante
+ * ({ variantId, nom, demandee, accordee }, accordee à 0 si elle est épuisée),
+ * ou null si l'unité a bien été ajoutée.
  */
-PanierData.ajouter = function (variantId) {
+PanierData.ajouter = async function (variantId) {
   let lignes = PanierData.lire();
   let ligne = lignes.find((element) => element.variantId === variantId);
 
   if (ligne === undefined) {
     lignes.push({ variantId, quantite: 1 });
+  } else if (ligne.quantite >= QUANTITE_MAX) {
+    // Plafond du panier atteint : rien à demander au serveur.
+    return { variantId, demandee: ligne.quantite + 1, accordee: ligne.quantite };
   } else {
-    ligne.quantite = Math.min(ligne.quantite + 1, QUANTITE_MAX);
+    ligne.quantite += 1;
   }
 
-  PanierData.enregistrer(lignes);
+  let detail = await PanierData.fetchDetail(lignes);
+  PanierData.aligner(detail);
+
+  return detail.ajustements.find((ajustement) => ajustement.variantId === variantId) ?? null;
+};
+
+/**
+ * Remplace le panier enregistré par les lignes accordées par le serveur
+ * (réponse de fetchDetail) : quantités ramenées au stock, lignes épuisées ou
+ * inconnues retirées.
+ */
+PanierData.aligner = function (detail) {
+  PanierData.enregistrer(
+    detail.lignes.map((ligne) => ({ variantId: ligne.variantId, quantite: ligne.quantite }))
+  );
 };
 
 /**
@@ -103,9 +125,12 @@ PanierData.nombreArticles = function () {
 /**
  * Le détail du panier : POST /api/panier, corps JSON { lignes }.
  *
- * { lignes: [ { variantId, quantite, nom, slug, coloris, prix, image, image_alt, sousTotal } ],
- *   total, nombre }
- * Les variantes inconnues du serveur (produit retiré) sont absentes de la réponse.
+ * { lignes: [ { variantId, quantite, quantiteMax, nom, slug, coloris, prix, image,
+ *               image_alt, sousTotal } ],
+ *   total, nombre, ajustements: [ { variantId, nom, demandee, accordee } ] }
+ * Les quantités sont ramenées au stock disponible (quantiteMax) et chaque
+ * correction figure dans ajustements ; une variante épuisée est retirée
+ * (accordee : 0). Les variantes inconnues (produit retiré) sont absentes.
  */
 PanierData.fetchDetail = async function (lignes) {
   return postRequest("panier", { lignes });

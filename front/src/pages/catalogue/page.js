@@ -55,8 +55,24 @@ C.chargerCategories = async function () {
 };
 
 C.handler_ajouter = async function (variantId, nom) {
-  PanierData.ajouter(variantId);
-  M.message = { type: "succes", texte: `« ${nom} » a été ajouté au panier.` };
+  try {
+    // Le serveur vérifie le stock avant d'accepter l'ajout.
+    let ajustement = await PanierData.ajouter(variantId);
+
+    if (ajustement === null) {
+      M.message = { type: "succes", texte: `« ${nom} » a été ajouté au panier.` };
+    } else if (ajustement.accordee === 0) {
+      M.message = { type: "avertissement", texte: `« ${nom} » est épuisé : il n’a pas pu être ajouté au panier.` };
+    } else {
+      M.message = {
+        type: "avertissement",
+        texte: `Vous avez déjà le maximum disponible de « ${nom} » dans votre panier.`,
+      };
+    }
+  } catch (erreur) {
+    M.message = { type: "erreur", texte: `Impossible d’ajouter « ${nom} » au panier : ${erreur.message}` };
+  }
+
   V.rafraichir();
 };
 

@@ -11,14 +11,28 @@ import template from "./template.html?raw";
  * Le panier est conservé dans le navigateur (data/panier.js), sans prix. À
  * chaque affichage et après chaque modification, la page demande au serveur
  * le détail des lignes : noms, prix, sous-totaux et total viennent de lui.
+ * Le serveur ramène aussi les quantités au stock disponible : le panier
+ * enregistré est alors aligné sur sa réponse, et chaque correction annoncée.
  */
 
 let M = {
-  panier: null, // dernière réponse de l'API : { lignes, total, nombre }
+  panier: null, // dernière réponse de l'API : { lignes, total, nombre, ajustements }
   message: null, // { type, texte }, ou null
+  avertissements: [], // un message par quantité ajustée au stock
 };
 
 let C = {};
+
+/**
+ * Message d'un ajustement fait par le serveur pour respecter le stock.
+ */
+C.texteAjustement = function (ajustement) {
+  if (ajustement.accordee === 0) {
+    return `« ${ajustement.nom} » n’est plus disponible : il a été retiré de votre panier.`;
+  }
+
+  return `La quantité de « ${ajustement.nom} » a été ramenée à ${ajustement.accordee} : c’est le stock disponible actuellement.`;
+};
 
 /**
  * Demande au serveur le détail du panier enregistré et le range dans le modèle.
@@ -29,16 +43,19 @@ C.charger = async function () {
   try {
     M.panier = await PanierData.fetchDetail(lignes);
     M.message = null;
+    M.avertissements = M.panier.ajustements.map((ajustement) => ({
+      type: "avertissement",
+      texte: C.texteAjustement(ajustement),
+    }));
 
-    // Une variante que le serveur ne connaît plus (produit retiré de la vente)
-    // est absente de sa réponse : on la retire aussi du panier enregistré.
-    if (M.panier.lignes.length !== lignes.length) {
-      PanierData.enregistrer(
-        M.panier.lignes.map((ligne) => ({ variantId: ligne.variantId, quantite: ligne.quantite }))
-      );
+    // Quantité ramenée au stock, variante épuisée ou retirée de la vente : le
+    // panier enregistré prend les valeurs accordées par le serveur.
+    if (M.panier.ajustements.length > 0 || M.panier.lignes.length !== lignes.length) {
+      PanierData.aligner(M.panier);
     }
   } catch (erreur) {
     M.panier = null;
+    M.avertissements = [];
     M.message = { type: "erreur", texte: `Impossible de charger le panier : ${erreur.message}` };
   }
 };
@@ -88,7 +105,9 @@ V.createPageFragment = function () {
   }
   let pageFragment = htmlToFragment(genericRenderer(template, { titre }));
 
-  pageFragment.querySelector('slot[name="message"]').replaceWith(MessageView.dom(M.message));
+  pageFragment
+    .querySelector('slot[name="message"]')
+    .replaceWith(MessageView.dom(M.message), ...M.avertissements.map((avertissement) => MessageView.dom(avertissement)));
 
   let slotLignes = pageFragment.querySelector('slot[name="lignes"]');
   let slotResume = pageFragment.querySelector('slot[name="resume"]');

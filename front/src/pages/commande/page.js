@@ -20,12 +20,24 @@ import template from "./template.html?raw";
 const CONNEXION = "/connexion?retour=/commande";
 
 let M = {
-  panier: null, // détail du panier renvoyé par l'API : { lignes, total, nombre }
+  panier: null, // détail du panier renvoyé par l'API : { lignes, total, nombre, ajustements }
   envoiEnCours: false, // vrai entre le clic sur « Confirmer » et la réponse
   message: null, // { type, texte }, ou null
+  avertissements: [], // un message par quantité ajustée au stock
 };
 
 let C = {};
+
+/**
+ * Message d'un ajustement fait par le serveur pour respecter le stock.
+ */
+C.texteAjustement = function (ajustement) {
+  if (ajustement.accordee === 0) {
+    return `« ${ajustement.nom} » n’est plus disponible : il a été retiré de votre panier.`;
+  }
+
+  return `La quantité de « ${ajustement.nom} » a été ramenée à ${ajustement.accordee} : c’est le stock disponible actuellement.`;
+};
 
 /**
  * Demande au serveur le détail du panier enregistré.
@@ -33,9 +45,19 @@ let C = {};
 C.charger = async function () {
   try {
     M.panier = await PanierData.fetchDetail(PanierData.lire());
-    M.message = null;
+    M.avertissements = M.panier.ajustements.map((ajustement) => ({
+      type: "avertissement",
+      texte: C.texteAjustement(ajustement),
+    }));
+
+    // Le stock a baissé : le récapitulatif et le panier enregistré prennent
+    // les quantités accordées par le serveur.
+    if (M.panier.ajustements.length > 0) {
+      PanierData.aligner(M.panier);
+    }
   } catch (erreur) {
     M.panier = null;
+    M.avertissements = [];
     M.message = { type: "erreur", texte: `Impossible de charger votre panier : ${erreur.message}` };
   }
 };
@@ -59,6 +81,15 @@ C.handler_confirmer = async function () {
     // Session expirée entre l'affichage et le clic : retour à la connexion.
     if (erreur.statut === 403) {
       naviguer(CONNEXION);
+      return;
+    }
+
+    // Stock insuffisant au moment de valider : rien n'est enregistré. Le
+    // récapitulatif est rechargé, ajusté, et le client confirme à nouveau.
+    if (erreur.statut === 409) {
+      await C.charger();
+      M.message = { type: "erreur", texte: erreur.message };
+      V.rafraichir();
       return;
     }
 
@@ -112,7 +143,9 @@ V.rafraichir = function () {
 V.createPageFragment = function () {
   let pageFragment = htmlToFragment(template);
 
-  pageFragment.querySelector('slot[name="message"]').replaceWith(MessageView.dom(M.message));
+  pageFragment
+    .querySelector('slot[name="message"]')
+    .replaceWith(MessageView.dom(M.message), ...M.avertissements.map((avertissement) => MessageView.dom(avertissement)));
 
   let slotRecapitulatif = pageFragment.querySelector('slot[name="recapitulatif"]');
   if (M.panier === null) {
