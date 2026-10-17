@@ -46,8 +46,8 @@ V
     si l'écart semble nécessaire (exigence de la maquette ou de l'US), arrête-toi et demande avant de l'écrire ;
   - signale dans le compte rendu tout écart restant avec le fichier calqué.
   Le dossier voisin `SAE301-Starter-main/` n'est pas une référence.
-- **Persistance côté navigateur par défaut : `localStorage`** (comme le thème sombre), sauf demande contraire. C'est le cas du panier :
-  module `data/panier.js`, clé `panier`, lignes `{ variantId, quantite }` sans prix, accès protégés par `try/catch` (voir `lib/theme.js`).
+- **Persistance côté navigateur par défaut : `localStorage`**, sauf demande contraire. C'est le cas du panier :
+  module `data/panier.js`, clé `panier`, lignes `{ variantId, quantite }` sans prix, accès protégés par `try/catch`.
 - Le front ne fait jamais foi : prix, stock, rôle et quantités sont revalidés côté serveur.
 
 ## Demander une US

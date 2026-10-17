@@ -1,15 +1,6 @@
 @import "tailwindcss";
 
 /*
-  Le thème sombre s'active par la classe theme-dark posée sur <html>, et non
-  par le réglage du système : c'est ce que déclare cette variante. La boutique
-  n'a pas de thème sombre (la maquette n'en prévoit pas), mais la page
-  d'administration du starter utilise encore dark: ; la variante reste donc
-  déclarée, sans que rien ne pose la classe.
-*/
-@custom-variant dark (&:where(.theme-dark, .theme-dark *));
-
-/*
   Tokens de la maquette Figma (variables du fichier « Maquettes PlayStation »).
 
   Primitives : les valeurs brutes, déclarées une seule fois.
@@ -117,11 +108,6 @@
 }
 
 @layer base {
-  /* Menus déroulants et barres de défilement natifs, eux aussi en sombre. */
-  .theme-dark {
-    color-scheme: dark;
-  }
-
   /* Un seul anneau de focus pour toute l'application, visible uniquement au
      clavier : :focus-visible ne se déclenche pas sur un clic de souris. */
   :where(a, button, select, input):focus-visible {

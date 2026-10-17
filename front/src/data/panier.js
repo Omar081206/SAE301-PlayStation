@@ -2,8 +2,8 @@ import { postRequest } from "../lib/api-request.js";
 
 // Le panier vit dans le navigateur (localStorage, clé « panier ») : une liste
 // de lignes { variantId, quantite }, sans prix. Les prix et les totaux viennent
-// toujours du serveur (voir fetchDetail). Chaque accès au stockage est protégé,
-// comme dans lib/theme.js : sans stockage, le panier est simplement vide.
+// toujours du serveur (voir fetchDetail). Chaque accès au stockage est protégé
+// par try/catch : sans stockage, le panier est simplement vide.
 const CLE = "panier";
 const QUANTITE_MAX = 99;
 

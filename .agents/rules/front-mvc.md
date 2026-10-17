@@ -47,7 +47,7 @@ Ordre fixe du fichier : imports → commentaire de page → `let M` → `let C` 
 `let XxxData = {}` ; `XxxData.fetchXxx = async function (...)` renvoie `getRequest(...)` / `postRequest(...)` de
 `lib/api-request.js` (seul module autorisé à appeler `fetch`). `encodeURIComponent` sur toute valeur d'URL.
 JSDoc : route appelée + forme de la réponse. Stockage navigateur : `localStorage` par défaut (panier : `data/panier.js`, clé `panier`, lignes `{ variantId, quantite }`), jamais de prix stocké ;
-`try/catch` à chaque lecture / écriture et `JSON.parse` protégé, comme `lib/theme.js` : la page doit fonctionner storage vide ou indisponible.
+`try/catch` à chaque lecture / écriture et `JSON.parse` protégé, comme `data/panier.js` : la page doit fonctionner storage vide ou indisponible.
 Calcul pur réutilisable (totaux, formats) : fonction exportée dans `lib/`, sur le modèle de `lib/format.js`.
 
 ## Routes (`main.js`)

@@ -1,18 +1,23 @@
-# SAE301-Starter
+# SAE301 — PlayStation Click & Collect
 
-Catalogue de films : une API PHP en trois couches (routage / contrôleur /
+Boutique click & collect PlayStation (consoles, manettes, casques et
+accessoires, jeux) : une API PHP en trois couches (routage / contrôleur /
 modèle) au-dessus de MySQL, et un front en JavaScript organisé en layouts,
-pages et composants, avec un routeur côté client.
+pages et composants, avec un routeur côté client. Construite sur le starter
+« catalogue de films » du module, dont elle garde l'architecture.
 
-- préférences de tri et de pagination mémorisées dans des cookies ;
-- connexion par session, page Administration réservée au rôle `admin` ;
-- thème clair / sombre en `localStorage`.
+- catalogue filtrable par catégorie, fiche produit avec galerie ;
+- panier conservé dans le navigateur (`localStorage`), prix recalculés par le
+  serveur ;
+- comptes clients (mots de passe en bcrypt, session PHP), validation de
+  commande avec numéro unique ;
+- page Administration du starter réservée au rôle `admin`.
 
 ## Arborescence
 
 ```
 .htaccess            /api/... vers le back, tout le reste vers front/dist/
-sql/import.sql       tables film et genre, à importer dans votre base
+sql/import.sql       tables de la boutique (+ film et genre pour /admin)
 back/                API PHP, ne renvoie que du JSON
 ├── index.php        point d'entrée : assemble les dépendances, délègue
 ├── config/          identifiants de la base, chemin du projet
@@ -23,7 +28,7 @@ front/               sources du front (Vite + Tailwind)
 ├── vite.config.js   chemin du projet, proxy de développement
 ├── src/
 │   ├── main.js      déclaration des routes et des layouts
-│   ├── global.css   Tailwind, thème sombre
+│   ├── global.css   Tailwind, tokens de la maquette Figma
 │   ├── layouts/     structures de page (en-tête + slot de la page)
 │   ├── pages/       une page par route : page.js + template.html
 │   ├── ui/          composants réutilisables : index.js + template.html
@@ -34,11 +39,11 @@ front/               sources du front (Vite + Tailwind)
 
 ## Installation
 
-1. Importez `sql/import.sql` dans votre base depuis phpMyAdmin (il crée les
-   tables `film` et `genre` ; une table existante de même nom serait
-   remplacée).
+1. Importez `sql/import.sql` dans votre base depuis phpMyAdmin. Il crée les
+   tables de la boutique, des produits et des comptes de test. **Toute table
+   existante de même nom est remplacée : comptes et commandes sont perdus.**
 2. Dans `back/config/config.php`, renseignez les identifiants de la base et
-   le chemin du projet (`/~votre_login/Base/`).
+   le chemin du projet (`/~votre_login/SAE301/`).
 3. Dans `front/vite.config.js`, donnez à `BASE` **exactement** le même chemin.
 4. Dans `front/`, installez les dépendances :
 
@@ -56,8 +61,8 @@ Le chemin du projet apparaît donc à deux endroits, et seulement là :
 npm run dev
 ```
 
-Le front est servi par Vite à `http://localhost:5173/~votre_login/Base/`, avec
-rechargement à chaque modification. Les requêtes `/~votre_login/Base/api/...`
+Le front est servi par Vite à `http://localhost:5173/~votre_login/SAE301/`, avec
+rechargement à chaque modification. Les requêtes `/~votre_login/SAE301/api/...`
 sont relayées par Vite vers l'API déployée sur `mmi.unilim.fr` : le back doit
 donc être en place sur le serveur (voir Déployer).
 
@@ -78,10 +83,10 @@ npm run build
 ```
 
 Le front compilé est produit dans `front/dist/`. Déposez ensuite dans votre
-espace web, dans le dossier `Base/` : `.htaccess`, `back/` et `front/dist/`
+espace web, dans le dossier `SAE301/` : `.htaccess`, `back/` et `front/dist/`
 (en gardant ce chemin). Inutile de déposer `front/node_modules/`.
 
-L'application est alors à `https://mmi.unilim.fr/~votre_login/Base/`. Le
+L'application est alors à `https://mmi.unilim.fr/~votre_login/SAE301/`. Le
 `.htaccess` sert les fichiers de `front/dist/`, et répond par
 `front/dist/index.html` à toute autre adresse (`/admin`…) : c'est le routeur
 du front qui affiche la bonne page, ou la page 404.
@@ -96,7 +101,7 @@ Déclaré dans `main.js`, sur le modèle de `react-router` :
 router.addLayout("/", RootLayout);
 router.addRoute("/", CataloguePage);
 router.addRoute("/admin", AdminPage);
-router.addRoute("/films/:id", FilmPage);   // params.id dans la page
+router.addRoute("/produit/:slug", ProduitPage);   // params.slug dans la page
 router.addRoute("*", The404Page);          // toujours en dernier
 ```
 
@@ -146,16 +151,24 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 
 | Route | Effet |
 |---|---|
-| `GET /api/films?page=2&tri=note&parPage=24` | une page du catalogue |
-| `POST /api/login` | connexion, corps JSON `{"email": …, "mdp": …}` |
+| `GET /api/produits?categorie=manettes` | le catalogue, entier ou d'une catégorie |
+| `GET /api/produit?slug=…` | la fiche d'un produit et ses images |
+| `GET /api/categories` | les catégories et leur nombre de produits |
+| `POST /api/panier` | détail du panier, corps `{"lignes": [{"variantId", "quantite"}]}` : prix et totaux calculés par le serveur |
+| `POST /api/inscription` | création de compte, corps `{"email", "mdp"}` |
+| `POST /api/login` | connexion, corps `{"email", "mdp"}` |
 | `POST /api/logout` | déconnexion |
-| `GET /api/admin/stats` | statistiques, réservées au rôle `admin` |
+| `GET /api/session` | l'utilisateur connecté, s'il y en a un |
+| `POST /api/commande` | validation de commande (client connecté), corps `{"lignes"}` |
+| `GET /api/commande?numero=…` | une commande du client connecté |
+| `GET /api/admin/stats` | statistiques du starter, réservées au rôle `admin` |
 
-Tris acceptés : `titre`, `annee`, `note`. Valeurs de `parPage` : `12`, `24`,
-`48`. `tri` et `parPage` sont facultatifs : sans eux, le serveur applique les
-préférences mémorisées dans les cookies. La réponse rappelle les réglages
-appliqués (`tri`, `parPage`, `page`, `pagesTotal`, `total`) : le front n'a
-jamais besoin de lire les cookies, qui sont en `HttpOnly`.
+L'API ne répond jamais 401 : sur mmi.unilim.fr, l'espace web est déjà protégé
+par l'authentification HTTP d'Apache, et un 401 ferait redemander au
+navigateur les identifiants de l'IUT. Non connecté : 403 ; identifiants
+incorrects : 422.
+
+Test de bout en bout de la commande : `tests/commande.sh [URL du projet]`.
 
 ## Comptes
 
