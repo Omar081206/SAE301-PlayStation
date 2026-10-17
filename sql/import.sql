@@ -23,6 +23,7 @@ SET NAMES utf8mb4;
 
 -- Ordre inverse des clés étrangères : une table est supprimée avant celles
 -- dont elle dépend.
+DROP TABLE IF EXISTS mouvement_stock;
 DROP TABLE IF EXISTS parametre;
 DROP TABLE IF EXISTS ligne_commande;
 DROP TABLE IF EXISTS commande;
@@ -494,3 +495,45 @@ CREATE TABLE parametre (
 -- (coloris Blanc) bientôt épuisées, Écouteurs PULSE Explore noirs épuisés.
 INSERT INTO parametre (cle, valeur, description) VALUES
     ('seuil_bientot_epuise', '3', 'Stock à partir duquel une variante est « Bientôt épuisé » (stock de 1 à ce seuil).');
+
+-- ---------------------------------------------------------------------------
+-- Journal des mouvements de stock
+--
+-- Une ligne par variante et par mouvement : quantite est signée (-2 pour une
+-- commande, +2 pour son annulation), stock_avant / stock_apres permettent de
+-- reconstituer l'historique. utilisateur_id : qui a provoqué le mouvement
+-- (le client qui commande, l'administrateur qui annule).
+-- ---------------------------------------------------------------------------
+CREATE TABLE mouvement_stock (
+    id             INT UNSIGNED                     NOT NULL AUTO_INCREMENT,
+    variante_id    INT UNSIGNED                     NULL,
+    commande_id    INT UNSIGNED                     NULL,
+    utilisateur_id INT UNSIGNED                     NULL,
+    quantite       SMALLINT                         NOT NULL,
+    motif          ENUM('commande', 'annulation')   NOT NULL,
+    stock_avant    SMALLINT UNSIGNED                NOT NULL,
+    stock_apres    SMALLINT UNSIGNED                NOT NULL,
+    cree_le        DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    KEY idx_mouvement_variante (variante_id),
+    KEY idx_mouvement_commande (commande_id),
+    KEY idx_mouvement_date (cree_le),
+
+    CONSTRAINT fk_mouvement_variante
+        FOREIGN KEY (variante_id) REFERENCES variante (id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_mouvement_commande
+        FOREIGN KEY (commande_id) REFERENCES commande (id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_mouvement_utilisateur
+        FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
