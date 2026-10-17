@@ -17,6 +17,9 @@ use App\Model\UtilisateurModel;
  * noms, prix et total sont relus en base au moment de la commande, puis
  * figés dans les lignes de commande.
  *
+ * Une quantité supérieure au stock fait refuser la commande (409) : la
+ * réservation et la décrémentation du stock relèvent de STK-a.
+ *
  * Non connecté : 403, et non 401 (voir AuthController : un 401 se confond
  * avec l'authentification HTTP d'Apache sur mmi.unilim.fr).
  */
@@ -99,6 +102,12 @@ final class CommandeController
         foreach ($quantites as $id => $quantite) {
             if (!isset($variantes[$id])) {
                 continue;
+            }
+
+            // Le stock a pu baisser depuis l'affichage du récapitulatif :
+            // rien n'est enregistré, le client revoit sa commande.
+            if ($quantite > $variantes[$id]['stock']) {
+                Response::erreur('Le stock a changé depuis l’affichage de votre commande : vérifiez les quantités.', 409);
             }
 
             $total += round($variantes[$id]['prix'] * $quantite, 2);

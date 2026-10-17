@@ -24,8 +24,8 @@ final class PanierModel
     }
 
     /**
-     * Les variantes demandées, indexées par leur identifiant. Une variante
-     * inconnue est simplement absente du résultat.
+     * Les variantes demandées, indexées par leur identifiant, avec leur stock
+     * actuel. Une variante inconnue est simplement absente du résultat.
      *
      * L'image est l'image principale du coloris s'il en a une, sinon celle
      * du produit.
@@ -47,6 +47,7 @@ final class PanierModel
             "SELECT variante.id,
                     variante.coloris,
                     variante.prix,
+                    variante.stock,
                     produit.nom,
                     produit.slug,
                     COALESCE(image_coloris.fichier, image_produit.fichier) AS image,
@@ -77,6 +78,7 @@ final class PanierModel
                 'slug'      => $ligne['slug'],
                 'coloris'   => $ligne['coloris'],
                 'prix'      => (float) $ligne['prix'],
+                'stock'     => (int) $ligne['stock'],
                 'image'     => $ligne['image'],
                 'image_alt' => $ligne['image_alt'],
             ];

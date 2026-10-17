@@ -44,9 +44,16 @@ let FicheProduitView = {
       fragment.querySelector('slot[name="coloris"]').replaceWith(...lignes);
     }
 
-    fragment
-      .querySelector('[data-action="ajouter"]')
-      .addEventListener("click", () => actions.surAjout(produit.variante_id, produit.nom));
+    let bouton = fragment.querySelector('[data-action="ajouter"]');
+
+    // Variante par défaut épuisée : bouton désactivé (le serveur refuserait
+    // de toute façon l'ajout).
+    if (produit.etat_stock === "epuise") {
+      bouton.disabled = true;
+      bouton.textContent = "Épuisé";
+    }
+
+    bouton.addEventListener("click", () => actions.surAjout(produit.variante_id, produit.nom));
 
     return fragment;
   },

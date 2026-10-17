@@ -1,6 +1,7 @@
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { formaterPrix } from "../../lib/format.js";
 import iconeAjout from "../../assets/ajout-panier.svg";
+import iconeAjoutDesactive from "../../assets/ajout-panier-desactive.svg";
 import { BadgeStockView } from "../badge-stock/index.js";
 import template from "./template.html?raw";
 
@@ -31,9 +32,17 @@ let CarteProduitView = {
 
     fragment.querySelector('slot[name="badge"]').replaceWith(BadgeStockView.dom(produit.etat_stock));
 
-    fragment
-      .querySelector('[data-action="ajouter"]')
-      .addEventListener("click", () => actions.surAjout(produit.variante_id, produit.nom));
+    let bouton = fragment.querySelector('[data-action="ajouter"]');
+
+    // Produit épuisé : bouton désactivé et grisé (le serveur refuserait de
+    // toute façon l'ajout). État réglé en JS : un template n'a pas de condition.
+    if (produit.etat_stock === "epuise") {
+      bouton.disabled = true;
+      bouton.setAttribute("aria-label", `${produit.nom} est épuisé`);
+      bouton.querySelector("img").src = iconeAjoutDesactive;
+    }
+
+    bouton.addEventListener("click", () => actions.surAjout(produit.variante_id, produit.nom));
 
     return fragment;
   },

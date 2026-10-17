@@ -11,7 +11,8 @@ import templateVide from "./vide.html?raw";
 let LignesPanierView = {
   /**
    * @param {Array<{variantId: number, nom: string, slug: string, quantite: number,
-   *                sousTotal: number, image: string, image_alt: string}>} lignes
+   *                quantiteMax: number, sousTotal: number, image: string,
+   *                image_alt: string}>} lignes  quantiteMax : stock disponible, plafonné.
    * @param {{surQuantite: (variantId: number, quantite: number) => void,
    *          surSuppression: (variantId: number) => void}} actions
    */
@@ -39,7 +40,7 @@ let LignesPanierView = {
 
       // État réglé en JS : un template n'a pas de condition.
       moins.disabled = ligne.quantite <= 1;
-      plus.disabled = ligne.quantite >= 99;
+      plus.disabled = ligne.quantite >= ligne.quantiteMax;
 
       moins.addEventListener("click", () => actions.surQuantite(ligne.variantId, ligne.quantite - 1));
       plus.addEventListener("click", () => actions.surQuantite(ligne.variantId, ligne.quantite + 1));
