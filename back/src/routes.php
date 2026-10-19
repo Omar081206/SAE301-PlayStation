@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Controller\AdminCategorieController;
 use App\Controller\AdminCommandeController;
 use App\Controller\AdminController;
+use App\Controller\AdminProduitController;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
 use App\Controller\CommandeController;
@@ -44,6 +45,15 @@ return [
     'GET  /api/admin/commande'         => [AdminCommandeController::class, 'detail'],
     'POST /api/admin/commande/statut'  => [AdminCommandeController::class, 'statut'],
     'POST /api/admin/commandes/statut' => [AdminCommandeController::class, 'statutLot'],
+    'GET  /api/admin/produits'                 => [AdminProduitController::class, 'index'],
+    'GET  /api/admin/produit'                  => [AdminProduitController::class, 'detail'],
+    'POST /api/admin/produit/enregistrer'      => [AdminProduitController::class, 'enregistrer'],
+    'POST /api/admin/produit/supprimer'        => [AdminProduitController::class, 'supprimer'],
+    'POST /api/admin/produit/image'            => [AdminProduitController::class, 'image'],
+    'POST /api/admin/produit/image/supprimer'  => [AdminProduitController::class, 'imageSupprimer'],
+    'POST /api/admin/produit/image/principale' => [AdminProduitController::class, 'imagePrincipale'],
+    'POST /api/admin/produit/image/variante'   => [AdminProduitController::class, 'imageVariante'],
+    'POST /api/admin/parametre/seuil'          => [AdminProduitController::class, 'seuilModifier'],
     'GET  /api/admin/categories'         => [AdminCategorieController::class, 'index'],
     'POST /api/admin/categorie/creer'     => [AdminCategorieController::class, 'creer'],
     'POST /api/admin/categorie/modifier'  => [AdminCategorieController::class, 'modifier'],

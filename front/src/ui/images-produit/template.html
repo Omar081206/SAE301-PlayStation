@@ -1,0 +1,18 @@
+<section class="flex flex-col gap-3.5 rounded-xl border border-trait bg-page p-3.5 lg:gap-4 lg:p-6">
+  <h2 class="text-prix-sm font-bold">Images</h2>
+
+  <slot name="message"></slot>
+
+  <!-- Zone de dépôt : un clic ouvre le choix de fichiers (le champ est dans
+       le label), un glisser-déposer les envoie aussi. -->
+  <label data-role="depot" class="flex cursor-pointer flex-col items-center gap-1 rounded-lg border border-dashed border-champ px-4 py-8 text-center text-sm data-survol:border-action data-survol:bg-action/10 has-focus-visible:outline-2 has-focus-visible:outline-action">
+    <span class="font-semibold">Glissez vos images ici</span>
+    <span class="text-xs text-texte-attenue">ou cliquez pour les choisir (JPEG, PNG ou WebP, 6 Mo au plus)</span>
+    <input type="file" accept="image/jpeg,image/png,image/webp" multiple class="sr-only">
+  </label>
+  <p data-role="inactif" class="text-sm text-texte-attenue">Enregistrez d’abord le produit pour lui ajouter des images.</p>
+
+  <ul class="grid grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] gap-2">
+    <slot name="images"></slot>
+  </ul>
+</section>

@@ -48,4 +48,20 @@ final class ParametreModel
 
         return $valeur === false ? null : (string) $valeur;
     }
+
+    /**
+     * Enregistre la valeur d'un paramètre, créé avec sa description s'il
+     * n'existe pas encore (sinon, la description ne change pas).
+     */
+    public function ecrire(string $cle, string $valeur, string $description): void
+    {
+        $requetePreparee = $this->pdo->prepare(
+            'INSERT INTO parametre (cle, valeur, description) VALUES (:cle, :valeur, :description)
+             ON DUPLICATE KEY UPDATE valeur = VALUES(valeur)'
+        );
+        $requetePreparee->bindValue(':cle',         $cle,         PDO::PARAM_STR);
+        $requetePreparee->bindValue(':valeur',      $valeur,      PDO::PARAM_STR);
+        $requetePreparee->bindValue(':description', $description, PDO::PARAM_STR);
+        $requetePreparee->execute();
+    }
 }

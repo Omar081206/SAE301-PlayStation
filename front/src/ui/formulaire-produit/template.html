@@ -1,0 +1,48 @@
+<div class="flex flex-col gap-3.5 lg:gap-6">
+  <div class="flex flex-col items-start gap-2.5 lg:flex-row lg:items-center lg:justify-between">
+    <h1 class="text-intertitre-sm font-bold lg:text-intertitre-lg">{{titre}}</h1>
+    <div class="flex flex-wrap gap-2.5">
+      <button type="button" data-action="supprimer" class="rounded-full bg-secondaire px-4 py-3 text-xs leading-3 font-bold text-lien lg:text-sm lg:leading-3.5">Supprimer le produit</button>
+      <button type="button" data-action="enregistrer" class="rounded-full bg-action px-4 py-3 text-xs leading-3 font-bold text-texte-inverse lg:text-sm lg:leading-3.5">Enregistrer</button>
+    </div>
+  </div>
+
+  <slot name="message"></slot>
+
+  <div class="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start lg:gap-4">
+    <div class="flex flex-col gap-3.5 lg:gap-4">
+      <section class="flex flex-col gap-3.5 rounded-xl border border-trait bg-page p-3.5 lg:gap-4 lg:p-6">
+        <h2 class="text-prix-sm font-bold">Informations</h2>
+
+        <label class="flex flex-col gap-2 text-sm">
+          Nom
+          <input name="nom" type="text" required maxlength="120" value="{{nom}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+        </label>
+
+        <div class="grid gap-3.5 md:grid-cols-2 lg:gap-4">
+          <label class="flex flex-col gap-2 text-sm">
+            Catégorie
+            <!-- Les catégories sont ajoutées en JS : un <slot> n'est pas
+                 permis dans un <select>. -->
+            <select name="categorie_id" required class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+              <option value="">Choisir une catégorie</option>
+            </select>
+          </label>
+          <label class="flex flex-col gap-2 text-sm">
+            Prix de base (€)
+            <input name="prixBase" type="number" required min="0.01" max="99999.99" step="0.01" value="{{prixBase}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+          </label>
+        </div>
+
+        <label class="flex flex-col gap-2 text-sm font-semibold">
+          Description
+          <textarea name="description" required maxlength="2000" rows="4" class="rounded-lg border border-trait bg-page px-4 py-3 text-sm font-normal">{{description}}</textarea>
+        </label>
+      </section>
+
+      <slot name="options"></slot>
+    </div>
+
+    <slot name="images"></slot>
+  </div>
+</div>

@@ -1,0 +1,29 @@
+<section class="flex flex-col gap-3.5 rounded-xl border border-trait bg-page p-3.5 lg:gap-4 lg:p-6">
+  <h2 class="text-prix-sm font-bold">Options et variantes</h2>
+
+  <ul class="flex flex-col gap-2.5">
+    <slot name="options"></slot>
+  </ul>
+  <button type="button" data-action="ajouter-option" class="self-start text-sm font-medium underline">+ Ajouter une option</button>
+
+  <h3 class="text-sm font-semibold">Variantes</h3>
+  <p data-role="aide" class="text-sm text-texte-attenue">{{aide}}</p>
+
+  <!-- Tableau à partir de lg, blocs en dessous. Les lignes du tableau sont
+       ajoutées en JS dans le <tbody> : un <slot> n'y est pas permis. -->
+  <div data-role="variantes" class="overflow-hidden rounded-xl border border-trait">
+    <table class="hidden w-full text-left text-sm lg:table">
+      <thead class="bg-tuile-claire text-xs text-texte-attenue">
+        <tr>
+          <th scope="col" class="px-4 py-3 font-semibold">Combinaison</th>
+          <th scope="col" class="px-4 py-3 font-semibold">Supplément (€)</th>
+          <th scope="col" class="px-4 py-3 font-semibold">Stock</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <ul class="flex flex-col lg:hidden">
+      <slot name="blocs"></slot>
+    </ul>
+  </div>
+</section>

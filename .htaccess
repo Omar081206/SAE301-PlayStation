@@ -16,6 +16,12 @@ RewriteEngine On
 #    QSA conserve la chaîne de requête (?page=2), END arrête la réécriture.
 RewriteRule ^api/ back/index.php [END,QSA]
 
+# 1 bis. Images téléversées depuis le back-office : leurs noms commencent par
+#    « u- » et elles sont rangées dans uploads/produits/, hors du build (un
+#    npm run build ne les efface pas). Les autres images restent dans
+#    front/dist/images/produits/ (règles 2 et 3).
+RewriteRule ^images/produits/(u-[A-Za-z0-9._-]+)$ uploads/produits/$1 [END]
+
 # 3. (second passage, voir la règle 2) La requête désigne désormais un chemin
 #    dans front/dist/. Si c'est un fichier du build (script, feuille de style,
 #    image), on le sert tel quel.

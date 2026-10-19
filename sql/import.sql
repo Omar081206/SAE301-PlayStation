@@ -481,7 +481,8 @@ INSERT INTO parametre (cle, valeur, description) VALUES
 -- Une ligne par variante et par mouvement : quantite est signée (-2 pour une
 -- commande, +2 pour son annulation), stock_avant / stock_apres permettent de
 -- reconstituer l'historique. utilisateur_id : qui a provoqué le mouvement
--- (le client qui commande, l'administrateur qui annule).
+-- (le client qui commande, l'administrateur qui annule ou qui corrige le
+-- stock dans le back-office : motif « ajustement », sans commande).
 -- ---------------------------------------------------------------------------
 CREATE TABLE mouvement_stock (
     id             INT UNSIGNED                     NOT NULL AUTO_INCREMENT,
@@ -489,7 +490,7 @@ CREATE TABLE mouvement_stock (
     commande_id    INT UNSIGNED                     NULL,
     utilisateur_id INT UNSIGNED                     NULL,
     quantite       SMALLINT                         NOT NULL,
-    motif          ENUM('commande', 'annulation')   NOT NULL,
+    motif          ENUM('commande', 'annulation', 'ajustement') NOT NULL,
     stock_avant    SMALLINT UNSIGNED                NOT NULL,
     stock_apres    SMALLINT UNSIGNED                NOT NULL,
     cree_le        DATETIME                         NOT NULL DEFAULT CURRENT_TIMESTAMP,

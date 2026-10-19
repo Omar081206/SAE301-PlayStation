@@ -8,3 +8,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Images téléversées depuis le back-office (GOF-a) : données, pas code.
+uploads/produits/*
+!uploads/produits/.gitkeep
