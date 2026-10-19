@@ -14,6 +14,17 @@ use PDO;
  */
 final class CommandeModel
 {
+    /**
+     * Colonnes de tri de la liste du back-office, par clé reçue du
+     * contrôleur. Le statut est un ENUM : MySQL le trie dans l'ordre de sa
+     * déclaration (en cours, disponible, retirée, annulée).
+     */
+    private const TRIS = [
+        'date'    => 'commande.cree_le',
+        'statut'  => 'commande.statut',
+        'montant' => 'commande.total',
+    ];
+
     /** Connexion à la base, fournie à la construction. */
     private PDO $pdo;
 
@@ -137,9 +148,10 @@ final class CommandeModel
      * Change le statut d'une commande, si son statut actuel le permet.
      *
      * La commande est verrouillée pendant le changement : deux demandes
-     * simultanées ne peuvent pas partir du même statut. Avec $recrediter, le
-     * stock de chaque ligne est rendu à sa variante et inscrit au journal,
-     * dans la même transaction.
+     * simultanées ne peuvent pas partir du même statut. Le changement est
+     * inscrit au journal des administrateurs (journal_admin) et, avec
+     * $recrediter, le stock de chaque ligne est rendu à sa variante et inscrit
+     * au journal des stocks, dans la même transaction.
      *
      * @param string[] $statutsAutorises Statuts depuis lesquels le changement
      *                                   est permis (règle du contrôleur).
@@ -180,6 +192,16 @@ final class CommandeModel
             $requeteStatut->bindValue(':statut', $nouveau, PDO::PARAM_STR);
             $requeteStatut->bindValue(':id',     $id,      PDO::PARAM_INT);
             $requeteStatut->execute();
+
+            $requeteJournal = $this->pdo->prepare(
+                'INSERT INTO journal_admin (commande_id, utilisateur_id, ancien_statut, nouveau_statut)
+                 VALUES (:commande, :auteur, :ancien, :nouveau)'
+            );
+            $requeteJournal->bindValue(':commande', $id,                  PDO::PARAM_INT);
+            $requeteJournal->bindValue(':auteur',   $auteurId,            PDO::PARAM_INT);
+            $requeteJournal->bindValue(':ancien',   $commande['statut'],  PDO::PARAM_STR);
+            $requeteJournal->bindValue(':nouveau',  $nouveau,             PDO::PARAM_STR);
+            $requeteJournal->execute();
 
             if ($recrediter) {
                 // Lignes dont la variante existe encore, verrouillées par
@@ -263,13 +285,29 @@ final class CommandeModel
             return null;
         }
 
+        return [
+            'numero'  => $commande['numero'],
+            'statut'  => $commande['statut'],
+            'total'   => (float) $commande['total'],
+            'cree_le' => $commande['cree_le'],
+            'lignes'  => $this->lignes((int) $commande['id']),
+        ];
+    }
+
+    /**
+     * Les lignes d'une commande, prix figés à la commande.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function lignes(int $commandeId): array
+    {
         $requeteLignes = $this->pdo->prepare(
             'SELECT nom, coloris, prix_unitaire, quantite
                FROM ligne_commande
               WHERE commande_id = :id
            ORDER BY id'
         );
-        $requeteLignes->bindValue(':id', (int) $commande['id'], PDO::PARAM_INT);
+        $requeteLignes->bindValue(':id', $commandeId, PDO::PARAM_INT);
         $requeteLignes->execute();
 
         // MySQL renvoie les nombres sous forme de chaînes. On les convertit
@@ -286,12 +324,111 @@ final class CommandeModel
             ];
         }
 
+        return $lignes;
+    }
+
+    /**
+     * Toutes les commandes, pour le back-office : numéro, date, client,
+     * nombre d'articles, total et statut.
+     *
+     * @param string $tri  Clé de TRIS (date, statut ou montant), déjà
+     *                     validée par le contrôleur.
+     * @param bool   $croissant Sens du tri ; à valeur égale, la plus récente
+     *                          d'abord.
+     * @return array<int, array<string, mixed>>
+     */
+    public function listerPourAdmin(string $tri, bool $croissant): array
+    {
+        // La colonne et le sens viennent de listes fixes, jamais de la
+        // requête : ils peuvent être écrits dans le SQL.
+        $colonne = self::TRIS[$tri] ?? self::TRIS['date'];
+        $sens    = $croissant ? 'ASC' : 'DESC';
+
+        $sql = "SELECT commande.numero,
+                       commande.statut,
+                       commande.total,
+                       commande.cree_le,
+                       utilisateur.pseudo,
+                       COALESCE(SUM(ligne_commande.quantite), 0) AS articles
+                  FROM commande
+            INNER JOIN utilisateur    ON utilisateur.id = commande.utilisateur_id
+             LEFT JOIN ligne_commande ON ligne_commande.commande_id = commande.id
+              GROUP BY commande.id, commande.numero, commande.statut, commande.total,
+                       commande.cree_le, utilisateur.pseudo
+              ORDER BY {$colonne} {$sens}, commande.cree_le DESC, commande.id DESC";
+
+        $commandes = [];
+
+        foreach ($this->pdo->query($sql)->fetchAll() as $ligne) {
+            $commandes[] = [
+                'numero'   => $ligne['numero'],
+                'statut'   => $ligne['statut'],
+                'total'    => (float) $ligne['total'],
+                'cree_le'  => $ligne['cree_le'],
+                'client'   => $ligne['pseudo'],
+                'articles' => (int) $ligne['articles'],
+            ];
+        }
+
+        return $commandes;
+    }
+
+    /**
+     * Une commande, quel que soit son client, pour le back-office : lignes,
+     * client et historique des changements de statut. null si elle n'existe
+     * pas.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function trouverPourAdmin(string $numero): ?array
+    {
+        $requetePreparee = $this->pdo->prepare(
+            'SELECT commande.id, commande.numero, commande.statut, commande.total, commande.cree_le,
+                    utilisateur.pseudo, utilisateur.email
+               FROM commande
+         INNER JOIN utilisateur ON utilisateur.id = commande.utilisateur_id
+              WHERE commande.numero = :numero'
+        );
+        $requetePreparee->bindValue(':numero', $numero, PDO::PARAM_STR);
+        $requetePreparee->execute();
+
+        $commande = $requetePreparee->fetch();
+
+        if ($commande === false) {
+            return null;
+        }
+
+        // Un administrateur supprimé depuis : l'auteur reste inconnu (NULL).
+        $requeteJournal = $this->pdo->prepare(
+            'SELECT journal_admin.ancien_statut, journal_admin.nouveau_statut, journal_admin.cree_le,
+                    utilisateur.pseudo
+               FROM journal_admin
+          LEFT JOIN utilisateur ON utilisateur.id = journal_admin.utilisateur_id
+              WHERE journal_admin.commande_id = :id
+           ORDER BY journal_admin.id'
+        );
+        $requeteJournal->bindValue(':id', (int) $commande['id'], PDO::PARAM_INT);
+        $requeteJournal->execute();
+
+        $historique = [];
+
+        foreach ($requeteJournal->fetchAll() as $ligne) {
+            $historique[] = [
+                'ancien'  => $ligne['ancien_statut'],
+                'nouveau' => $ligne['nouveau_statut'],
+                'le'      => $ligne['cree_le'],
+                'par'     => $ligne['pseudo'],
+            ];
+        }
+
         return [
-            'numero'  => $commande['numero'],
-            'statut'  => $commande['statut'],
-            'total'   => (float) $commande['total'],
-            'cree_le' => $commande['cree_le'],
-            'lignes'  => $lignes,
+            'numero'     => $commande['numero'],
+            'statut'     => $commande['statut'],
+            'total'      => (float) $commande['total'],
+            'cree_le'    => $commande['cree_le'],
+            'client'     => ['pseudo' => $commande['pseudo'], 'email' => $commande['email']],
+            'lignes'     => $this->lignes((int) $commande['id']),
+            'historique' => $historique,
         ];
     }
 }

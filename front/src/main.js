@@ -10,6 +10,8 @@ import { CommandePage } from "./pages/commande/page.js";
 import { ConfirmationPage } from "./pages/confirmation/page.js";
 import { AdminPage } from "./pages/admin/page.js";
 import { AdminCategoriesPage } from "./pages/admin-categories/page.js";
+import { AdminCommandesPage } from "./pages/admin-commandes/page.js";
+import { AdminCommandePage } from "./pages/admin-commande/page.js";
 import { The404Page } from "./pages/404/page.js";
 
 // base : chemin du projet sur le serveur (BASE dans vite.config.js).
@@ -28,6 +30,8 @@ router.addRoute("/commande", CommandePage);
 router.addRoute("/commande/:numero", ConfirmationPage);
 router.addRoute("/admin", AdminPage);
 router.addRoute("/admin/categories", AdminCategoriesPage);
+router.addRoute("/admin/commandes", AdminCommandesPage);
+router.addRoute("/admin/commandes/:numero", AdminCommandePage);
 
 // En dernier : toute adresse qui ne correspond à aucune route.
 router.addRoute("*", The404Page);
