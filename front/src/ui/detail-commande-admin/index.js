@@ -34,7 +34,7 @@ let DetailCommandeAdminView = {
   /**
    * @param {{numero: string, statut: string, total: number,
    *          client: {prenom: string, nom: string, email: string},
-   *          lignes: Array<{nom: string, coloris: string|null, quantite: number,
+   *          lignes: Array<{nom: string, options: string|null, quantite: number,
    *                         prix_unitaire: number, sous_total: number}>,
    *          historique: Array<{ancien: string, nouveau: string, le: string, par: string|null}>,
    *          suivants: string[]}} commande
@@ -58,7 +58,7 @@ let DetailCommandeAdminView = {
     for (let ligne of commande.lignes) {
       let donnees = {
         nom: ligne.nom,
-        options: ligne.coloris ?? "—",
+        options: ligne.options ?? "—",
         quantite: ligne.quantite,
         prixUnitaire: formaterPrix(ligne.prix_unitaire),
         sousTotal: formaterPrix(ligne.sous_total),

@@ -10,7 +10,8 @@ import templateLigne from "./ligne.html?raw";
 let DetailCommandeClientView = {
   /**
    * @param {{total: number,
-   *          lignes: Array<{nom: string, coloris: string|null, quantite: number, sous_total: number}>}} commande
+   *          lignes: Array<{nom: string, options: string|null, quantite: number, sous_total: number}>}} commande
+   *   options : les options choisies, en texte (« Coloris : Noir »).
    * @param {{surRenouvellement: () => void}} actions
    */
   dom: function (commande, actions) {
@@ -20,14 +21,14 @@ let DetailCommandeClientView = {
       let element = htmlToFragment(
         genericRenderer(templateLigne, {
           nom: ligne.nom,
-          coloris: ligne.coloris ?? "",
+          options: ligne.options ?? "",
           quantite: ligne.quantite,
           sousTotal: formaterPrix(ligne.sous_total),
         })
       );
-      // État réglé en JS : un template n'a pas de condition. Pas de
-      // coloris : pas d'option à afficher.
-      if (ligne.coloris === null) {
+      // État réglé en JS : un template n'a pas de condition. Pas d'option :
+      // rien à afficher.
+      if (ligne.options === null) {
         element.querySelector('[data-role="options"]').remove();
       }
       return element;

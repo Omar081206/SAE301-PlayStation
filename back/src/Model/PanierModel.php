@@ -27,8 +27,9 @@ final class PanierModel
      * Les variantes demandées, indexées par leur identifiant, avec leur stock
      * actuel. Une variante inconnue est simplement absente du résultat.
      *
-     * L'image est l'image principale du coloris s'il en a une, sinon celle
-     * du produit.
+     * L'image est l'image principale de la variante (un coloris) s'il en a
+     * une, sinon celle du produit. options : les valeurs de la variante, en
+     * texte (« Coloris : Noir »), ou null pour un produit sans option.
      *
      * @param  array<int, int> $ids Identifiants de variantes, déjà validés.
      * @return array<int, array<string, mixed>>
@@ -45,7 +46,12 @@ final class PanierModel
 
         $requetePreparee = $this->pdo->prepare(
             "SELECT variante.id,
-                    variante.coloris,
+                    (SELECT GROUP_CONCAT(CONCAT(option_produit.nom, ' : ', valeur_option.valeur)
+                                         ORDER BY option_produit.ordre SEPARATOR ', ')
+                       FROM variante_valeur
+                 INNER JOIN valeur_option  ON valeur_option.id = variante_valeur.valeur_id
+                 INNER JOIN option_produit ON option_produit.id = valeur_option.option_id
+                      WHERE variante_valeur.variante_id = variante.id) AS options,
                     variante.prix,
                     variante.stock,
                     produit.nom,
@@ -76,7 +82,7 @@ final class PanierModel
             $variantes[(int) $ligne['id']] = [
                 'nom'       => $ligne['nom'],
                 'slug'      => $ligne['slug'],
-                'coloris'   => $ligne['coloris'],
+                'options'   => $ligne['options'],
                 'prix'      => (float) $ligne['prix'],
                 'stock'     => (int) $ligne['stock'],
                 'image'     => $ligne['image'],

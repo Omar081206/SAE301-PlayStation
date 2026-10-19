@@ -2,20 +2,24 @@ import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { formaterPrix } from "../../lib/format.js";
 import { BadgeStockView } from "../badge-stock/index.js";
 import template from "./template.html?raw";
-import templateColoris from "./coloris.html?raw";
+import templateOption from "./option.html?raw";
+import templateValeur from "./valeur.html?raw";
 
 // Fiche d'un produit, tel que le renvoie l'API :
-// { id, nom, slug, description, categorie, categorie_slug, variante_id, prix,
-//   etat_stock, images, variantes: [ { id, coloris, etat_stock } ] }
-// La galerie prend la place du <slot name="galerie"> ; le badge de stock de la
-// variante par défaut, celle du <slot name="badge"> ; une ligne par coloris,
-// avec son propre badge, celle du <slot name="coloris">.
+// { id, nom, slug, description, categorie, categorie_slug, prix, etat_stock,
+//   images, options: [ { id, nom, valeurs: [ { id, valeur } ] } ],
+//   variantes: [ { id, prix, etat_stock, valeurs, images } ] }
+// avec la variante qui correspond aux options choisies (null si cette
+// combinaison n'existe pas). Le prix, le badge de stock et le bouton sont
+// ceux de cette variante ; la galerie (slot « galerie ») est placée par la
+// page. Un groupe de choix par option prend place dans le slot « options ».
 let FicheProduitView = {
-  html: function (produit) {
+  html: function (data) {
     // Les valeurs sont mises en forme avant d'être passées au template.
+    let produit = data.produit;
     return genericRenderer(template, {
       nom: produit.nom,
-      prix: formaterPrix(produit.prix),
+      prix: formaterPrix(data.variante === null ? produit.prix : data.variante.prix),
       description: produit.description,
       categorie: produit.categorie,
       categorieSlug: produit.categorie_slug,
@@ -23,37 +27,53 @@ let FicheProduitView = {
   },
 
   /**
-   * @param {{variante_id: number, nom: string, etat_stock: string,
-   *          variantes: Array<{coloris: string|null, etat_stock: string}>}} produit
-   * @param {{surAjout: (variantId: number, nom: string) => void}} actions
+   * @param {{produit: Object, variante: {id: number, prix: number, etat_stock: string}|null,
+   *          choix: Object<number, number>, libelle: string}} data
+   *   choix : valeur choisie pour chaque option (identifiants) ; libelle :
+   *   nom du produit et options choisies, pour les messages.
+   * @param {{surChoix: (optionId: number, valeurId: number) => void,
+   *          surAjout: (variantId: number, libelle: string) => void}} actions
    */
-  dom: function (produit, actions) {
-    let fragment = htmlToFragment(FicheProduitView.html(produit));
+  dom: function (data, actions) {
+    let fragment = htmlToFragment(FicheProduitView.html(data));
+    let variante = data.variante;
 
-    fragment.querySelector('slot[name="badge"]').replaceWith(BadgeStockView.dom(produit.etat_stock));
+    fragment
+      .querySelector('slot[name="badge"]')
+      .replaceWith(variante === null ? "" : BadgeStockView.dom(variante.etat_stock));
 
-    // Un seul coloris (ou aucun) : le badge principal suffit.
-    if (produit.variantes.length < 2) {
-      fragment.querySelector('[data-role="coloris"]').remove();
-    } else {
-      let lignes = produit.variantes.map((variante) => {
-        let ligne = htmlToFragment(genericRenderer(templateColoris, { coloris: variante.coloris }));
-        ligne.querySelector('slot[name="badge"]').replaceWith(BadgeStockView.dom(variante.etat_stock));
-        return ligne;
+    let groupes = data.produit.options.map((option) => {
+      let choisie = option.valeurs.find((valeur) => valeur.id === data.choix[option.id]);
+      let groupe = htmlToFragment(genericRenderer(templateOption, { nom: option.nom, choisie: choisie?.valeur ?? "" }));
+
+      let valeurs = option.valeurs.map((valeur) => {
+        let element = htmlToFragment(
+          genericRenderer(templateValeur, { optionId: option.id, valeurId: valeur.id, valeur: valeur.valeur })
+        );
+        let radio = element.querySelector("input");
+        // État réglé en JS : un template n'a pas de condition.
+        radio.checked = valeur.id === data.choix[option.id];
+        radio.addEventListener("change", () => actions.surChoix(option.id, valeur.id));
+        return element;
       });
-      fragment.querySelector('slot[name="coloris"]').replaceWith(...lignes);
-    }
+      groupe.querySelector('slot[name="valeurs"]').replaceWith(...valeurs);
+      return groupe;
+    });
+    fragment.querySelector('slot[name="options"]').replaceWith(...groupes);
 
     let bouton = fragment.querySelector('[data-action="ajouter"]');
 
-    // Variante par défaut épuisée : bouton désactivé (le serveur refuserait
-    // de toute façon l'ajout).
-    if (produit.etat_stock === "epuise") {
+    // Combinaison inexistante ou variante épuisée : bouton désactivé (le
+    // serveur refuserait de toute façon l'ajout).
+    if (variante === null) {
+      bouton.disabled = true;
+      bouton.textContent = "Combinaison indisponible";
+    } else if (variante.etat_stock === "epuise") {
       bouton.disabled = true;
       bouton.textContent = "Épuisé";
+    } else {
+      bouton.addEventListener("click", () => actions.surAjout(variante.id, data.libelle));
     }
-
-    bouton.addEventListener("click", () => actions.surAjout(produit.variante_id, produit.nom));
 
     return fragment;
   },

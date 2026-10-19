@@ -13,13 +13,8 @@
         <h1 class="text-produit-sm font-light md:text-produit-md lg:text-produit-lg">{{nom}}</h1>
         <p class="text-prix-sm font-light md:text-prix-md lg:text-prix-lg">{{prix}}</p>
 
-        <!-- Disponibilité de chaque coloris, pour un produit qui en a plusieurs. -->
-        <div data-role="coloris" class="flex flex-col gap-1.75 lg:gap-2">
-          <p class="text-sm font-bold lg:text-base">Disponibilité par coloris</p>
-          <ul class="flex flex-col gap-1.75 text-sm lg:gap-2">
-            <slot name="coloris"></slot>
-          </ul>
-        </div>
+        <!-- Un groupe de choix par option du produit (Coloris…). -->
+        <slot name="options"></slot>
         <button type="button" data-action="ajouter" class="rounded-full bg-achat px-3.5 py-2.5 text-sm leading-3.5 font-bold text-texte-inverse disabled:bg-trait disabled:text-texte-attenue lg:px-4 lg:py-3">Ajouter au panier</button>
       </div>
 

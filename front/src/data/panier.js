@@ -153,7 +153,7 @@ PanierData.nombreArticles = function () {
 /**
  * Le détail du panier : POST /api/panier, corps JSON { lignes }.
  *
- * { lignes: [ { variantId, quantite, quantiteMax, nom, slug, coloris, prix, image,
+ * { lignes: [ { variantId, quantite, quantiteMax, nom, slug, options, prix, image,
  *               image_alt, sousTotal } ],
  *   total, nombre, ajustements: [ { variantId, nom, demandee, accordee } ] }
  * Les quantités sont ramenées au stock disponible (quantiteMax) et chaque

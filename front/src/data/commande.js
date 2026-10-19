@@ -8,7 +8,8 @@ let CommandeData = {};
  * 403 si personne n'est connecté, 422 si le panier est vide ou invalide.
  *
  * { commande: { numero, statut, total, cree_le,
- *               lignes: [ { nom, coloris, prix_unitaire, quantite, sous_total } ] } }
+ *               lignes: [ { variantId, nom, options, prix_unitaire, quantite, sous_total } ] } }
+ * options : les options choisies, en texte (« Coloris : Noir »), ou null.
  */
 CommandeData.save = async function (lignes) {
   return postRequest("commande", { lignes });

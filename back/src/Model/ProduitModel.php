@@ -92,10 +92,12 @@ final class ProduitModel
     }
 
     /**
-     * Un produit par son slug, avec les images de son coloris par défaut et ses
-     * variantes (stock compris), ou null s'il n'existe pas.
+     * Un produit par son slug, avec les images de sa variante par défaut, ses
+     * options (et leurs valeurs) et ses variantes, ou null s'il n'existe pas.
      *
-     * Comme dans le catalogue, le prix est le plus bas des variantes.
+     * Chaque variante donne son prix, son stock, ses valeurs (une par option)
+     * et ses images : les siennes si elle en a (un coloris), sinon celles du
+     * produit. Comme dans le catalogue, le prix est le plus bas des variantes.
      *
      * @return array<string, mixed>|null
      */
@@ -126,27 +128,69 @@ final class ProduitModel
             return null;
         }
 
-        $requeteVariantes = $this->pdo->prepare(
-            'SELECT id, coloris, stock FROM variante WHERE produit_id = :id ORDER BY id'
+        $produitId = (int) $ligne['id'];
+
+        $requeteImages = $this->pdo->prepare(
+            'SELECT variante_id, fichier, alt FROM image WHERE produit_id = :id ORDER BY ordre'
         );
-        $requeteVariantes->bindValue(':id', (int) $ligne['id'], PDO::PARAM_INT);
+        $requeteImages->bindValue(':id', $produitId, PDO::PARAM_INT);
+        $requeteImages->execute();
+
+        // Images du produit (variante_id NULL), et images propres à certaines
+        // variantes, indexées par variante.
+        $imagesProduit   = [];
+        $imagesVariantes = [];
+        foreach ($requeteImages->fetchAll() as $image) {
+            $donnees = ['fichier' => $image['fichier'], 'alt' => $image['alt']];
+            if ($image['variante_id'] === null) {
+                $imagesProduit[] = $donnees;
+            } else {
+                $imagesVariantes[(int) $image['variante_id']][] = $donnees;
+            }
+        }
+
+        $requeteValeurs = $this->pdo->prepare(
+            'SELECT option_produit.id AS option_id, option_produit.nom,
+                    valeur_option.id AS valeur_id, valeur_option.valeur
+               FROM option_produit
+         INNER JOIN valeur_option ON valeur_option.option_id = option_produit.id
+              WHERE option_produit.produit_id = :id
+           ORDER BY option_produit.ordre, option_produit.id, valeur_option.ordre, valeur_option.id'
+        );
+        $requeteValeurs->bindValue(':id', $produitId, PDO::PARAM_INT);
+        $requeteValeurs->execute();
+
+        $options = [];
+        foreach ($requeteValeurs->fetchAll() as $valeur) {
+            $optionId = (int) $valeur['option_id'];
+            $options[$optionId] ??= ['id' => $optionId, 'nom' => $valeur['nom'], 'valeurs' => []];
+            $options[$optionId]['valeurs'][] = ['id' => (int) $valeur['valeur_id'], 'valeur' => $valeur['valeur']];
+        }
+
+        $requeteVariantes = $this->pdo->prepare(
+            'SELECT variante.id, variante.prix, variante.stock,
+                    GROUP_CONCAT(variante_valeur.valeur_id ORDER BY variante_valeur.valeur_id) AS valeurs
+               FROM variante
+          LEFT JOIN variante_valeur ON variante_valeur.variante_id = variante.id
+              WHERE variante.produit_id = :id
+           GROUP BY variante.id, variante.prix, variante.stock
+           ORDER BY variante.id'
+        );
+        $requeteVariantes->bindValue(':id', $produitId, PDO::PARAM_INT);
         $requeteVariantes->execute();
 
         $variantes = [];
 
         foreach ($requeteVariantes->fetchAll() as $variante) {
+            $id = (int) $variante['id'];
             $variantes[] = [
-                'id'      => (int) $variante['id'],
-                'coloris' => $variante['coloris'],
+                'id'      => $id,
+                'prix'    => (float) $variante['prix'],
                 'stock'   => (int) $variante['stock'],
+                'valeurs' => $variante['valeurs'] === null ? [] : array_map('intval', explode(',', $variante['valeurs'])),
+                'images'  => $imagesVariantes[$id] ?? $imagesProduit,
             ];
         }
-
-        $requeteImages = $this->pdo->prepare(
-            'SELECT fichier, alt FROM image WHERE produit_id = :id AND variante_id IS NULL ORDER BY ordre'
-        );
-        $requeteImages->bindValue(':id', (int) $ligne['id'], PDO::PARAM_INT);
-        $requeteImages->execute();
 
         // MySQL renvoie des chaînes : on convertit avant le JSON.
         return [
@@ -158,7 +202,8 @@ final class ProduitModel
             'categorie_slug' => $ligne['categorie_slug'],
             'variante_id'    => (int) $ligne['variante_id'],
             'prix'           => (float) $ligne['prix'],
-            'images'         => $requeteImages->fetchAll(),
+            'images'         => $imagesProduit,
+            'options'        => array_values($options),
             'variantes'      => $variantes,
         ];
     }

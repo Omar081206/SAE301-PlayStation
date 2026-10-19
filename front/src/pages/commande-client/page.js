@@ -73,8 +73,8 @@ C.compteRendu = function (ajoutes, detail) {
   }
 
   for (let ligne of M.commande.lignes) {
-    // Le coloris distingue deux lignes du même produit.
-    let nom = ligne.coloris === null ? ligne.nom : `${ligne.nom} (${ligne.coloris})`;
+    // Les options distinguent deux lignes du même produit.
+    let nom = ligne.options === null ? ligne.nom : `${ligne.nom} (${ligne.options})`;
     let ajustement = detail?.ajustements.find((element) => element.variantId === ligne.variantId);
     let present = detail?.lignes.some((element) => element.variantId === ligne.variantId);
 

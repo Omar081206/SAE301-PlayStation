@@ -44,7 +44,7 @@ final class CommandeModel
      * simultanées sur la dernière unité sont traitées l'une après l'autre, et
      * la seconde trouve un stock à 0.
      *
-     * @param array<int, array{variantId: int, nom: string, coloris: ?string,
+     * @param array<int, array{variantId: int, nom: string, options: ?string,
      *                         prix: float, quantite: int}> $lignes
      *        Lignes validées par le contrôleur, prix lus en base.
      */
@@ -99,15 +99,15 @@ final class CommandeModel
             $requeteNumero->execute();
 
             $requeteLigne = $this->pdo->prepare(
-                'INSERT INTO ligne_commande (commande_id, variante_id, nom, coloris, prix_unitaire, quantite)
-                 VALUES (:commande, :variante, :nom, :coloris, :prix, :quantite)'
+                'INSERT INTO ligne_commande (commande_id, variante_id, nom, options, prix_unitaire, quantite)
+                 VALUES (:commande, :variante, :nom, :options, :prix, :quantite)'
             );
 
             foreach ($lignes as $ligne) {
                 $requeteLigne->bindValue(':commande', $id,                       PDO::PARAM_INT);
                 $requeteLigne->bindValue(':variante', $ligne['variantId'],       PDO::PARAM_INT);
                 $requeteLigne->bindValue(':nom',      $ligne['nom'],             PDO::PARAM_STR);
-                $requeteLigne->bindValue(':coloris',  $ligne['coloris'],         $ligne['coloris'] === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+                $requeteLigne->bindValue(':options',  $ligne['options'],         $ligne['options'] === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
                 $requeteLigne->bindValue(':prix',     (string) $ligne['prix'],   PDO::PARAM_STR);
                 $requeteLigne->bindValue(':quantite', $ligne['quantite'],        PDO::PARAM_INT);
                 $requeteLigne->execute();
@@ -402,7 +402,7 @@ final class CommandeModel
     private function lignes(int $commandeId): array
     {
         $requeteLignes = $this->pdo->prepare(
-            'SELECT variante_id, nom, coloris, prix_unitaire, quantite
+            'SELECT variante_id, nom, options, prix_unitaire, quantite
                FROM ligne_commande
               WHERE commande_id = :id
            ORDER BY id'
@@ -418,7 +418,7 @@ final class CommandeModel
             $lignes[] = [
                 'variantId'     => $ligne['variante_id'] === null ? null : (int) $ligne['variante_id'],
                 'nom'           => $ligne['nom'],
-                'coloris'       => $ligne['coloris'],
+                'options'       => $ligne['options'],
                 'prix_unitaire' => (float) $ligne['prix_unitaire'],
                 'quantite'      => (int) $ligne['quantite'],
                 'sous_total'    => round((float) $ligne['prix_unitaire'] * (int) $ligne['quantite'], 2),
