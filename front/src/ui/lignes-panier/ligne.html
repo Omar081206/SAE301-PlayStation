@@ -8,24 +8,24 @@
   <div class="flex min-w-0 flex-1 flex-col gap-1.75 lg:flex-row lg:items-center lg:gap-6">
     <div class="flex items-start justify-between gap-1.75 lg:flex-1">
       <div class="flex flex-col items-start gap-1">
-        <a href="/produit/{{slug}}" data-link class="text-sm font-bold lg:text-base">{{nom}}</a>
+        <a href="/produit/{{slug}}" data-link class="text-sm font-bold hover:text-lien lg:text-base">{{nom}}</a>
         <!-- Produit à options seulement : retiré en JS sinon. -->
         <p data-role="options" class="text-xs text-texte-attenue lg:text-sm">{{options}}</p>
-        <a data-role="modifier" href="/produit/{{slug}}/options/{{variantId}}" data-link aria-label="Modifier les options de {{nom}}" class="text-sm font-bold text-lien underline">Modifier les options</a>
+        <a data-role="modifier" href="/produit/{{slug}}/options/{{variantId}}" data-link aria-label="Modifier les options de {{nom}}" class="text-sm font-bold text-lien underline hover:text-lien-survol">Modifier les options</a>
       </div>
       <p class="shrink-0 text-sm font-bold lg:hidden">{{sousTotal}}</p>
     </div>
 
     <div class="flex items-center gap-2.5 lg:gap-6">
       <div class="flex items-center rounded-full border-2 border-trait">
-        <button type="button" data-action="moins" aria-label="Retirer un exemplaire de {{nom}}" class="flex size-9 items-center justify-center font-medium disabled:text-desactive">−</button>
+        <button type="button" data-action="moins" aria-label="Retirer un exemplaire de {{nom}}" class="flex size-9 items-center justify-center rounded-full font-medium enabled:hover:bg-secondaire disabled:text-desactive">−</button>
         <span class="w-10 text-center font-semibold"><span class="sr-only">Quantité : </span>{{quantite}}</span>
-        <button type="button" data-action="plus" aria-label="Ajouter un exemplaire de {{nom}}" class="flex size-9 items-center justify-center font-medium disabled:text-desactive">+</button>
+        <button type="button" data-action="plus" aria-label="Ajouter un exemplaire de {{nom}}" class="flex size-9 items-center justify-center rounded-full font-medium enabled:hover:bg-secondaire disabled:text-desactive">+</button>
       </div>
 
       <div class="flex flex-col lg:w-27.5 lg:items-end lg:gap-2">
         <p class="hidden font-bold lg:block">{{sousTotal}}</p>
-        <button type="button" data-action="supprimer" aria-label="Supprimer {{nom}} du panier" class="text-sm font-bold text-lien underline">Supprimer</button>
+        <button type="button" data-action="supprimer" aria-label="Supprimer {{nom}} du panier" class="text-sm font-bold text-lien underline enabled:hover:text-lien-survol">Supprimer</button>
       </div>
     </div>
   </div>

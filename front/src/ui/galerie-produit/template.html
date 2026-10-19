@@ -4,8 +4,8 @@
        défiler. 21 rem = en-tête, lien de retour, miniatures et marges. -->
   <div class="fond-galerie relative flex h-83.25 items-center justify-between overflow-hidden rounded-xl px-3.5 md:h-120 lg:h-[clamp(20rem,calc(100dvh-21rem),35rem)] lg:rounded-2xl lg:px-4">
     <img src="{{image}}" alt="{{alt}}" width="560" height="560" class="absolute inset-0 size-full object-contain">
-    <button type="button" data-action="precedente" aria-label="Image précédente" class="relative flex size-10 items-center justify-center rounded-full bg-action text-lg font-medium text-texte-inverse disabled:bg-texte-inverse/40 lg:size-12 lg:text-xl">‹</button>
-    <button type="button" data-action="suivante" aria-label="Image suivante" class="relative flex size-10 items-center justify-center rounded-full bg-action text-lg font-medium text-texte-inverse disabled:bg-texte-inverse/40 lg:size-12 lg:text-xl">›</button>
+    <button type="button" data-action="precedente" aria-label="Image précédente" class="relative flex size-10 items-center justify-center rounded-full bg-action text-lg font-medium text-texte-inverse disabled:bg-texte-inverse/40 lg:size-12 lg:text-xl enabled:hover:bg-action-survol">‹</button>
+    <button type="button" data-action="suivante" aria-label="Image suivante" class="relative flex size-10 items-center justify-center rounded-full bg-action text-lg font-medium text-texte-inverse disabled:bg-texte-inverse/40 lg:size-12 lg:text-xl enabled:hover:bg-action-survol">›</button>
   </div>
 
   <ul class="flex gap-1.75 lg:gap-3" data-role="miniatures">
