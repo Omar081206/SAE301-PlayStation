@@ -3,14 +3,15 @@ import { getRequest, postRequest } from "../lib/api-request.js";
 let AdminData = {};
 
 /**
- * Connexion au back-office : POST /api/admin/login, corps { email, mdp }
- * Seuls les comptes admin sont acceptés (422 sinon). La session
- * d'administration est distincte de celle du client.
+ * Connexion au back-office : POST /api/admin/login, corps { identifiant, mdp }
+ * L'identifiant est le pseudo ou l'adresse e-mail. Seuls les comptes admin
+ * sont acceptés (422 sinon). La session d'administration est distincte de
+ * celle du client.
  *
- * { connecte: true, email }
+ * { connecte: true, email, pseudo }
  */
-AdminData.login = async function (email, mdp) {
-  return postRequest("admin/login", { email, mdp });
+AdminData.login = async function (identifiant, mdp) {
+  return postRequest("admin/login", { identifiant, mdp });
 };
 
 /**
@@ -23,7 +24,7 @@ AdminData.logout = async function () {
 
 /**
  * Administrateur connecté : GET /api/admin/session
- * { connecte, email } (email à null si personne n'est connecté)
+ * { connecte, email, pseudo } (à null si personne n'est connecté)
  */
 AdminData.fetchSession = async function () {
   return getRequest("admin/session");

@@ -53,8 +53,8 @@ verifier() {
 }
 
 STOCK_ORIGINE="$(stock)"
-poster client login '{"email":"client@playstation.test","mdp":"client1234"}' > /dev/null
-poster admin admin/login '{"email":"admin@playstation.test","mdp":"admin1234"}' > /dev/null
+poster client login '{"identifiant":"client@playstation.test","mdp":"client1234"}' > /dev/null
+poster admin admin/login '{"identifiant":"admin","mdp":"admin1234"}' > /dev/null
 COMMANDE_2='{"lignes":[{"variantId":13,"quantite":2}]}'
 
 echo "1. La commande décrémente le stock et l'inscrit au journal"

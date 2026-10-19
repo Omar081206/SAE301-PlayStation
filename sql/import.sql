@@ -272,26 +272,31 @@ INSERT INTO image (produit_id, variante_id, fichier, alt, ordre) VALUES
 --
 -- mot_de_passe : empreinte bcrypt produite par password_hash(), jamais le mot
 -- de passe lui-même. role : 'client' pour la boutique, 'admin' pour la zone
--- d'administration.
+-- d'administration. pseudo : choisi à l'inscription, il sert à se connecter
+-- (comme l'adresse e-mail) et s'affiche dans l'en-tête. Il ne contient jamais
+-- « @ » : c'est ce qui le distingue d'une adresse à la connexion. La
+-- collation ne distingue pas la casse : « Omar » et « omar » sont un seul pseudo.
 -- ---------------------------------------------------------------------------
 CREATE TABLE utilisateur (
     id           INT UNSIGNED            NOT NULL AUTO_INCREMENT,
     email        VARCHAR(180)            NOT NULL,
+    pseudo       VARCHAR(30)             NOT NULL,
     mot_de_passe VARCHAR(255)            NOT NULL,
     role         ENUM('client', 'admin') NOT NULL DEFAULT 'client',
     cree_le      DATETIME                NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id),
-    UNIQUE KEY uq_utilisateur_email (email)
+    UNIQUE KEY uq_utilisateur_email (email),
+    UNIQUE KEY uq_utilisateur_pseudo (pseudo)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
--- Comptes de test (voir README) : client@playstation.test / client1234 et
--- admin@playstation.test / admin1234.
-INSERT INTO utilisateur (email, mot_de_passe, role) VALUES
-    ('client@playstation.test', '$2y$12$lJPa0JrD2Rw0ET8.r/Xp2umTobri5omSesmplBIX4zUn8xO8oFT2K', 'client'),
-    ('admin@playstation.test',  '$2y$12$1puRSW6uY8T6pxGogeWEw.H9ufh93afp.iNCoMHWoKjYw8jIC5CNy', 'admin');
+-- Comptes de test (voir README) : client (client@playstation.test) /
+-- client1234 et admin (admin@playstation.test) / admin1234.
+INSERT INTO utilisateur (email, pseudo, mot_de_passe, role) VALUES
+    ('client@playstation.test', 'client', '$2y$12$lJPa0JrD2Rw0ET8.r/Xp2umTobri5omSesmplBIX4zUn8xO8oFT2K', 'client'),
+    ('admin@playstation.test',  'admin',  '$2y$12$1puRSW6uY8T6pxGogeWEw.H9ufh93afp.iNCoMHWoKjYw8jIC5CNy', 'admin');
 
 -- ---------------------------------------------------------------------------
 -- Commandes

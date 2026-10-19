@@ -23,16 +23,21 @@ final class UtilisateurModel
     }
 
     /**
-     * Un compte par son adresse e-mail, ou null s'il n'existe pas.
+     * Un compte par son adresse e-mail ou son pseudo, ou null s'il n'existe pas.
+     *
+     * Un pseudo ne contient jamais « @ », une adresse en contient toujours :
+     * une même saisie ne peut pas désigner deux comptes. La collation de la
+     * table ne distingue pas la casse.
      *
      * @return array<string, mixed>|null
      */
-    public function trouverParEmail(string $email): ?array
+    public function trouverParIdentifiant(string $identifiant): ?array
     {
         $requetePreparee = $this->pdo->prepare(
-            'SELECT id, email, mot_de_passe, role FROM utilisateur WHERE email = :email'
+            'SELECT id, email, pseudo, mot_de_passe, role FROM utilisateur WHERE email = :email OR pseudo = :pseudo'
         );
-        $requetePreparee->bindValue(':email', $email, PDO::PARAM_STR);
+        $requetePreparee->bindValue(':email',  $identifiant, PDO::PARAM_STR);
+        $requetePreparee->bindValue(':pseudo', $identifiant, PDO::PARAM_STR);
         $requetePreparee->execute();
 
         $ligne = $requetePreparee->fetch();
@@ -45,6 +50,7 @@ final class UtilisateurModel
         return [
             'id'           => (int) $ligne['id'],
             'email'        => $ligne['email'],
+            'pseudo'       => $ligne['pseudo'],
             'mot_de_passe' => $ligne['mot_de_passe'],
             'role'         => $ligne['role'],
         ];
@@ -69,12 +75,13 @@ final class UtilisateurModel
      * @param string $empreinte Empreinte du mot de passe (password_hash), jamais
      *                          le mot de passe lui-même.
      */
-    public function creer(string $email, string $empreinte): int
+    public function creer(string $email, string $pseudo, string $empreinte): int
     {
         $requetePreparee = $this->pdo->prepare(
-            "INSERT INTO utilisateur (email, mot_de_passe, role) VALUES (:email, :empreinte, 'client')"
+            "INSERT INTO utilisateur (email, pseudo, mot_de_passe, role) VALUES (:email, :pseudo, :empreinte, 'client')"
         );
         $requetePreparee->bindValue(':email',     $email,     PDO::PARAM_STR);
+        $requetePreparee->bindValue(':pseudo',    $pseudo,    PDO::PARAM_STR);
         $requetePreparee->bindValue(':empreinte', $empreinte, PDO::PARAM_STR);
         $requetePreparee->execute();
 

@@ -10,7 +10,8 @@ import template from "./template.html?raw";
 // lit ni le panier ni la session.
 let HeaderView = {
   /**
-   * @param {{nombre: number, connecte: boolean}} data  Articles du panier, état de connexion.
+   * @param {{nombre: number, connecte: boolean, pseudo: string|null}} data
+   *   Articles du panier, état de connexion, pseudo du client connecté.
    */
   html: function (data) {
     return genericRenderer(template, {
@@ -20,7 +21,10 @@ let HeaderView = {
       iconePanier,
       nombre: data.nombre,
       libellePanier: data.nombre > 1 ? `Panier, ${data.nombre} articles` : `Panier, ${data.nombre} article`,
-      libelleCompte: data.connecte ? "Mon compte" : "Connexion",
+      // Connecté : le pseudo remplace « Mon compte » (sauf session ouverte
+      // avant l'arrivée des pseudos). L'icône mobile garde « Mon compte ».
+      libelleCompte: data.connecte ? (data.pseudo ?? "Mon compte") : "Connexion",
+      libelleIcone: data.connecte ? (data.pseudo ? `Mon compte, ${data.pseudo}` : "Mon compte") : "Connexion",
     });
   },
 

@@ -25,7 +25,11 @@ export function RootLayout() {
  * connexion connu (voir data/auth.js).
  */
 function donneesHeader() {
-  return { nombre: PanierData.nombreArticles(), connecte: AuthData.session.connecte };
+  return {
+    nombre: PanierData.nombreArticles(),
+    connecte: AuthData.session.connecte,
+    pseudo: AuthData.session.pseudo ?? null,
+  };
 }
 
 /**

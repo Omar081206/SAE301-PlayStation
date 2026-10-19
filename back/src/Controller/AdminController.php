@@ -33,28 +33,29 @@ final class AdminController
     }
 
     /**
-     * POST /api/admin/login, corps JSON { email, mdp }.
+     * POST /api/admin/login, corps JSON { identifiant, mdp } : l'identifiant
+     * est le pseudo ou l'adresse e-mail.
      */
     public function login(Request $requete): void
     {
-        $corps = $requete->corps();
-        $email = mb_strtolower(trim((string) ($corps['email'] ?? '')));
-        $mdp   = (string) ($corps['mdp'] ?? '');
+        $corps       = $requete->corps();
+        $identifiant = trim((string) ($corps['identifiant'] ?? ''));
+        $mdp         = (string) ($corps['mdp'] ?? '');
 
-        $compte = $this->utilisateurs->trouverParEmail($email);
+        $compte = $this->utilisateurs->trouverParIdentifiant($identifiant);
 
         // Même message pour un compte inconnu, un client ou un mauvais mot de
-        // passe : rien ne permet de deviner quelles adresses sont admin.
+        // passe : rien ne permet de deviner quels comptes sont admin.
         if ($compte === null || $compte['role'] !== 'admin' || !password_verify($mdp, $compte['mot_de_passe'])) {
-            Response::erreur('Adresse e-mail ou mot de passe incorrect.', 422);
+            Response::erreur('Identifiant ou mot de passe incorrect.', 422);
         }
 
         // Accès élevé : identifiant de session neuf, l'ancien est détruit.
         session_regenerate_id(true);
 
-        $_SESSION['admin'] = ['id' => $compte['id'], 'email' => $compte['email']];
+        $_SESSION['admin'] = ['id' => $compte['id'], 'email' => $compte['email'], 'pseudo' => $compte['pseudo']];
 
-        Response::json(['connecte' => true, 'email' => $compte['email']]);
+        Response::json(['connecte' => true, 'email' => $compte['email'], 'pseudo' => $compte['pseudo']]);
     }
 
     /**
@@ -65,7 +66,7 @@ final class AdminController
         unset($_SESSION['admin']);
         session_regenerate_id(true);
 
-        Response::json(['connecte' => false, 'email' => null]);
+        Response::json(['connecte' => false, 'email' => null, 'pseudo' => null]);
     }
 
     /**
@@ -74,10 +75,14 @@ final class AdminController
     public function session(): void
     {
         if (!isset($_SESSION['admin'])) {
-            Response::json(['connecte' => false, 'email' => null]);
+            Response::json(['connecte' => false, 'email' => null, 'pseudo' => null]);
         }
 
-        Response::json(['connecte' => true, 'email' => $_SESSION['admin']['email']]);
+        Response::json([
+            'connecte' => true,
+            'email'    => $_SESSION['admin']['email'],
+            'pseudo'   => $_SESSION['admin']['pseudo'] ?? null,
+        ]);
     }
 
     /**
