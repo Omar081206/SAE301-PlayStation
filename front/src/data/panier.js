@@ -85,6 +85,34 @@ PanierData.ajouter = async function (variantId) {
 };
 
 /**
+ * Ajoute plusieurs lignes { variantId, quantite } au panier (commander à
+ * nouveau) : les quantités s'ajoutent à celles déjà présentes, dans la
+ * limite de 99 par ligne.
+ *
+ * Le serveur vérifie d'abord le stock et l'existence des variantes (POST
+ * /api/panier) : on enregistre ce qu'il accorde. Renvoie sa réponse
+ * (voir fetchDetail), dont les ajustements.
+ */
+PanierData.ajouterLignes = async function (ajouts) {
+  let lignes = PanierData.lire();
+
+  for (let ajout of ajouts) {
+    let ligne = lignes.find((element) => element.variantId === ajout.variantId);
+
+    if (ligne === undefined) {
+      lignes.push({ variantId: ajout.variantId, quantite: Math.min(ajout.quantite, QUANTITE_MAX) });
+    } else {
+      ligne.quantite = Math.min(ligne.quantite + ajout.quantite, QUANTITE_MAX);
+    }
+  }
+
+  let detail = await PanierData.fetchDetail(lignes);
+  PanierData.aligner(detail);
+
+  return detail;
+};
+
+/**
  * Remplace le panier enregistré par les lignes accordées par le serveur
  * (réponse de fetchDetail) : quantités ramenées au stock, lignes épuisées ou
  * inconnues retirées.
