@@ -215,6 +215,7 @@ admin se connecte uniquement par `/admin` : les deux connexions sont séparées.
 | Symptôme | Cause probable |
 |---|---|
 | Un listing de dossiers, ou une erreur 404 sur la racine | le `.htaccess` n'a pas été déposé, ou `front/dist/` est absent (lancer `npm run build`) |
+| « L'image n'a pas pu être enregistrée » (back-office, Produits) | PHP (utilisateur `www-data`) ne peut pas écrire dans `uploads/produits/` : `setfacl -m g:www-data:rwx uploads/produits` puis `setfacl -d -m g:www-data:rwx uploads/produits` (git ne garde pas ces droits) |
 | Page blanche, fichiers `assets/…` en 404 | `BASE` de `vite.config.js` ne correspond pas au dossier de dépôt |
 | « Impossible de charger le catalogue » | identifiants de `config.php`, ou tables non importées |
 | Les réglages ne sont jamais retenus, la connexion ne tient pas | `chemin` de `config.php` ne correspond pas au dossier de dépôt |
