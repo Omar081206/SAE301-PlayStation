@@ -1,13 +1,16 @@
-<section class="flex max-w-130 flex-col gap-3.5 rounded-xl bg-page p-7 shadow-panneau-sm lg:gap-4 lg:rounded-2xl lg:p-8">
-  <h2 class="text-prix-sm font-light lg:text-prix-lg">Connexion administrateur</h2>
+<section class="flex w-full max-w-110 flex-col gap-4 rounded-xl border border-trait bg-page p-6">
+  <img src="{{logo}}" alt="PlayStation" width="44" height="34" class="h-8.5 w-auto self-start">
+  <h1 class="text-prix-lg font-bold">Back-office</h1>
 
-  <form class="flex flex-col gap-3.5 lg:gap-4">
-    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
-      Adresse e-mail
+  <slot name="message"></slot>
+
+  <form class="flex flex-col gap-4">
+    <label class="flex flex-col gap-2 text-sm">
+      Adresse e-mail de l’administrateur
       <input name="email" type="email" required maxlength="180" autocomplete="username" value="{{email}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
     </label>
 
-    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+    <label class="flex flex-col gap-2 text-sm">
       Mot de passe
       <input name="mdp" type="password" required autocomplete="current-password" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
     </label>

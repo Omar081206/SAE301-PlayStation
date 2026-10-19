@@ -29,8 +29,16 @@ final class AdminCommandeController
         'annulee'    => ['en_cours', 'disponible'],
     ];
 
+    /** Libellé de chaque statut, pour les messages. */
+    private const LIBELLES = [
+        'en_cours'   => 'en cours',
+        'disponible' => 'disponible',
+        'retiree'    => 'retirée',
+        'annulee'    => 'annulée',
+    ];
+
     /** Clés de tri acceptées pour la liste. */
-    private const TRIS = ['date', 'statut', 'montant'];
+    private const TRIS = ['numero', 'date', 'statut', 'montant'];
 
     /** Nombre maximal de commandes dans une action en lot. */
     private const LOT_MAX = 100;
@@ -96,7 +104,8 @@ final class AdminCommandeController
                 'numero' => $numero,
                 'change' => false,
                 'code'   => 422,
-                'erreur' => "Une commande « {$resultat['avant']} » ne peut pas passer à « {$nouveau} ».",
+                'erreur' => 'Une commande « ' . self::LIBELLES[$resultat['avant']]
+                          . ' » ne peut pas passer à « ' . self::LIBELLES[$nouveau] . ' ».',
             ];
         }
 
@@ -104,8 +113,9 @@ final class AdminCommandeController
     }
 
     /**
-     * GET /api/admin/commandes?tri=date|statut|montant&sens=asc|desc : toutes
-     * les commandes. Par défaut, les plus récentes d'abord.
+     * GET /api/admin/commandes?tri=numero|date|statut|montant&sens=asc|desc :
+     * toutes les commandes, chacune avec les statuts vers lesquels elle peut
+     * passer (boutons de ligne). Par défaut, les plus récentes d'abord.
      */
     public function index(Request $requete): void
     {
@@ -118,8 +128,13 @@ final class AdminCommandeController
             Response::erreur('Tri invalide', 400);
         }
 
+        $commandes = array_map(
+            fn (array $commande): array => $commande + ['suivants' => $this->suivants($commande['statut'])],
+            $this->commandes->listerPourAdmin($tri, $sens === 'asc')
+        );
+
         Response::json([
-            'commandes' => $this->commandes->listerPourAdmin($tri, $sens === 'asc'),
+            'commandes' => $commandes,
             'tri'       => $tri,
             'sens'      => $sens,
         ]);

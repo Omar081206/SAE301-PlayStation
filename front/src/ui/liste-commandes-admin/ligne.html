@@ -1,9 +1,8 @@
-<tr class="border-b border-trait last:border-0">
-  <td class="p-3.5"><input type="checkbox" data-action="choisir" aria-label="Sélectionner la commande {{numero}}" class="size-4"></td>
-  <td class="p-3.5"><a href="/admin/commandes/{{numero}}" data-link class="font-bold whitespace-nowrap text-lien underline">{{numero}}</a></td>
-  <td class="p-3.5 whitespace-nowrap">{{date}}</td>
-  <td class="p-3.5">{{client}}</td>
-  <td class="p-3.5 text-right">{{articles}}</td>
-  <td class="p-3.5 text-right whitespace-nowrap">{{total}}</td>
-  <td class="p-3.5"><slot name="statut"></slot></td>
+<tr class="border-t border-trait">
+  <td class="py-3 pl-4"><input type="checkbox" data-action="choisir" aria-label="Sélectionner la commande {{numero}}" class="size-4.5 accent-action"></td>
+  <td class="px-2 py-3 font-semibold whitespace-nowrap">{{numero}}</td>
+  <td class="px-2 py-3 whitespace-nowrap">{{date}}</td>
+  <td class="px-2 py-3"><slot name="statut"></slot></td>
+  <td class="px-2 py-3 font-semibold whitespace-nowrap">{{total}}</td>
+  <td class="px-2 py-3 pr-4"><slot name="actions"></slot></td>
 </tr>

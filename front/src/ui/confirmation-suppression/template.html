@@ -1,24 +1,8 @@
-<section class="flex flex-col gap-3.5 rounded-xl border-2 border-red-700 bg-page p-5.25 lg:max-w-200 lg:gap-4 lg:rounded-2xl lg:p-6">
-  <h2 data-focus tabindex="-1" class="text-prix-sm font-light lg:text-prix-lg">Supprimer « {{nom}} » ?</h2>
-
-  <slot name="message"></slot>
-
-  <p class="text-sm">{{explication}}</p>
-
-  <form class="flex flex-col gap-3.5 lg:gap-4">
-    <!-- Seulement si la catégorie a des produits : retiré en JS sinon. -->
-    <label data-role="destination" class="flex flex-col gap-1.75 text-sm lg:gap-2">
-      Déplacer ses produits vers
-      <select name="destination" required class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
-        <!-- Les autres catégories sont ajoutées en JS : un <slot> n'est pas
-             permis dans un <select>. -->
-        <option value="">Choisir une catégorie</option>
-      </select>
-    </label>
-
-    <div class="flex flex-wrap gap-3.5">
-      <button type="submit" class="rounded-full bg-red-700 px-4 py-3 text-sm leading-3.5 font-bold text-texte-inverse">Confirmer la suppression</button>
-      <button type="button" data-action="annuler" class="rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien">Annuler</button>
-    </div>
-  </form>
-</section>
+<label class="flex flex-col gap-2 text-sm">
+  <span>Réaffecter les produits à <span aria-hidden="true">*</span></span>
+  <!-- Les autres catégories sont ajoutées en JS : un <slot> n'est pas
+       permis dans un <select>. -->
+  <select name="destination" required class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+    <option value="">Choisir une catégorie</option>
+  </select>
+</label>

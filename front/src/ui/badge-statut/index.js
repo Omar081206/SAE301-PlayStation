@@ -6,8 +6,8 @@ import template from "./template.html?raw";
 const STATUTS = {
   en_cours: { libelle: "En cours", couleurs: "bg-action text-texte-inverse" },
   disponible: { libelle: "Disponible", couleurs: "bg-succes text-texte-inverse" },
-  retiree: { libelle: "Retirée", couleurs: "bg-trait text-texte" },
-  annulee: { libelle: "Annulée", couleurs: "bg-trait text-texte-attenue" },
+  retiree: { libelle: "Retirée", couleurs: "bg-barre-sony text-texte-inverse" },
+  annulee: { libelle: "Annulée", couleurs: "bg-erreur text-texte-inverse" },
 };
 
 // Badge du statut d'une commande (en_cours, disponible, retiree, annulee).

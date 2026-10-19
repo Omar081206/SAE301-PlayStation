@@ -11,7 +11,7 @@ const MODES = {
 
 // Formulaire de création ou de modification d'une catégorie. Il ne conserve
 // rien et ne décide de rien : il transmet la saisie, et c'est le serveur qui
-// la valide (nom libre, longueurs).
+// la valide (nom libre, longueurs) et en déduit l'adresse /categorie/….
 let FormulaireCategorieView = {
   html: function (data) {
     return genericRenderer(template, { ...MODES[data.mode], nom: data.nom, description: data.description });

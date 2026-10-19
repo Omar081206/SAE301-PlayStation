@@ -1,0 +1,15 @@
+<!-- Ouverte par la page (showModal) une fois insérée dans le document. -->
+<dialog aria-label="{{titre}}" class="m-auto w-[calc(100%-2.625rem)] max-w-130 rounded-xl border border-trait bg-page p-5.25 text-texte backdrop:bg-texte/40 lg:p-6">
+  <form class="flex flex-col gap-3.5 lg:gap-4">
+    <h2 class="text-prix-sm font-bold">{{titre}}</h2>
+    <p class="text-sm text-texte-attenue">{{texte}}</p>
+
+    <slot name="message"></slot>
+    <slot name="contenu"></slot>
+
+    <div class="flex flex-col gap-3 md:flex-row md:justify-end">
+      <button type="button" data-action="retour" class="rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien">{{retour}}</button>
+      <button type="submit" class="rounded-full bg-action px-4 py-3 text-sm leading-3.5 font-bold text-texte-inverse">{{confirmer}}</button>
+    </div>
+  </form>
+</dialog>

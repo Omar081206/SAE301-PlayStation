@@ -1,9 +1,15 @@
-<div class="flex flex-col gap-3.5 rounded-xl bg-page p-5.25 shadow-panneau-sm md:flex-row md:items-center md:justify-between lg:rounded-2xl lg:px-6 lg:py-4">
-  <p class="text-sm">{{libelle}}</p>
+<div class="flex items-center justify-between gap-3 rounded-lg bg-pied px-3.5 py-2.5 text-texte-inverse lg:justify-start lg:px-4 lg:py-3">
+  <p class="text-sm font-semibold"><span class="lg:hidden">{{libelleCourt}}</span><span class="hidden lg:inline">{{libelle}}</span></p>
 
-  <div class="flex flex-wrap gap-3.5">
-    <button type="button" data-statut="disponible" class="rounded-full bg-action px-4 py-3 text-sm leading-3.5 font-bold text-texte-inverse disabled:bg-desactive">Marquer disponible</button>
-    <button type="button" data-statut="retiree" class="rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien disabled:text-desactive">Marquer retirée</button>
-    <button type="button" data-statut="annulee" class="rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-red-700 disabled:text-desactive">Annuler</button>
+  <!-- À partir de lg, les boutons sont affichés ; en dessous, ils sont
+       rangés dans le menu « Actions ». -->
+  <details class="relative lg:hidden">
+    <summary class="cursor-pointer list-none text-base font-semibold">Actions <span aria-hidden="true" class="text-xs">▾</span></summary>
+    <div class="absolute top-full right-0 z-10 mt-2 flex w-56 flex-col gap-2 rounded-lg border border-trait bg-page p-2 shadow-panneau">
+      <slot name="boutons-menu"></slot>
+    </div>
+  </details>
+  <div class="hidden gap-3 lg:flex">
+    <slot name="boutons"></slot>
   </div>
 </div>

@@ -1,20 +1,41 @@
-<div class="overflow-x-auto rounded-xl bg-page shadow-panneau-sm lg:rounded-2xl">
-  <!-- Les lignes sont ajoutées en JS dans le <tbody> : un <slot> n'y est pas
-       permis. Les en-têtes triables sont des boutons ; celui du tri en cours
-       reçoit aria-sort. -->
-  <table class="w-full min-w-170 text-left text-sm">
-    <caption class="sr-only">Commandes des clients</caption>
-    <thead class="border-b border-trait text-texte-attenue">
-      <tr>
-        <th scope="col" class="w-12 p-3.5"><input type="checkbox" data-action="tout" aria-label="Sélectionner toutes les commandes" class="size-4"></th>
-        <th scope="col" class="p-3.5 font-medium">Commande</th>
-        <th scope="col" data-colonne="date" class="p-3.5 font-medium"><button type="button" data-tri="date" class="font-medium underline-offset-2 hover:underline">Date <span data-role="fleche" aria-hidden="true"></span></button></th>
-        <th scope="col" class="p-3.5 font-medium">Client</th>
-        <th scope="col" class="p-3.5 text-right font-medium">Articles</th>
-        <th scope="col" data-colonne="montant" class="p-3.5 text-right font-medium"><button type="button" data-tri="montant" class="font-medium underline-offset-2 hover:underline">Montant <span data-role="fleche" aria-hidden="true"></span></button></th>
-        <th scope="col" data-colonne="statut" class="p-3.5 font-medium"><button type="button" data-tri="statut" class="font-medium underline-offset-2 hover:underline">Statut <span data-role="fleche" aria-hidden="true"></span></button></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+<div class="flex flex-col gap-3.5">
+  <!-- En dessous de lg : tri par liste déroulante (les en-têtes du tableau
+       ne sont pas affichés). -->
+  <label class="self-start lg:hidden">
+    <span class="sr-only">Trier les commandes</span>
+    <select data-role="tri" class="rounded-lg border border-trait bg-page px-3 py-2 text-base">
+      <option value="date desc">Tri : date ↓</option>
+      <option value="date asc">Tri : date ↑</option>
+      <option value="montant desc">Tri : montant ↓</option>
+      <option value="montant asc">Tri : montant ↑</option>
+      <option value="statut asc">Tri : statut</option>
+      <option value="numero desc">Tri : n° ↓</option>
+    </select>
+  </label>
+
+  <slot name="lot"></slot>
+
+  <!-- À partir de lg : tableau. Les lignes sont ajoutées en JS dans le
+       <tbody> : un <slot> n'y est pas permis. Les en-têtes triables sont des
+       boutons ; celui du tri en cours reçoit aria-sort. -->
+  <div class="hidden overflow-hidden rounded-xl border border-trait bg-page lg:block">
+    <table class="w-full text-left text-sm">
+      <caption class="sr-only">Commandes des clients</caption>
+      <thead class="bg-tuile-claire text-xs text-texte-attenue">
+        <tr>
+          <th scope="col" class="w-10 py-3 pl-4"><input type="checkbox" data-action="tout" aria-label="Sélectionner toutes les commandes" class="size-4.5 accent-action"></th>
+          <th scope="col" data-colonne="numero" class="px-2 py-3 font-semibold"><button type="button" data-tri="numero" class="font-semibold">N° de commande <span data-role="fleche" aria-hidden="true">↕</span></button></th>
+          <th scope="col" data-colonne="date" class="px-2 py-3 font-semibold"><button type="button" data-tri="date" class="font-semibold">Date <span data-role="fleche" aria-hidden="true">↕</span></button></th>
+          <th scope="col" data-colonne="statut" class="px-2 py-3 font-semibold"><button type="button" data-tri="statut" class="font-semibold">Statut <span data-role="fleche" aria-hidden="true">↕</span></button></th>
+          <th scope="col" data-colonne="montant" class="px-2 py-3 font-semibold"><button type="button" data-tri="montant" class="font-semibold">Montant <span data-role="fleche" aria-hidden="true">↕</span></button></th>
+          <th scope="col" class="px-2 py-3 pr-4 font-semibold">Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <ul class="flex flex-col gap-3.5 lg:hidden">
+    <slot name="cartes"></slot>
+  </ul>
 </div>
