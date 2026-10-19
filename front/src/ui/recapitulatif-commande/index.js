@@ -19,17 +19,24 @@ let RecapitulatifCommandeView = {
       genericRenderer(template, { nombre: data.panier.nombre, total: formaterPrix(data.panier.total) })
     );
 
-    let lignes = data.panier.lignes.map((ligne) =>
-      htmlToFragment(
+    let lignes = data.panier.lignes.map((ligne) => {
+      let element = htmlToFragment(
         genericRenderer(templateLigne, {
           nom: ligne.nom,
+          options: ligne.options ?? "",
           quantite: ligne.quantite,
           sousTotal: formaterPrix(ligne.sousTotal),
           image: import.meta.env.BASE_URL + "images/produits/" + ligne.image,
           alt: ligne.image_alt,
         })
-      )
-    );
+      );
+      // État réglé en JS : un template n'a pas de condition. Produit sans
+      // option : pas de ligne vide.
+      if (ligne.options === null) {
+        element.querySelector('[data-role="options"]').remove();
+      }
+      return element;
+    });
     fragment.querySelector('slot[name="lignes"]').replaceWith(...lignes);
 
     let bouton = fragment.querySelector('[data-action="confirmer"]');

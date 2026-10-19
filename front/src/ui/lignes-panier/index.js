@@ -28,12 +28,20 @@ let LignesPanierView = {
         genericRenderer(templateLigne, {
           nom: ligne.nom,
           slug: ligne.slug,
+          variantId: ligne.variantId,
+          options: ligne.options ?? "",
           quantite: ligne.quantite,
           sousTotal: formaterPrix(ligne.sousTotal),
           image: import.meta.env.BASE_URL + "images/produits/" + ligne.image,
           alt: ligne.image_alt,
         })
       );
+
+      // Produit sans option : rien à afficher ni à modifier.
+      if (ligne.options === null) {
+        element.querySelector('[data-role="options"]').remove();
+        element.querySelector('[data-role="modifier"]').remove();
+      }
 
       let moins = element.querySelector('[data-action="moins"]');
       let plus = element.querySelector('[data-action="plus"]');

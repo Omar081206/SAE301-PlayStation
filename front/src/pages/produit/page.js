@@ -1,5 +1,6 @@
 import { PanierData } from "../../data/panier.js";
 import { ProduitData } from "../../data/produit.js";
+import { naviguer } from "../../lib/navigation.js";
 import { htmlToFragment } from "../../lib/utils.js";
 import { FicheProduitView } from "../../ui/fiche-produit/index.js";
 import { GalerieProduitView } from "../../ui/galerie-produit/index.js";
@@ -14,12 +15,19 @@ import template from "./template.html?raw";
  * l'état de la page : changer d'image ou d'option modifie le modèle, puis la
  * page se reconstruit. Les options désignent une variante : son prix, son
  * stock et ses images sont affichés, et c'est elle qui est ajoutée au panier.
+ *
+ * Depuis le panier, « Modifier les options » ouvre la fiche à l'adresse
+ * /produit/:slug/options/:variante : les options de cet article sont
+ * présélectionnées, et le bouton remplace sa variante dans le panier au lieu
+ * d'en ajouter une. La variante est dans le chemin, pas dans « ?… » : le
+ * routeur ne garde que le chemin des liens.
  */
 
 let M = {
   produit: null, // dernière réponse de l'API : la fiche du produit
   choix: {}, // valeur choisie pour chaque option : { optionId: valeurId }
   optionModifiee: null, // option qui vient de changer : son choix reprend le focus
+  modification: null, // variante du panier dont on modifie les options, ou null
   imageActive: 0, // position, dans les images de la variante, de l'image affichée
   message: null, // { type, texte }, ou null
 };
@@ -28,16 +36,26 @@ let C = {};
 
 /**
  * Demande la fiche du produit et la range dans le modèle.
+ *
+ * @param {string|undefined} variante  Variante du panier dont on modifie les
+ *   options (paramètre d'URL), ou undefined.
  */
-C.charger = async function (slug) {
+C.charger = async function (slug, variante) {
   try {
     M.produit = (await ProduitData.fetchOne(slug)).produit;
     M.imageActive = 0;
 
-    // Au départ, les options de la variante par défaut (la première en
-    // stock, choisie par le serveur).
+    // Au départ, les options de l'article du panier qu'on modifie, s'il
+    // s'agit bien d'une variante de ce produit présente au panier ; sinon,
+    // celles de la variante par défaut (la première en stock, choisie par le
+    // serveur).
+    let demandee = Number(variante);
+    let auPanier = PanierData.lire().some((ligne) => ligne.variantId === demandee);
+    let modifiee = auPanier ? M.produit.variantes.find((variante) => variante.id === demandee) : undefined;
+    M.modification = modifiee === undefined ? null : modifiee.id;
+
     M.choix = {};
-    let parDefaut = M.produit.variantes.find((variante) => variante.id === M.produit.variante_id);
+    let parDefaut = modifiee ?? M.produit.variantes.find((variante) => variante.id === M.produit.variante_id);
     for (let option of M.produit.options) {
       M.choix[option.id] = option.valeurs.find((valeur) => parDefaut.valeurs.includes(valeur.id))?.id ?? option.valeurs[0].id;
     }
@@ -110,6 +128,11 @@ C.handler_changerImage = async function (position) {
 };
 
 C.handler_ajouter = async function (variantId, nom) {
+  if (M.modification !== null) {
+    await C.mettreAJour(variantId, nom);
+    return;
+  }
+
   try {
     // Le serveur vérifie le stock avant d'accepter l'ajout.
     let ajustement = await PanierData.ajouter(variantId);
@@ -131,9 +154,38 @@ C.handler_ajouter = async function (variantId, nom) {
   V.rafraichir();
 };
 
-C.init = async function (slug) {
+/**
+ * Modifier les options d'un article du panier : sa variante est remplacée
+ * par celle choisie (même quantité), puis retour au panier. Si le stock ne
+ * permet pas toute la quantité, on reste ici pour le dire.
+ */
+C.mettreAJour = async function (variantId, nom) {
+  try {
+    let ajustement = await PanierData.remplacer(M.modification, variantId);
+
+    if (ajustement === null) {
+      naviguer("/panier");
+      return;
+    }
+
+    M.modification = null;
+    M.message = {
+      type: "avertissement",
+      texte:
+        ajustement.accordee === 0
+          ? `« ${nom} » vient d’être épuisé : l’article a été retiré de votre panier.`
+          : `Votre panier est mis à jour, mais il ne reste que ${ajustement.accordee} « ${nom} » : la quantité a été ajustée.`,
+    };
+  } catch (erreur) {
+    M.message = { type: "erreur", texte: `Impossible de mettre à jour votre panier : ${erreur.message}` };
+  }
+
+  V.rafraichir();
+};
+
+C.init = async function (slug, variante) {
   M.message = null;
-  await C.charger(slug);
+  await C.charger(slug, variante);
   return V.init();
 };
 
@@ -191,7 +243,14 @@ V.createPageFragment = function () {
 
   let variante = C.variante();
   let fiche = FicheProduitView.dom(
-    { produit: M.produit, variante, choix: M.choix, etats: C.etats(), libelle: C.libelle() },
+    {
+      produit: M.produit,
+      variante,
+      choix: M.choix,
+      etats: C.etats(),
+      libelle: C.libelle(),
+      modification: M.modification !== null,
+    },
     { surChoix: C.handler_choisir, surAjout: C.handler_ajouter }
   );
   fiche.querySelector('slot[name="galerie"]').replaceWith(
@@ -205,7 +264,8 @@ V.createPageFragment = function () {
   return pageFragment;
 };
 
-// params : paramètres d'URL de la route, ici { slug } pour /produit/:slug.
+// params : paramètres d'URL de la route, ici { slug } pour /produit/:slug,
+// et { slug, variante } pour /produit/:slug/options/:variante.
 export function ProduitPage(params) {
-  return C.init(params.slug);
+  return C.init(params.slug, params.variante);
 }

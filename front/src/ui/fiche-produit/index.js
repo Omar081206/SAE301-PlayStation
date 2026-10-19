@@ -34,7 +34,10 @@ let FicheProduitView = {
 
   /**
    * @param {{produit: Object, variante: {id: number, prix: number, etat_stock: string}|null,
-   *          choix: Object<number, number>, etats: Object<number, string>, libelle: string}} data
+   *          choix: Object<number, number>, etats: Object<number, string>, libelle: string,
+   *          modification: boolean}} data
+   *   modification : on modifie les options d'un article du panier (le
+   *   bouton met le panier à jour au lieu d'ajouter) ;
    *   choix : valeur choisie pour chaque option (identifiants) ; etats :
    *   pour chaque valeur, « disponible », « epuise » ou « inexistante »
    *   (variante à laquelle elle mènerait) ; libelle : nom du produit et
@@ -92,6 +95,9 @@ let FicheProduitView = {
       bouton.disabled = true;
       bouton.textContent = "Épuisé";
     } else {
+      if (data.modification) {
+        bouton.textContent = "Mettre à jour mon panier";
+      }
       bouton.addEventListener("click", () => actions.surAjout(variante.id, data.libelle));
     }
 
