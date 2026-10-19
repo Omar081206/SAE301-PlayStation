@@ -17,18 +17,18 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
 use App\Controller\AdminCommandeController;
+use App\Controller\AdminController;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
 use App\Controller\CommandeController;
 use App\Controller\PanierController;
 use App\Controller\ProduitController;
-use App\Controller\StatsController;
 use App\Model\CategorieModel;
 use App\Model\CommandeModel;
-use App\Model\FilmModel;
 use App\Model\PanierModel;
 use App\Model\ParametreModel;
 use App\Model\ProduitModel;
+use App\Model\TableauDeBordModel;
 use App\Model\UtilisateurModel;
 
 // --- Chargement automatique des classes ------------------------------------
@@ -75,7 +75,7 @@ try {
         PanierController::class    => new PanierController(new PanierModel($pdo)),
         CommandeController::class  => new CommandeController(new PanierModel($pdo), new CommandeModel($pdo), new UtilisateurModel($pdo)),
         AuthController::class      => new AuthController(new UtilisateurModel($pdo)),
-        StatsController::class     => new StatsController(new FilmModel($pdo)),
+        AdminController::class     => new AdminController(new UtilisateurModel($pdo), new TableauDeBordModel($pdo)),
         AdminCommandeController::class => new AdminCommandeController(new CommandeModel($pdo)),
     ];
 

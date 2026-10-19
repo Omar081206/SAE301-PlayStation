@@ -1,25 +1,17 @@
-<section class="mb-6 rounded-lg border border-zinc-200 p-6 shadow-xs">
-  <h2 class="mb-5 text-base font-semibold tracking-tight">Connexion</h2>
+<section class="flex max-w-130 flex-col gap-3.5 rounded-xl bg-page p-7 shadow-panneau-sm lg:gap-4 lg:rounded-2xl lg:p-8">
+  <h2 class="text-prix-sm font-light lg:text-prix-lg">Connexion administrateur</h2>
 
-  <form class="flex flex-col gap-4">
-    <label class="flex flex-col gap-2 text-sm font-medium">
-      Identifiant
-      <input name="login" type="text" autocomplete="username" value="{{login}}" class="h-9 rounded-md border border-zinc-200 bg-white px-3 font-normal transition-colors hover:border-zinc-500" />
+  <form class="flex flex-col gap-3.5 lg:gap-4">
+    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+      Adresse e-mail
+      <input name="email" type="email" required autocomplete="username" value="{{email}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
     </label>
 
-    <label class="flex flex-col gap-2 text-sm font-medium">
+    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
       Mot de passe
-      <input name="mdp" type="password" autocomplete="current-password" class="h-9 rounded-md border border-zinc-200 bg-white px-3 font-normal transition-colors hover:border-zinc-500" />
+      <input name="mdp" type="password" required autocomplete="current-password" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
     </label>
 
-    <div class="flex flex-wrap gap-3">
-      <button type="submit" class="h-9 rounded-md bg-zinc-900 px-4 text-sm font-medium text-zinc-50 transition-opacity hover:opacity-90">
-        Se connecter
-      </button>
-      <!-- type « button » et non « submit » : ce bouton n'envoie pas le formulaire. -->
-      <button type="button" data-action="deconnexion" class="h-9 rounded-md border border-zinc-200 px-4 text-sm font-medium transition-colors hover:bg-zinc-100">
-        Se déconnecter
-      </button>
-    </div>
+    <button type="submit" class="rounded-full bg-action px-4 py-3 text-sm leading-3.5 font-bold text-texte-inverse">Se connecter</button>
   </form>
 </section>

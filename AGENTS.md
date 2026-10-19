@@ -35,10 +35,10 @@ V
   Si le starter n'a pas d'équivalent, ou si deux architectures se défendent, arrête-toi et demande.
 - **Règle primordiale : le starter films de ce dépôt fait foi pour la forme du code.** Avant d'écrire un fichier, ouvre son
   équivalent et reproduis-le ligne à ligne, en ne changeant que le domaine. Références : fichiers d'origine encore présents
-  (`ui/message`, `ui/statistiques`, `ui/formulaire-connexion`, `pages/admin`, `data/auth.js`, `data/stats.js`,
-  `FilmModel.php`, `AuthController.php`, `StatsController.php`) et leurs transpositions fidèles faites en DEC-b
-  (`ui/carte-produit` ← carte-film, `ui/grille-produits` ← grille-films, `pages/catalogue`, `data/produit.js`,
-  `ProduitController.php` ← CatalogueController, `ProduitModel.php`) :
+  (`ui/message`, `ui/formulaire-connexion`, `data/auth.js`, `AuthController.php`) et leurs transpositions fidèles
+  (`ui/carte-produit` ← carte-film, `ui/grille-produits` ← grille-films, `ui/indicateurs` ← statistiques,
+  `pages/catalogue`, `pages/admin`, `data/produit.js`, `ProduitController.php` ← CatalogueController,
+  `ProduitModel.php` ← FilmModel, `AdminController.php` ← StatsController) :
   - mêmes signatures (`dom(produit)`, `dom(produits)` : pas de paramètre en plus), même forme de commentaires
     (commentaire d'une ligne au-dessus de l'objet, pas de bloc `@param` / `@returns` là où le starter n'en met pas) ;
   - aucune constante, aucune logique, aucun cas particulier que le fichier calqué n'a pas ;

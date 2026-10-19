@@ -15,6 +15,11 @@ use App\Model\UtilisateurModel;
  * côté serveur. Le client ne détient que l'identifiant de session, dans le
  * cookie PHPSESSID.
  *
+ * La session client (clés id, utilisateur, role) est distincte de la session
+ * d'administration (clé admin, voir AdminController) : les comptes admin ne se
+ * connectent pas ici, et se déconnecter de la boutique ne touche pas à
+ * l'administration.
+ *
  * Aucune réponse 401 : sur mmi.unilim.fr, tout l'espace web est protégé par
  * l'authentification HTTP d'Apache, et un 401 venu de l'API ferait croire au
  * navigateur que les identifiants de l'IUT sont refusés (il les redemande ou
@@ -47,9 +52,10 @@ final class AuthController
 
         $compte = $this->utilisateurs->trouverParEmail($email);
 
-        // Même message que le compte existe ou non : la réponse ne doit pas
-        // permettre de deviner quelles adresses sont inscrites.
-        if ($compte === null || !password_verify($mdp, $compte['mot_de_passe'])) {
+        // Même message que le compte existe ou non, et pour un compte admin
+        // (qui se connecte par /admin) : la réponse ne doit pas permettre de
+        // deviner quelles adresses sont inscrites, ni lesquelles sont admin.
+        if ($compte === null || $compte['role'] !== 'client' || !password_verify($mdp, $compte['mot_de_passe'])) {
             Response::erreur('Adresse e-mail ou mot de passe incorrect.', 422);
         }
 
@@ -94,7 +100,7 @@ final class AuthController
 
         // Compte supprimé depuis l'ouverture de la session : on la ferme.
         if (!$this->utilisateurs->existe((int) $_SESSION['id'])) {
-            $_SESSION = [];
+            unset($_SESSION['id'], $_SESSION['utilisateur'], $_SESSION['role']);
             Response::json(['connecte' => false, 'email' => null, 'role' => null]);
         }
 
@@ -107,7 +113,14 @@ final class AuthController
 
     public function logout(): void
     {
-        $_SESSION = [];                               // vide la copie en mémoire
+        // Seule la connexion client est fermée : une session d'administration
+        // ouverte dans le même navigateur reste ouverte.
+        unset($_SESSION['id'], $_SESSION['utilisateur'], $_SESSION['role']);
+
+        if ($_SESSION !== []) {
+            session_regenerate_id(true);
+            Response::json(['connecte' => false, 'email' => null, 'role' => null]);
+        }
 
         // Supprime le cookie, avec le chemin sous lequel il a été posé : celui
         // que index.php a réglé avant session_start().

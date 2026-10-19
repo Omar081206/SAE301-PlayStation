@@ -1,6 +1,7 @@
 import { Router } from "./lib/router.js";
 import { AuthData } from "./data/auth.js";
 import { RootLayout } from "./layouts/root/layout.js";
+import { AdminLayout } from "./layouts/admin/layout.js";
 import { CataloguePage } from "./pages/catalogue/page.js";
 import { ProduitPage } from "./pages/produit/page.js";
 import { PanierPage } from "./pages/panier/page.js";
@@ -14,6 +15,8 @@ import { The404Page } from "./pages/404/page.js";
 const router = new Router("app", { base: import.meta.env.BASE_URL });
 
 router.addLayout("/", RootLayout);
+// Le back-office a son propre layout : le routeur choisit le préfixe le plus long.
+router.addLayout("/admin", AdminLayout);
 
 router.addRoute("/", CataloguePage);
 router.addRoute("/categorie/:slug", CataloguePage);
