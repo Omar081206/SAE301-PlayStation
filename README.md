@@ -155,13 +155,15 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `GET /api/produit?slug=…` | la fiche d'un produit et ses images |
 | `GET /api/categories` | les catégories et leur nombre de produits |
 | `POST /api/panier` | détail du panier, corps `{"lignes": [{"variantId", "quantite"}]}` : prix et totaux calculés par le serveur |
-| `POST /api/inscription` | création de compte, corps `{"email", "pseudo", "mdp"}` |
-| `POST /api/login` | connexion, corps `{"identifiant", "mdp"}` : l'identifiant est le pseudo ou l'adresse e-mail |
+| `POST /api/inscription` | création de compte, corps `{"prenom", "nom", "email", "mdp"}` |
+| `POST /api/login` | connexion, corps `{"email", "mdp"}` |
 | `POST /api/logout` | déconnexion |
 | `GET /api/session` | l'utilisateur connecté, s'il y en a un |
+| `GET /api/compte` | espace personnel : profil et 3 dernières commandes (client connecté) |
+| `POST /api/compte/profil` | modification du profil, corps `{"prenom", "nom", "email", "mdpActuel", "nouveauMdp"}` ; le mot de passe actuel est exigé pour changer d'adresse ou de mot de passe |
 | `POST /api/commande` | validation de commande (client connecté), corps `{"lignes"}` |
 | `GET /api/commande?numero=…` | une commande du client connecté |
-| `POST /api/admin/login` · `POST /api/admin/logout` · `GET /api/admin/session` | connexion au back-office (corps `{"identifiant", "mdp"}`), séparée de celle des clients (comptes `admin` uniquement) |
+| `POST /api/admin/login` · `POST /api/admin/logout` · `GET /api/admin/session` | connexion au back-office (corps `{"email", "mdp"}`), séparée de celle des clients (comptes `admin` uniquement) |
 | `GET /api/admin/tableau-de-bord` | indicateurs du back-office (admin) |
 | `GET /api/admin/categories` | catégories du back-office, avec leur nombre de produits (admin) |
 | `POST /api/admin/categorie/creer` · `POST /api/admin/categorie/modifier` | création (`{"nom", "description"}`) ou modification (`{"id", "nom", "description"}`) d'une catégorie (admin) ; le slug est déduit du nom |
@@ -191,14 +193,15 @@ unité : avec `php -S`, lancer le serveur avec `PHP_CLI_SERVER_WORKERS=6`.
 
 Comptes de test créés par `sql/import.sql` (mots de passe stockés en bcrypt) :
 
-| Pseudo | Adresse e-mail | Mot de passe | Rôle |
+| Prénom Nom | Adresse e-mail | Mot de passe | Rôle |
 |---|---|---|---|
-| `client` | `client@playstation.test` | `client1234` | `client` |
-| `admin` | `admin@playstation.test` | `admin1234` | `admin` |
+| Nathan Drake | `client@playstation.test` | `client1234` | `client` |
+| Admin PlayStation | `admin@playstation.test` | `admin1234` | `admin` |
 
-On se connecte avec le pseudo ou avec l'adresse e-mail. Une fois connecté, le
-bouton « Mon compte » du header affiche le pseudo. Un visiteur peut aussi créer
-son compte (adresse, pseudo, mot de passe) depuis la page `/connexion`. Le compte
+On se connecte avec l'adresse e-mail. Une fois connecté, le bouton du header
+affiche « Prénom N. » et mène à l'espace personnel (`/compte`, `/compte/profil`).
+Un visiteur peut aussi créer son compte (prénom, nom, adresse, mot de passe)
+depuis la page `/connexion`. Le compte
 admin se connecte uniquement par `/admin` : les deux connexions sont séparées.
 
 ## Si ça ne marche pas

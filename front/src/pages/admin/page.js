@@ -15,7 +15,7 @@ import template from "./template.html?raw";
  */
 
 let M = {
-  identifiant: "", // dernier identifiant saisi, pour pré-remplir le formulaire
+  email: "", // dernière adresse saisie, pour pré-remplir le formulaire
   tableau: null, // indicateurs, si le serveur les a fournis
   message: null, // { type, texte }, ou null
 };
@@ -38,11 +38,11 @@ C.chargerTableau = async function () {
   }
 };
 
-C.handler_connexion = async function (identifiant, mdp) {
-  M.identifiant = identifiant;
+C.handler_connexion = async function (email, mdp) {
+  M.email = email;
 
   try {
-    await AdminData.login(identifiant, mdp);
+    await AdminData.login(email, mdp);
     M.message = null;
     // La requête suivante transporte le cookie de session reçu à l'instant.
     await C.chargerTableau();
@@ -70,7 +70,7 @@ V.init = function () {
 };
 
 // Même principe que la page Catalogue : toute la page se reconstruit à partir
-// du modèle. L'identifiant saisi survit parce qu'il est dans le modèle.
+// du modèle. L'adresse saisie survit parce qu'elle est dans le modèle.
 V.rafraichir = function () {
   let fragment = V.createPageFragment();
   let nouvelleRacine = fragment.firstElementChild;
@@ -91,7 +91,7 @@ V.createPageFragment = function () {
   if (M.tableau === null) {
     slotIndicateurs.remove();
     slotConnexion.replaceWith(
-      FormulaireConnexionView.dom({ identifiant: M.identifiant }, { surConnexion: C.handler_connexion })
+      FormulaireConnexionView.dom({ email: M.email }, { surConnexion: C.handler_connexion })
     );
   } else {
     slotConnexion.remove();

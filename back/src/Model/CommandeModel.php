@@ -295,6 +295,39 @@ final class CommandeModel
     }
 
     /**
+     * Les dernières commandes d'un utilisateur, la plus récente d'abord :
+     * numéro, date, statut et total (aperçu de l'espace personnel).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function recentes(int $utilisateurId, int $limite): array
+    {
+        $requetePreparee = $this->pdo->prepare(
+            'SELECT numero, statut, total, cree_le
+               FROM commande
+              WHERE utilisateur_id = :utilisateur
+           ORDER BY cree_le DESC, id DESC
+              LIMIT :limite'
+        );
+        $requetePreparee->bindValue(':utilisateur', $utilisateurId, PDO::PARAM_INT);
+        $requetePreparee->bindValue(':limite',      $limite,        PDO::PARAM_INT);
+        $requetePreparee->execute();
+
+        $commandes = [];
+
+        foreach ($requetePreparee->fetchAll() as $ligne) {
+            $commandes[] = [
+                'numero'  => $ligne['numero'],
+                'statut'  => $ligne['statut'],
+                'total'   => (float) $ligne['total'],
+                'cree_le' => $ligne['cree_le'],
+            ];
+        }
+
+        return $commandes;
+    }
+
+    /**
      * Les lignes d'une commande, prix figés à la commande.
      *
      * @return array<int, array<string, mixed>>
@@ -348,13 +381,14 @@ final class CommandeModel
                        commande.statut,
                        commande.total,
                        commande.cree_le,
-                       utilisateur.pseudo,
+                       utilisateur.prenom,
+                       utilisateur.nom,
                        COALESCE(SUM(ligne_commande.quantite), 0) AS articles
                   FROM commande
             INNER JOIN utilisateur    ON utilisateur.id = commande.utilisateur_id
              LEFT JOIN ligne_commande ON ligne_commande.commande_id = commande.id
               GROUP BY commande.id, commande.numero, commande.statut, commande.total,
-                       commande.cree_le, utilisateur.pseudo
+                       commande.cree_le, utilisateur.prenom, utilisateur.nom
               ORDER BY {$colonne} {$sens}, commande.cree_le DESC, commande.id DESC";
 
         $commandes = [];
@@ -365,7 +399,7 @@ final class CommandeModel
                 'statut'   => $ligne['statut'],
                 'total'    => (float) $ligne['total'],
                 'cree_le'  => $ligne['cree_le'],
-                'client'   => $ligne['pseudo'],
+                'client'   => trim($ligne['prenom'] . ' ' . $ligne['nom']),
                 'articles' => (int) $ligne['articles'],
             ];
         }
@@ -384,7 +418,7 @@ final class CommandeModel
     {
         $requetePreparee = $this->pdo->prepare(
             'SELECT commande.id, commande.numero, commande.statut, commande.total, commande.cree_le,
-                    utilisateur.pseudo, utilisateur.email
+                    utilisateur.prenom, utilisateur.nom, utilisateur.email
                FROM commande
          INNER JOIN utilisateur ON utilisateur.id = commande.utilisateur_id
               WHERE commande.numero = :numero'
@@ -401,7 +435,7 @@ final class CommandeModel
         // Un administrateur supprimé depuis : l'auteur reste inconnu (NULL).
         $requeteJournal = $this->pdo->prepare(
             'SELECT journal_admin.ancien_statut, journal_admin.nouveau_statut, journal_admin.cree_le,
-                    utilisateur.pseudo
+                    utilisateur.prenom, utilisateur.nom
                FROM journal_admin
           LEFT JOIN utilisateur ON utilisateur.id = journal_admin.utilisateur_id
               WHERE journal_admin.commande_id = :id
@@ -417,7 +451,7 @@ final class CommandeModel
                 'ancien'  => $ligne['ancien_statut'],
                 'nouveau' => $ligne['nouveau_statut'],
                 'le'      => $ligne['cree_le'],
-                'par'     => $ligne['pseudo'],
+                'par'     => $ligne['prenom'] === null ? null : trim($ligne['prenom'] . ' ' . $ligne['nom']),
             ];
         }
 
@@ -426,7 +460,11 @@ final class CommandeModel
             'statut'     => $commande['statut'],
             'total'      => (float) $commande['total'],
             'cree_le'    => $commande['cree_le'],
-            'client'     => ['pseudo' => $commande['pseudo'], 'email' => $commande['email']],
+            'client'     => [
+                'prenom' => $commande['prenom'],
+                'nom'    => $commande['nom'],
+                'email'  => $commande['email'],
+            ],
             'lignes'     => $this->lignes((int) $commande['id']),
             'historique' => $historique,
         ];

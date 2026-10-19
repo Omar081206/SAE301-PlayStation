@@ -10,10 +10,14 @@ import template from "./template.html?raw";
 // lit ni le panier ni la session.
 let HeaderView = {
   /**
-   * @param {{nombre: number, connecte: boolean, pseudo: string|null}} data
-   *   Articles du panier, état de connexion, pseudo du client connecté.
+   * @param {{nombre: number, connecte: boolean, prenom: string|null, nom: string|null}} data
+   *   Articles du panier, état de connexion, prénom et nom du client connecté.
    */
   html: function (data) {
+    // Connecté : « Nathan D. » remplace « Mon compte » (sauf session ouverte
+    // avant l'arrivée des prénoms) et le lien mène à l'espace personnel.
+    let nomCourt = data.prenom ? `${data.prenom}${data.nom ? ` ${data.nom.charAt(0)}.` : ""}` : null;
+
     return genericRenderer(template, {
       logoSony,
       logoPlayStation,
@@ -21,10 +25,9 @@ let HeaderView = {
       iconePanier,
       nombre: data.nombre,
       libellePanier: data.nombre > 1 ? `Panier, ${data.nombre} articles` : `Panier, ${data.nombre} article`,
-      // Connecté : le pseudo remplace « Mon compte » (sauf session ouverte
-      // avant l'arrivée des pseudos). L'icône mobile garde « Mon compte ».
-      libelleCompte: data.connecte ? (data.pseudo ?? "Mon compte") : "Connexion",
-      libelleIcone: data.connecte ? (data.pseudo ? `Mon compte, ${data.pseudo}` : "Mon compte") : "Connexion",
+      lienCompte: data.connecte ? "/compte" : "/connexion",
+      libelleCompte: data.connecte ? (nomCourt ?? "Mon compte") : "Connexion",
+      libelleIcone: data.connecte ? (nomCourt ? `Mon compte, ${nomCourt}` : "Mon compte") : "Connexion",
     });
   },
 

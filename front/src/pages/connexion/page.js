@@ -19,11 +19,10 @@ import template from "./template.html?raw";
  */
 
 let M = {
-  session: null, // { connecte, email, pseudo, role } : dernier état renvoyé par le serveur
+  session: null, // { connecte, email, prenom, nom, role } : dernier état renvoyé par le serveur
   onglet: "connexion", // carte affichée en dessous de lg : "connexion" ou "inscription"
-  // Dernière saisie de chaque formulaire, pour les pré-remplir : pseudo ou
-  // adresse à la connexion, adresse et pseudo à l'inscription.
-  saisies: { connexion: { identifiant: "", pseudo: "" }, inscription: { identifiant: "", pseudo: "" } },
+  // Dernière saisie de chaque formulaire, pour les pré-remplir.
+  saisies: { connexion: { prenom: "", nom: "", email: "" }, inscription: { prenom: "", nom: "", email: "" } },
   erreurs: { connexion: null, inscription: null }, // message de chaque formulaire
   message: null, // { type, texte }, ou null
 };
@@ -31,15 +30,15 @@ let M = {
 let C = {};
 
 /**
- * Après une connexion réussie : retour à la page demandée, s'il y en a une.
- * Seul un chemin interne (« /… », pas « //autre-site ») est suivi.
- * Renvoie vrai si la page change.
+ * Après une connexion réussie : retour à la page demandée, ou, sans demande,
+ * à l'espace personnel. Seul un chemin interne (« /… », pas « //autre-site »)
+ * est suivi. Renvoie vrai (la page change).
  */
 C.retourner = function () {
   let retour = parametre("retour");
 
   if (retour === null || !retour.startsWith("/") || retour.startsWith("//")) {
-    return false;
+    retour = "/compte";
   }
 
   naviguer(retour);
@@ -58,11 +57,11 @@ C.charger = async function () {
   }
 };
 
-C.handler_connexion = async function (identifiant, mdp) {
-  M.saisies.connexion.identifiant = identifiant;
+C.handler_connexion = async function (saisie) {
+  M.saisies.connexion.email = saisie.email;
 
   try {
-    M.session = await AuthData.login(identifiant, mdp);
+    M.session = await AuthData.login(saisie.email, saisie.mdp);
     M.erreurs = { connexion: null, inscription: null };
     M.message = { type: "succes", texte: "Vous êtes connecté." };
     if (C.retourner()) return;
@@ -73,11 +72,11 @@ C.handler_connexion = async function (identifiant, mdp) {
   V.rafraichir();
 };
 
-C.handler_inscription = async function (email, mdp, pseudo) {
-  M.saisies.inscription = { identifiant: email, pseudo };
+C.handler_inscription = async function (saisie) {
+  M.saisies.inscription = { prenom: saisie.prenom, nom: saisie.nom, email: saisie.email };
 
   try {
-    M.session = await AuthData.inscription(email, pseudo, mdp);
+    M.session = await AuthData.inscription(saisie.prenom, saisie.nom, saisie.email, saisie.mdp);
     M.erreurs = { connexion: null, inscription: null };
     M.message = { type: "succes", texte: "Votre compte est créé : vous êtes connecté." };
     if (C.retourner()) return;
@@ -164,8 +163,7 @@ V.createPageFragment = function () {
       FormulaireIdentificationView.dom(
         {
           mode,
-          identifiant: M.saisies[mode].identifiant,
-          pseudo: M.saisies[mode].pseudo,
+          saisie: M.saisies[mode],
           erreur: M.erreurs[mode],
           masqueEnMobile: M.onglet !== mode,
         },

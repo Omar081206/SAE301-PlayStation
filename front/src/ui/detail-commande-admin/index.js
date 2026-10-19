@@ -31,7 +31,7 @@ function formaterDate(date) {
 let DetailCommandeAdminView = {
   /**
    * @param {{numero: string, statut: string, total: number, cree_le: string,
-   *          client: {pseudo: string, email: string},
+   *          client: {prenom: string, nom: string, email: string},
    *          lignes: Array<{nom: string, coloris: string|null, quantite: number, sous_total: number}>,
    *          historique: Array<{ancien: string, nouveau: string, le: string, par: string|null}>,
    *          suivants: string[]}} commande
@@ -42,7 +42,7 @@ let DetailCommandeAdminView = {
       genericRenderer(template, {
         numero: commande.numero,
         date: formaterDate(commande.cree_le),
-        pseudo: commande.client.pseudo,
+        client: `${commande.client.prenom} ${commande.client.nom}`.trim(),
         email: commande.client.email,
         total: formaterPrix(commande.total),
       })
@@ -63,7 +63,7 @@ let DetailCommandeAdminView = {
 
     // La création ouvre l'historique ; chaque changement de statut suit.
     let evenements = [
-      { texte: "Commande passée", date: formaterDate(commande.cree_le), par: commande.client.pseudo },
+      { texte: "Commande passée", date: formaterDate(commande.cree_le), par: `${commande.client.prenom} ${commande.client.nom}`.trim() },
       ...commande.historique.map((evenement) => ({
         texte: `${BadgeStatutView.libelle(evenement.ancien)} → ${BadgeStatutView.libelle(evenement.nouveau)}`,
         date: formaterDate(evenement.le),

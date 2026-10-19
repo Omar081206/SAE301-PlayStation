@@ -28,7 +28,8 @@ function donneesHeader() {
   return {
     nombre: PanierData.nombreArticles(),
     connecte: AuthData.session.connecte,
-    pseudo: AuthData.session.pseudo ?? null,
+    prenom: AuthData.session.prenom ?? null,
+    nom: AuthData.session.nom ?? null,
   };
 }
 

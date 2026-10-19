@@ -1,10 +1,9 @@
 <section class="flex flex-col items-start gap-3.5 rounded-xl p-7 shadow-panneau-sm md:shadow-panneau lg:max-w-130 lg:gap-4 lg:rounded-2xl lg:p-8">
   <h2 class="text-prix-sm font-light md:text-prix-md lg:text-prix-lg">Vous êtes connecté</h2>
-  <p data-role="pseudo" class="text-sm">Pseudo : <strong>{{pseudo}}</strong></p>
-  <p class="text-sm">Adresse e-mail : <strong>{{email}}</strong></p>
+  <p class="text-sm"><strong>{{nomComplet}}</strong> · {{email}}</p>
 
   <div class="flex flex-wrap items-center gap-3.5">
-    <a href="/panier" data-link class="rounded-full bg-action px-4 py-3 text-sm leading-3.5 font-bold text-texte-inverse">Voir mon panier</a>
+    <a href="/compte" data-link class="rounded-full bg-action px-4 py-3 text-sm leading-3.5 font-bold text-texte-inverse">Mon espace personnel</a>
     <button type="button" data-action="deconnexion" class="rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien">Se déconnecter</button>
   </div>
 </section>

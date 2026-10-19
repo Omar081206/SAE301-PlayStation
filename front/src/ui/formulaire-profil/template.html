@@ -1,0 +1,41 @@
+<form class="flex flex-col gap-5.25 lg:max-w-160 lg:gap-6">
+  <section class="flex flex-col gap-3.5 rounded-xl bg-page p-5.25 shadow-panneau lg:gap-4 lg:rounded-2xl lg:p-6">
+    <h2 class="text-prix-sm font-medium">Informations</h2>
+
+    <div class="grid gap-3.5 md:grid-cols-2 lg:gap-4">
+      <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+        Prénom
+        <input name="prenom" type="text" required maxlength="60" autocomplete="given-name" value="{{prenom}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+      </label>
+      <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+        Nom
+        <input name="nom" type="text" required maxlength="60" autocomplete="family-name" value="{{nom}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+      </label>
+    </div>
+
+    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+      Adresse e-mail
+      <input name="email" type="email" required maxlength="180" autocomplete="email" value="{{email}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+    </label>
+  </section>
+
+  <section class="flex flex-col gap-3.5 rounded-xl bg-page p-5.25 shadow-panneau lg:gap-4 lg:rounded-2xl lg:p-6">
+    <h2 class="text-prix-sm font-medium">Changer de mot de passe</h2>
+    <p class="text-sm text-texte-attenue">Le mot de passe actuel est obligatoire pour changer d’adresse e-mail ou de mot de passe.</p>
+
+    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+      Mot de passe actuel
+      <input name="mdpActuel" type="password" autocomplete="current-password" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6 aria-invalid:border-2 aria-invalid:border-red-700">
+      <!-- Erreur sur ce champ : retirée en JS s'il n'y en a pas. Dans le
+           label, elle fait partie du nom accessible du champ. -->
+      <span data-role="erreur-mdp" class="text-xs text-red-700"><span aria-hidden="true">⚠</span> {{erreur}}</span>
+    </label>
+
+    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+      <span>Nouveau mot de passe <span class="text-texte-attenue">(8 caractères au moins ; laisser vide pour le garder)</span></span>
+      <input name="nouveauMdp" type="password" minlength="8" autocomplete="new-password" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+    </label>
+  </section>
+
+  <button type="submit" class="rounded-full bg-action px-4 py-3 text-sm leading-3.5 font-bold text-texte-inverse md:self-start">Enregistrer les modifications</button>
+</form>

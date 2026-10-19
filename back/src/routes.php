@@ -8,6 +8,7 @@ use App\Controller\AdminController;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
 use App\Controller\CommandeController;
+use App\Controller\CompteController;
 use App\Controller\PanierController;
 use App\Controller\ProduitController;
 
@@ -32,6 +33,8 @@ return [
     'POST /api/logout'      => [AuthController::class,      'logout'],
     'POST /api/inscription' => [AuthController::class,      'inscription'],
     'GET  /api/session'     => [AuthController::class,      'session'],
+    'GET  /api/compte'        => [CompteController::class, 'index'],
+    'POST /api/compte/profil' => [CompteController::class, 'profil'],
     'POST /api/admin/login'           => [AdminController::class, 'login'],
     'POST /api/admin/logout'          => [AdminController::class, 'logout'],
     'GET  /api/admin/session'         => [AdminController::class, 'session'],

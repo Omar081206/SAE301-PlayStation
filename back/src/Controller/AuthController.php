@@ -15,10 +15,10 @@ use App\Model\UtilisateurModel;
  * côté serveur. Le client ne détient que l'identifiant de session, dans le
  * cookie PHPSESSID.
  *
- * La session client (clés id, utilisateur, role) est distincte de la session
- * d'administration (clé admin, voir AdminController) : les comptes admin ne se
- * connectent pas ici, et se déconnecter de la boutique ne touche pas à
- * l'administration.
+ * La session client (clés id, utilisateur, prenom, nom, role) est distincte
+ * de la session d'administration (clé admin, voir AdminController) : les
+ * comptes admin ne se connectent pas ici, et se déconnecter de la boutique ne
+ * touche pas à l'administration.
  *
  * Aucune réponse 401 : sur mmi.unilim.fr, tout l'espace web est protégé par
  * l'authentification HTTP d'Apache, et un 401 venu de l'API ferait croire au
@@ -28,17 +28,19 @@ use App\Model\UtilisateurModel;
 final class AuthController
 {
     /** Longueur minimale d'un mot de passe. */
-    private const MDP_MIN = 8;
+    public const MDP_MIN = 8;
 
     /** Longueur maximale d'une adresse e-mail (taille de la colonne). */
     private const EMAIL_MAX = 180;
 
+    /** Longueur maximale d'un prénom ou d'un nom (taille des colonnes). */
+    private const NOM_MAX = 60;
+
     /**
-     * Forme d'un pseudo : 3 à 30 caractères (taille de la colonne), lettres
-     * sans accent, chiffres, point, tiret et tiret bas. Jamais de « @ » : à la
-     * connexion, c'est ce qui le distingue d'une adresse e-mail.
+     * Forme d'un prénom ou d'un nom : des lettres (accents compris), et
+     * éventuellement des espaces, tirets et apostrophes entre elles.
      */
-    private const PSEUDO_FORME = '/^[A-Za-z0-9._-]{3,30}$/';
+    private const NOM_FORME = "/^\\p{L}[\\p{L}\\p{M} '’-]*$/u";
 
     /** Le modèle qui interroge la base, fourni à la construction. */
     private UtilisateurModel $utilisateurs;
@@ -49,61 +51,74 @@ final class AuthController
     }
 
     /**
-     * POST /api/login, corps JSON { identifiant, mdp } : l'identifiant est le
-     * pseudo ou l'adresse e-mail.
+     * Message d'erreur pour un prénom, un nom ou une adresse invalide, ou
+     * null si les trois sont valides. Partagé avec CompteController (profil).
      */
-    public function login(Request $requete): void
+    public static function erreurIdentite(string $prenom, string $nom, string $email): ?string
     {
-        $corps       = $requete->corps();
-        $identifiant = trim((string) ($corps['identifiant'] ?? ''));
-        $mdp         = (string) ($corps['mdp'] ?? '');
-
-        $compte = $this->utilisateurs->trouverParIdentifiant($identifiant);
-
-        // Même message que le compte existe ou non, et pour un compte admin
-        // (qui se connecte par /admin) : la réponse ne doit pas permettre de
-        // deviner quels comptes sont inscrits, ni lesquels sont admin.
-        if ($compte === null || $compte['role'] !== 'client' || !password_verify($mdp, $compte['mot_de_passe'])) {
-            Response::erreur('Identifiant ou mot de passe incorrect.', 422);
+        foreach (['prénom' => $prenom, 'nom' => $nom] as $libelle => $valeur) {
+            if (mb_strlen($valeur) > self::NOM_MAX || preg_match(self::NOM_FORME, $valeur) !== 1) {
+                return "Saisissez votre {$libelle} (lettres, espaces, tirets ou apostrophes ; 60 caractères au plus).";
+            }
         }
 
-        $this->ouvrirSession($compte['id'], $compte['email'], $compte['pseudo'], $compte['role']);
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || mb_strlen($email) > self::EMAIL_MAX) {
+            return 'Saisissez une adresse e-mail valide.';
+        }
+
+        return null;
     }
 
     /**
-     * POST /api/inscription, corps JSON { email, pseudo, mdp }. Le compte créé
-     * est aussitôt connecté.
+     * POST /api/login, corps JSON { email, mdp }.
+     */
+    public function login(Request $requete): void
+    {
+        $corps = $requete->corps();
+        $email = mb_strtolower(trim((string) ($corps['email'] ?? '')));
+        $mdp   = (string) ($corps['mdp'] ?? '');
+
+        $compte = $this->utilisateurs->trouverParEmail($email);
+
+        // Même message que le compte existe ou non, et pour un compte admin
+        // (qui se connecte par /admin) : la réponse ne doit pas permettre de
+        // deviner quelles adresses sont inscrites, ni lesquelles sont admin.
+        if ($compte === null || $compte['role'] !== 'client' || !password_verify($mdp, $compte['mot_de_passe'])) {
+            Response::erreur('Adresse e-mail ou mot de passe incorrect.', 422);
+        }
+
+        $this->ouvrirSession($compte['id'], $compte['email'], $compte['prenom'], $compte['nom'], $compte['role']);
+    }
+
+    /**
+     * POST /api/inscription, corps JSON { prenom, nom, email, mdp }. Le compte
+     * créé est aussitôt connecté.
      */
     public function inscription(Request $requete): void
     {
         $corps  = $requete->corps();
+        $prenom = trim((string) ($corps['prenom'] ?? ''));
+        $nom    = trim((string) ($corps['nom'] ?? ''));
         $email  = mb_strtolower(trim((string) ($corps['email'] ?? '')));
-        $pseudo = trim((string) ($corps['pseudo'] ?? ''));
         $mdp    = (string) ($corps['mdp'] ?? '');
 
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false || mb_strlen($email) > self::EMAIL_MAX) {
-            Response::erreur('Saisissez une adresse e-mail valide.', 422);
-        }
+        $erreur = self::erreurIdentite($prenom, $nom, $email);
 
-        if (preg_match(self::PSEUDO_FORME, $pseudo) !== 1) {
-            Response::erreur('Le pseudo doit contenir de 3 à 30 caractères : lettres sans accent, chiffres, point, tiret ou tiret bas.', 422);
+        if ($erreur !== null) {
+            Response::erreur($erreur, 422);
         }
 
         if (mb_strlen($mdp) < self::MDP_MIN) {
             Response::erreur('Le mot de passe doit contenir au moins 8 caractères.', 422);
         }
 
-        if ($this->utilisateurs->trouverParIdentifiant($email) !== null) {
+        if ($this->utilisateurs->trouverParEmail($email) !== null) {
             Response::erreur('Un compte existe déjà avec cette adresse e-mail.', 409);
         }
 
-        if ($this->utilisateurs->trouverParIdentifiant($pseudo) !== null) {
-            Response::erreur('Ce pseudo est déjà pris : choisissez-en un autre.', 409);
-        }
+        $id = $this->utilisateurs->creer($email, $prenom, $nom, password_hash($mdp, PASSWORD_DEFAULT));
 
-        $id = $this->utilisateurs->creer($email, $pseudo, password_hash($mdp, PASSWORD_DEFAULT));
-
-        $this->ouvrirSession($id, $email, $pseudo, 'client');
+        $this->ouvrirSession($id, $email, $prenom, $nom, 'client');
     }
 
     /**
@@ -112,21 +127,22 @@ final class AuthController
     public function session(): void
     {
         if (!isset($_SESSION['id'])) {
-            Response::json(['connecte' => false, 'email' => null, 'pseudo' => null, 'role' => null]);
+            Response::json(self::deconnecte());
         }
 
         // Compte supprimé depuis l'ouverture de la session : on la ferme.
         if (!$this->utilisateurs->existe((int) $_SESSION['id'])) {
-            unset($_SESSION['id'], $_SESSION['utilisateur'], $_SESSION['pseudo'], $_SESSION['role']);
-            Response::json(['connecte' => false, 'email' => null, 'pseudo' => null, 'role' => null]);
+            self::fermerSession();
+            Response::json(self::deconnecte());
         }
 
-        // Une session ouverte avant l'arrivée des pseudos n'en a pas : le
+        // Une session ouverte avant l'arrivée des prénoms n'en a pas : le
         // header affiche alors « Mon compte ».
         Response::json([
             'connecte' => true,
             'email'    => $_SESSION['utilisateur'],
-            'pseudo'   => $_SESSION['pseudo'] ?? null,
+            'prenom'   => $_SESSION['prenom'] ?? null,
+            'nom'      => $_SESSION['nom'] ?? null,
             'role'     => $_SESSION['role'],
         ]);
     }
@@ -135,11 +151,11 @@ final class AuthController
     {
         // Seule la connexion client est fermée : une session d'administration
         // ouverte dans le même navigateur reste ouverte.
-        unset($_SESSION['id'], $_SESSION['utilisateur'], $_SESSION['pseudo'], $_SESSION['role']);
+        self::fermerSession();
 
         if ($_SESSION !== []) {
             session_regenerate_id(true);
-            Response::json(['connecte' => false, 'email' => null, 'pseudo' => null, 'role' => null]);
+            Response::json(self::deconnecte());
         }
 
         // Supprime le cookie, avec le chemin sous lequel il a été posé : celui
@@ -151,13 +167,32 @@ final class AuthController
 
         session_destroy();                            // efface le fichier serveur
 
-        Response::json(['connecte' => false, 'email' => null, 'pseudo' => null, 'role' => null]);
+        Response::json(self::deconnecte());
+    }
+
+    /**
+     * Réponse « personne n'est connecté ».
+     *
+     * @return array<string, mixed>
+     */
+    public static function deconnecte(): array
+    {
+        return ['connecte' => false, 'email' => null, 'prenom' => null, 'nom' => null, 'role' => null];
+    }
+
+    /**
+     * Retire la connexion client de la session (la session d'administration
+     * éventuelle reste). Partagé avec les contrôleurs qui vérifient le client.
+     */
+    public static function fermerSession(): void
+    {
+        unset($_SESSION['id'], $_SESSION['utilisateur'], $_SESSION['prenom'], $_SESSION['nom'], $_SESSION['role']);
     }
 
     /**
      * Range l'utilisateur en session et répond avec son état de connexion.
      */
-    private function ouvrirSession(int $id, string $email, string $pseudo, string $role): void
+    private function ouvrirSession(int $id, string $email, string $prenom, string $nom, string $role): void
     {
         // L'utilisateur devient authentifié : on lui attribue un identifiant de
         // session neuf, et on détruit l'ancien (true). Aucun identifiant connu
@@ -166,9 +201,10 @@ final class AuthController
 
         $_SESSION['id']          = $id;
         $_SESSION['utilisateur'] = $email;
-        $_SESSION['pseudo']      = $pseudo;
+        $_SESSION['prenom']      = $prenom;
+        $_SESSION['nom']         = $nom;
         $_SESSION['role']        = $role;
 
-        Response::json(['connecte' => true, 'email' => $email, 'pseudo' => $pseudo, 'role' => $role]);
+        Response::json(['connecte' => true, 'email' => $email, 'prenom' => $prenom, 'nom' => $nom, 'role' => $role]);
     }
 }
