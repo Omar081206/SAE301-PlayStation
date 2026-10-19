@@ -1,23 +1,4 @@
 <section class="flex flex-col gap-3.5 rounded-xl bg-page p-5.25 shadow-panneau lg:gap-4 lg:rounded-2xl lg:p-6">
   <h2 class="text-prix-sm font-medium">Commandes récentes</h2>
-
-  <!-- Tableau à partir de lg, cartes en dessous. Les lignes du tableau sont
-       ajoutées en JS dans le <tbody> : un <slot> n'y est pas permis. -->
-  <table class="hidden w-full overflow-hidden rounded-xl text-left outline outline-trait lg:table">
-    <caption class="sr-only">Vos dernières commandes, la plus récente d’abord</caption>
-    <thead class="bg-tuile-claire text-sm text-texte-attenue">
-      <tr>
-        <th scope="col" class="px-4 py-3 font-semibold">N° de commande</th>
-        <th scope="col" class="px-4 py-3 font-semibold">Date <span aria-hidden="true">↓</span></th>
-        <th scope="col" class="px-4 py-3 font-semibold">Statut</th>
-        <th scope="col" class="px-4 py-3 font-semibold">Total</th>
-        <th scope="col" class="px-4 py-3"><span class="sr-only">Détail</span></th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <ul class="flex flex-col gap-2.5 lg:hidden">
-    <slot name="cartes"></slot>
-  </ul>
+  <slot name="liste"></slot>
 </section>

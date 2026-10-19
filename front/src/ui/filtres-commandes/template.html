@@ -1,0 +1,13 @@
+<div class="flex flex-wrap items-center gap-2">
+  <slot name="statuts"></slot>
+
+  <label class="flex">
+    <span class="sr-only">Période</span>
+    <select data-role="periode" class="rounded-lg border-2 border-trait bg-page px-4 py-2 text-sm font-bold">
+      <option value="30j">Période : 30 derniers jours</option>
+      <option value="6m">Période : 6 derniers mois</option>
+      <option value="12m">Période : 12 derniers mois</option>
+      <option value="tout">Période : toutes</option>
+    </select>
+  </label>
+</div>

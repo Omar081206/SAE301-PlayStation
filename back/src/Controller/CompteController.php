@@ -24,6 +24,15 @@ final class CompteController
     /** Nombre de commandes de l'aperçu « Commandes récentes ». */
     private const RECENTES = 3;
 
+    /** Commandes par page de l'historique. */
+    private const PAR_PAGE = 10;
+
+    /** Périodes de l'historique, en jours (null : toutes les commandes). */
+    private const PERIODES = ['30j' => 30, '6m' => 183, '12m' => 365, 'tout' => null];
+
+    /** Statuts qu'on peut filtrer. */
+    private const STATUTS = ['en_cours', 'disponible', 'retiree', 'annulee'];
+
     /** Le modèle des comptes, fourni à la construction. */
     private UtilisateurModel $utilisateurs;
 
@@ -64,6 +73,43 @@ final class CompteController
         Response::json([
             'profil'    => ['prenom' => $compte['prenom'], 'nom' => $compte['nom'], 'email' => $compte['email']],
             'commandes' => $this->commandes->recentes($compte['id'], self::RECENTES),
+        ]);
+    }
+
+    /**
+     * GET /api/compte/commandes?statut=…&periode=…&page=… : l'historique des
+     * commandes, la plus récente d'abord, par pages de 10.
+     *
+     * statut : en_cours, disponible, retiree, annulee, ou absent pour tous ;
+     * periode : 30j, 6m (par défaut), 12m ou tout. Répond aussi avec le nombre
+     * de commandes de chaque statut sur la période (filtres).
+     */
+    public function commandes(Request $requete): void
+    {
+        $compte = $this->compteConnecte();
+
+        $statut  = $requete->parametre('statut');
+        $periode = $requete->parametre('periode', '6m');
+        $page    = filter_var($requete->parametre('page', '1'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        if (($statut !== null && !in_array($statut, self::STATUTS, true))
+            || !array_key_exists($periode, self::PERIODES) || $page === false) {
+            Response::erreur('Filtre invalide', 400);
+        }
+
+        $resultat = $this->commandes->historique(
+            $compte['id'],
+            $statut,
+            self::PERIODES[$periode],
+            self::PAR_PAGE,
+            ($page - 1) * self::PAR_PAGE
+        );
+
+        Response::json([
+            'commandes' => $resultat['commandes'],
+            'compteurs' => $resultat['compteurs'],
+            'page'      => $page,
+            'pages'     => max(1, (int) ceil($resultat['total'] / self::PAR_PAGE)),
         ]);
     }
 

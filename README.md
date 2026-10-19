@@ -160,6 +160,7 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `POST /api/logout` | déconnexion |
 | `GET /api/session` | l'utilisateur connecté, s'il y en a un |
 | `GET /api/compte` | espace personnel : profil et 3 dernières commandes (client connecté) |
+| `GET /api/compte/commandes?statut=…&periode=…&page=…` | historique des commandes du client connecté, la plus récente d'abord, 10 par page ; `periode` : `30j`, `6m` (défaut), `12m`, `tout` ; renvoie aussi le nombre de commandes par statut |
 | `POST /api/compte/profil` | modification du profil, corps `{"prenom", "nom", "email", "mdpActuel", "nouveauMdp"}` ; le mot de passe actuel est exigé pour changer d'adresse ou de mot de passe |
 | `POST /api/commande` | validation de commande (client connecté), corps `{"lignes"}` |
 | `GET /api/commande?numero=…` | une commande du client connecté |
@@ -183,7 +184,7 @@ navigateur les identifiants de l'IUT. Non connecté : 403 ; identifiants
 incorrects : 422.
 
 Tests (curl, sans dépendance) : `tests/compte.sh`, `tests/commande.sh`,
-`tests/stock.sh`, `tests/categories.sh`, `tests/commandes-admin.sh` et `tests/mouvements-stock.sh`, avec l'URL du projet en argument.
+`tests/stock.sh`, `tests/categories.sh`, `tests/commandes-admin.sh`, `tests/historique.sh` et `tests/mouvements-stock.sh`, avec l'URL du projet en argument.
 `tests/categories.sh` écrit en base (catégories de test, supprimées à la fin), `tests/commandes-admin.sh`
 aussi (trois commandes de test, dont une reste « retirée » ; le stock est rendu). Le dernier écrit
 en base (commandes annulées, journal) et vérifie la concurrence sur la dernière
@@ -199,7 +200,8 @@ Comptes de test créés par `sql/import.sql` (mots de passe stockés en bcrypt) 
 | Admin PlayStation | `admin@playstation.test` | `admin1234` | `admin` |
 
 On se connecte avec l'adresse e-mail. Une fois connecté, le bouton du header
-affiche « Prénom N. » et mène à l'espace personnel (`/compte`, `/compte/profil`).
+affiche « Prénom N. » et mène à l'espace personnel (`/compte`, `/compte/commandes`,
+`/compte/profil`).
 Un visiteur peut aussi créer son compte (prénom, nom, adresse, mot de passe)
 depuis la page `/connexion`. Le compte
 admin se connecte uniquement par `/admin` : les deux connexions sont séparées.

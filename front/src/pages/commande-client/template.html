@@ -1,0 +1,14 @@
+<!-- Mobile : titre, menu en pastilles, contenu. À partir de lg : menu à
+     gauche sur toute la hauteur, titre et contenu à droite. -->
+<div class="grid gap-5.25 px-7 py-7 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-x-10 lg:gap-y-6 lg:px-20 lg:py-8">
+  <h1 class="text-intertitre-sm font-light lg:col-start-2 lg:row-start-1 lg:text-produit-lg">{{titre}}</h1>
+
+  <div class="lg:col-start-1 lg:row-span-2 lg:row-start-1">
+    <slot name="navigation"></slot>
+  </div>
+
+  <div class="flex min-w-0 flex-col gap-5.25 lg:col-start-2 lg:gap-6">
+    <slot name="message"></slot>
+    <slot name="contenu"></slot>
+  </div>
+</div>
