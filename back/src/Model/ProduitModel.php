@@ -44,6 +44,7 @@ final class ProduitModel
                        produit.nom,
                        produit.slug,
                        categorie.nom  AS categorie,
+                       categorie.slug AS categorie_slug,
                        defaut.id      AS variante_id,
                        defaut.stock,
                        (SELECT MIN(toutes.prix) FROM variante AS toutes
@@ -86,6 +87,7 @@ final class ProduitModel
                 'nom'         => $ligne['nom'],
                 'slug'        => $ligne['slug'],
                 'categorie'   => $ligne['categorie'],
+                'categorie_slug' => $ligne['categorie_slug'],
                 'variante_id' => (int) $ligne['variante_id'],
                 'prix'        => (float) $ligne['prix'],
                 'stock'       => (int) $ligne['stock'],

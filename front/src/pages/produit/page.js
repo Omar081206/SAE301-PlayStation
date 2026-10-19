@@ -2,6 +2,7 @@ import { PanierData } from "../../data/panier.js";
 import { ProduitData } from "../../data/produit.js";
 import { naviguer } from "../../lib/navigation.js";
 import { htmlToFragment } from "../../lib/utils.js";
+import { CATEGORIES_EN_VISUEL } from "../../ui/carte-produit/index.js";
 import { FicheProduitView } from "../../ui/fiche-produit/index.js";
 import { GalerieProduitView } from "../../ui/galerie-produit/index.js";
 import { MessageView } from "../../ui/message/index.js";
@@ -255,7 +256,11 @@ V.createPageFragment = function () {
   );
   fiche.querySelector('slot[name="galerie"]').replaceWith(
     GalerieProduitView.dom(
-      { images: variante === null ? M.produit.images : variante.images, active: M.imageActive },
+      {
+        images: variante === null ? M.produit.images : variante.images,
+        active: M.imageActive,
+        remplir: CATEGORIES_EN_VISUEL.includes(M.produit.categorie_slug),
+      },
       { surImage: C.handler_changerImage }
     )
   );
