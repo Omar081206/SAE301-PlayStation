@@ -10,6 +10,12 @@ import template from "./template.html?raw";
 // Le badge de stock (composant BadgeStockView) prend la place du <slot name="badge">.
 // L'image est un fichier de front/public/images/produits/, que Vite recopie
 // dans dist/ sous le chemin du projet.
+// Catégories dont les images sont des jaquettes ou des visuels (les jeux) :
+// elles remplissent leur cadre, quitte à en rogner les bords. Les autres
+// (consoles, manettes…) sont des photos détourées : affichées en entier.
+// Partagé avec la page Produit (galerie).
+export const CATEGORIES_EN_VISUEL = ["jeux"];
+
 let CarteProduitView = {
   html: function (produit) {
     // Les valeurs sont mises en forme avant d'être passées au template.
@@ -24,13 +30,18 @@ let CarteProduitView = {
   },
 
   /**
-   * @param {{variante_id: number, nom: string, etat_stock: string}} produit
+   * @param {{variante_id: number, nom: string, etat_stock: string, categorie_slug: string}} produit
    * @param {{surAjout: (variantId: number, nom: string) => void}} actions
    */
   dom: function (produit, actions) {
     let fragment = htmlToFragment(CarteProduitView.html(produit));
 
     fragment.querySelector('slot[name="badge"]').replaceWith(BadgeStockView.dom(produit.etat_stock));
+
+    // Jaquette ou visuel de jeu : l'image remplit le cadre (bords rognés).
+    if (CATEGORIES_EN_VISUEL.includes(produit.categorie_slug)) {
+      fragment.querySelector("img").classList.replace("object-contain", "object-cover");
+    }
 
     let bouton = fragment.querySelector('[data-action="ajouter"]');
 

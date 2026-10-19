@@ -7,7 +7,9 @@ import templateMiniature from "./miniature.html?raw";
 // l'utilisateur demande, et la page décide.
 let GalerieProduitView = {
   /**
-   * @param {{images: Array<{fichier: string, alt: string}>, active: number}} data
+   * @param {{images: Array<{fichier: string, alt: string}>, active: number, remplir: boolean}} data
+   *   remplir : les images remplissent leur cadre (jaquettes de jeux) au
+   *   lieu d'y être affichées en entier.
    * @param {{surImage: (position: number) => void}} actions
    */
   dom: function (data, actions) {
@@ -18,6 +20,12 @@ let GalerieProduitView = {
         alt: image.alt,
       })
     );
+
+    // Jaquette de jeu : l'image remplit le cadre (bords rognés). État réglé
+    // en JS : un template n'a pas de condition.
+    if (data.remplir) {
+      fragment.querySelector("img").classList.replace("object-contain", "object-cover");
+    }
 
     let precedente = fragment.querySelector('[data-action="precedente"]');
     let suivante = fragment.querySelector('[data-action="suivante"]');
@@ -44,6 +52,9 @@ let GalerieProduitView = {
         })
       );
       let bouton = miniature.querySelector("button");
+      if (data.remplir) {
+        bouton.querySelector("img").classList.replace("object-contain", "object-cover");
+      }
       bouton.setAttribute("aria-current", String(position === data.active));
       bouton.addEventListener("click", () => actions.surImage(position));
       return miniature;
