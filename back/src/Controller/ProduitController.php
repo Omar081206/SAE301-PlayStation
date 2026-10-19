@@ -116,7 +116,7 @@ final class ProduitController
         }
 
         // Un état par variante, et celui de la variante par défaut (la
-        // première) pour le badge principal. Les quantités restent ici.
+        // première en stock) pour le badge principal. Les quantités restent ici.
         $seuil = $this->seuil();
 
         foreach ($produit['variantes'] as $position => $variante) {
@@ -124,7 +124,11 @@ final class ProduitController
             unset($produit['variantes'][$position]['stock']);
         }
 
-        $produit['etat_stock'] = $produit['variantes'][0]['etat_stock'];
+        foreach ($produit['variantes'] as $variante) {
+            if ($variante['id'] === $produit['variante_id']) {
+                $produit['etat_stock'] = $variante['etat_stock'];
+            }
+        }
 
         Response::json(['produit' => $produit]);
     }

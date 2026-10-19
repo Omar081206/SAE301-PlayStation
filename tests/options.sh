@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# Test des options de produit (OPT-c), contre l'API. Lecture seule.
+# Test des options de produit (OPT-c, OPT-b), contre l'API. Lecture seule.
 #
 # Usage : tests/options.sh [URL du projet]
 #   URL par défaut : http://localhost:8099/~hadj-zekri1/SAE301
@@ -71,6 +71,19 @@ echo "3. Le panier décrit les options de chaque variante"
 IFS=$'\t' read -r code corps <<< "$(api POST panier '{"lignes":[{"variantId":17,"quantite":1},{"variantId":13,"quantite":1}]}')"
 verifier "variante noire" "$(lire "$corps" "[l['options'] for l in d['lignes'] if l['variantId'] == 17][0]")" "Coloris : Noir"
 verifier "produit sans option" "$(lire "$corps" "[l['options'] for l in d['lignes'] if l['variantId'] == 13][0]")" "None"
+
+echo "4. Variante par défaut : la première en stock (OPT-b)"
+IFS=$'\t' read -r code catalogue <<< "$(api GET produits)"
+for slug in $(lire "$catalogue" "' '.join(p['slug'] for p in d['produits'])"); do
+  IFS=$'\t' read -r code fiche <<< "$(api GET "produit?slug=$slug")"
+  # Attendue : la première variante non épuisée, sinon la première.
+  attendue="$(lire "$fiche" "next((v['id'] for v in d['produit']['variantes'] if v['etat_stock'] != 'epuise'), d['produit']['variantes'][0]['id'])")"
+  carte="$(python3 -c 'import json,sys; print([p["variante_id"] for p in json.loads(sys.argv[1])["produits"] if p["slug"] == sys.argv[2]][0])' "$catalogue" "$slug")"
+  if [ "$carte" != "$attendue" ] || [ "$(lire "$fiche" "d['produit']['variante_id']")" != "$attendue" ]; then
+    verifier "$slug : variante par défaut" "$carte" "$attendue"
+  fi
+done
+verifier "catalogue et fiches cohérents" "$ECHECS" "0"
 
 echo
 if [ "$ECHECS" -eq 0 ]; then
