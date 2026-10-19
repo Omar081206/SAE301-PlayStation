@@ -166,7 +166,14 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `GET /api/admin/categories` | catégories du back-office, avec leur nombre de produits (admin) |
 | `POST /api/admin/categorie/creer` · `POST /api/admin/categorie/modifier` | création (`{"nom", "description"}`) ou modification (`{"id", "nom", "description"}`) d'une catégorie (admin) ; le slug est déduit du nom |
 | `POST /api/admin/categorie/supprimer` | suppression, corps `{"id", "destination"}` : les produits sont déplacés vers `destination` ; refusée (409) si la catégorie a des produits et qu'aucune destination n'est donnée |
+| `GET /api/admin/commandes?tri=date\|statut\|montant&sens=asc\|desc` | toutes les commandes, triées (admin) |
+| `GET /api/admin/commande?numero=…` | détail d'une commande : client, lignes, historique des changements de statut, statuts possibles (admin) |
 | `POST /api/admin/commande/statut` | changement de statut d'une commande (rôle `admin`), corps `{"numero", "statut"}` ; l'annulation recrédite le stock |
+| `POST /api/admin/commandes/statut` | changement de statut en lot, corps `{"numeros", "statut"}` : chaque commande est traitée séparément, le résultat de chacune est renvoyé |
+
+Chaque changement de statut fait depuis le back-office est inscrit dans la
+table `journal_admin` (qui, quand, ancien → nouveau statut), affichée dans le
+détail de la commande.
 
 L'API ne répond jamais 401 : sur mmi.unilim.fr, l'espace web est déjà protégé
 par l'authentification HTTP d'Apache, et un 401 ferait redemander au
@@ -174,8 +181,9 @@ navigateur les identifiants de l'IUT. Non connecté : 403 ; identifiants
 incorrects : 422.
 
 Tests (curl, sans dépendance) : `tests/compte.sh`, `tests/commande.sh`,
-`tests/stock.sh`, `tests/categories.sh` et `tests/mouvements-stock.sh`, avec l'URL du projet en argument.
-`tests/categories.sh` écrit en base (catégories de test, supprimées à la fin). Le dernier écrit
+`tests/stock.sh`, `tests/categories.sh`, `tests/commandes-admin.sh` et `tests/mouvements-stock.sh`, avec l'URL du projet en argument.
+`tests/categories.sh` écrit en base (catégories de test, supprimées à la fin), `tests/commandes-admin.sh`
+aussi (trois commandes de test, dont une reste « retirée » ; le stock est rendu). Le dernier écrit
 en base (commandes annulées, journal) et vérifie la concurrence sur la dernière
 unité : avec `php -S`, lancer le serveur avec `PHP_CLI_SERVER_WORKERS=6`.
 

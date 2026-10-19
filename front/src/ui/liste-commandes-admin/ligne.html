@@ -1,0 +1,9 @@
+<tr class="border-b border-trait last:border-0">
+  <td class="p-3.5"><input type="checkbox" data-action="choisir" aria-label="Sélectionner la commande {{numero}}" class="size-4"></td>
+  <td class="p-3.5"><a href="/admin/commandes/{{numero}}" data-link class="font-bold whitespace-nowrap text-lien underline">{{numero}}</a></td>
+  <td class="p-3.5 whitespace-nowrap">{{date}}</td>
+  <td class="p-3.5">{{client}}</td>
+  <td class="p-3.5 text-right">{{articles}}</td>
+  <td class="p-3.5 text-right whitespace-nowrap">{{total}}</td>
+  <td class="p-3.5"><slot name="statut"></slot></td>
+</tr>

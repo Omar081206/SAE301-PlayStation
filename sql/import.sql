@@ -23,6 +23,7 @@ SET NAMES utf8mb4;
 
 -- Ordre inverse des clés étrangères : une table est supprimée avant celles
 -- dont elle dépend.
+DROP TABLE IF EXISTS journal_admin;
 DROP TABLE IF EXISTS mouvement_stock;
 DROP TABLE IF EXISTS parametre;
 DROP TABLE IF EXISTS ligne_commande;
@@ -417,6 +418,40 @@ CREATE TABLE mouvement_stock (
         ON UPDATE CASCADE,
 
     CONSTRAINT fk_mouvement_utilisateur
+        FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
+-- Journal des administrateurs
+--
+-- Une ligne par changement de statut d'une commande fait depuis le
+-- back-office : qui (utilisateur_id, l'administrateur), quand, et le passage
+-- ancien_statut → nouveau_statut. Écrite dans la même transaction que le
+-- changement. Les effets sur le stock (annulation) sont, eux, dans
+-- mouvement_stock.
+-- ---------------------------------------------------------------------------
+CREATE TABLE journal_admin (
+    id             INT UNSIGNED                                         NOT NULL AUTO_INCREMENT,
+    commande_id    INT UNSIGNED                                         NOT NULL,
+    utilisateur_id INT UNSIGNED                                         NULL,
+    ancien_statut  ENUM('en_cours', 'disponible', 'retiree', 'annulee') NOT NULL,
+    nouveau_statut ENUM('en_cours', 'disponible', 'retiree', 'annulee') NOT NULL,
+    cree_le        DATETIME                                             NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    KEY idx_journal_commande (commande_id),
+    KEY idx_journal_date (cree_le),
+
+    CONSTRAINT fk_journal_commande
+        FOREIGN KEY (commande_id) REFERENCES commande (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_journal_utilisateur
         FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id)
         ON DELETE SET NULL
         ON UPDATE CASCADE

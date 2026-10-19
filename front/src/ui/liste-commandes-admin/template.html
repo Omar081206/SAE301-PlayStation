@@ -1,0 +1,20 @@
+<div class="overflow-x-auto rounded-xl bg-page shadow-panneau-sm lg:rounded-2xl">
+  <!-- Les lignes sont ajoutées en JS dans le <tbody> : un <slot> n'y est pas
+       permis. Les en-têtes triables sont des boutons ; celui du tri en cours
+       reçoit aria-sort. -->
+  <table class="w-full min-w-170 text-left text-sm">
+    <caption class="sr-only">Commandes des clients</caption>
+    <thead class="border-b border-trait text-texte-attenue">
+      <tr>
+        <th scope="col" class="w-12 p-3.5"><input type="checkbox" data-action="tout" aria-label="Sélectionner toutes les commandes" class="size-4"></th>
+        <th scope="col" class="p-3.5 font-medium">Commande</th>
+        <th scope="col" data-colonne="date" class="p-3.5 font-medium"><button type="button" data-tri="date" class="font-medium underline-offset-2 hover:underline">Date <span data-role="fleche" aria-hidden="true"></span></button></th>
+        <th scope="col" class="p-3.5 font-medium">Client</th>
+        <th scope="col" class="p-3.5 text-right font-medium">Articles</th>
+        <th scope="col" data-colonne="montant" class="p-3.5 text-right font-medium"><button type="button" data-tri="montant" class="font-medium underline-offset-2 hover:underline">Montant <span data-role="fleche" aria-hidden="true"></span></button></th>
+        <th scope="col" data-colonne="statut" class="p-3.5 font-medium"><button type="button" data-tri="statut" class="font-medium underline-offset-2 hover:underline">Statut <span data-role="fleche" aria-hidden="true"></span></button></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
