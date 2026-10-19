@@ -1,0 +1,16 @@
+<section class="flex flex-col gap-3.5 rounded-xl bg-page p-5.25 shadow-panneau lg:gap-4 lg:rounded-2xl lg:p-6">
+  <h2 class="text-prix-sm font-medium">Mes informations</h2>
+
+  <dl class="flex flex-col gap-3.5 text-sm md:text-base lg:gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+      <dt class="text-texte-attenue">Nom</dt>
+      <dd class="font-medium">{{nomComplet}}</dd>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+      <dt class="text-texte-attenue">Adresse e-mail</dt>
+      <dd class="font-medium break-all">{{email}}</dd>
+    </div>
+  </dl>
+
+  <a href="/compte/profil" data-link class="self-start text-sm font-bold text-lien underline md:text-base">Modifier mon profil</a>
+</section>

@@ -17,7 +17,7 @@ AdminCommandeData.fetchAll = async function (tri, sens) {
  * Une commande : GET /api/admin/commande?numero=…
  * 404 si elle n'existe pas.
  *
- * { commande: { numero, statut, total, cree_le, client: { pseudo, email },
+ * { commande: { numero, statut, total, cree_le, client: { prenom, nom, email },
  *               lignes, historique: [ { ancien, nouveau, le, par } ], suivants } }
  * suivants : statuts vers lesquels elle peut passer.
  */

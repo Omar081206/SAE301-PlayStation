@@ -10,8 +10,8 @@ let FormulaireConnexionView = {
   },
 
   /**
-   * @param {{identifiant: string}} data  Pseudo ou adresse à pré-remplir.
-   * @param {{surConnexion: (identifiant: string, mdp: string) => void}} actions
+   * @param {{email: string}} data  Adresse à pré-remplir.
+   * @param {{surConnexion: (email: string, mdp: string) => void}} actions
    */
   dom: function (data, actions) {
     let fragment = htmlToFragment(FormulaireConnexionView.html(data));
@@ -21,7 +21,7 @@ let FormulaireConnexionView = {
       // Sans cela, le navigateur enverrait le formulaire de manière classique,
       // en rechargeant la page.
       ev.preventDefault();
-      actions.surConnexion(formulaire.elements.identifiant.value.trim(), formulaire.elements.mdp.value);
+      actions.surConnexion(formulaire.elements.email.value.trim(), formulaire.elements.mdp.value);
     });
 
     return fragment;

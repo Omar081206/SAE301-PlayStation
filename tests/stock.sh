@@ -81,7 +81,7 @@ verifier "ligne dans le stock non modifiée" "$(lire "$PANIER" "[l['quantite'] f
 verifier "total recalculé (2 × 219,99 + 2 × 549,99)" "$(lire "$PANIER" "d['total']")" "1539.96"
 
 echo "4. Commande au-delà du stock refusée (STK-c)"
-poster login '{"identifiant":"client@playstation.test","mdp":"client1234"}' > /dev/null
+poster login '{"email":"client@playstation.test","mdp":"client1234"}' > /dev/null
 IFS=$'\t' read -r code corps <<< "$(poster commande '{"lignes":[{"variantId":4,"quantite":5}]}')"
 verifier "POST /commande Portal × 5 (stock 2)" "$code" "409"
 IFS=$'\t' read -r code corps <<< "$(poster commande '{"lignes":[{"variantId":21,"quantite":1}]}')"

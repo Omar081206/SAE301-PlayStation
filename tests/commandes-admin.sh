@@ -81,7 +81,7 @@ IFS=$'\t' read -r code corps <<< "$(admin POST admin/commandes/statut '{"numeros
 verifier "POST /admin/commandes/statut" "$code" "403"
 
 echo "2. Trois commandes du client de test"
-api POST login '{"identifiant":"client","mdp":"client1234"}' > /dev/null
+api POST login '{"email":"client@playstation.test","mdp":"client1234"}' > /dev/null
 IFS=$'\t' read -r code corps <<< "$(api POST commande '{"lignes":[{"variantId":5,"quantite":1}]}')"
 N1="$(champ "$corps" commande.numero)"
 IFS=$'\t' read -r code corps <<< "$(api POST commande '{"lignes":[{"variantId":17,"quantite":2}]}')"
@@ -89,13 +89,13 @@ N2="$(champ "$corps" commande.numero)"
 IFS=$'\t' read -r code corps <<< "$(api POST commande '{"lignes":[{"variantId":5,"quantite":1},{"variantId":17,"quantite":1}]}')"
 N3="$(champ "$corps" commande.numero)"
 verifier "trois commandes créées" "$([ -n "$N1" ] && [ -n "$N2" ] && [ -n "$N3" ] && echo oui)" "oui"
-admin POST admin/login '{"identifiant":"admin","mdp":"admin1234"}' > /dev/null
+admin POST admin/login '{"email":"admin@playstation.test","mdp":"admin1234"}' > /dev/null
 
 echo "3. Liste et tris"
 IFS=$'\t' read -r code corps <<< "$(admin GET admin/commandes)"
 verifier "GET /admin/commandes" "$code" "200"
 verifier "par défaut, la plus récente d'abord" "$(champ "$corps" commandes.0.numero)" "$N3"
-verifier "client affiché" "$(champ "$corps" commandes.0.client)" "client"
+verifier "client affiché (prénom nom)" "$(champ "$corps" commandes.0.client)" "Nathan Drake"
 verifier "nombre d'articles" "$(champ "$corps" commandes.0.articles)" "2"
 IFS=$'\t' read -r code corps <<< "$(admin GET 'admin/commandes?tri=montant&sens=asc')"
 verifier "tri par montant croissant" "$(python3 -c 'import json,sys
@@ -126,7 +126,7 @@ IFS=$'\t' read -r code corps <<< "$(admin GET "admin/commande?numero=$N1")"
 verifier "GET /admin/commande" "$code" "200"
 verifier "client" "$(champ "$corps" commande.client.email)" "client@playstation.test"
 verifier "deux changements au journal" "$(python3 -c 'import json,sys; print(len(json.loads(sys.argv[1])["commande"]["historique"]))' "$corps")" "2"
-verifier "premier changement" "$(champ "$corps" commande.historique.0.ancien) → $(champ "$corps" commande.historique.0.nouveau) par $(champ "$corps" commande.historique.0.par)" "en_cours → disponible par admin"
+verifier "premier changement" "$(champ "$corps" commande.historique.0.ancien) → $(champ "$corps" commande.historique.0.nouveau) par $(champ "$corps" commande.historique.0.par)" "en_cours → disponible par Admin PlayStation"
 verifier "plus aucun statut possible" "$(champ "$corps" commande.suivants)" "[]"
 IFS=$'\t' read -r code corps <<< "$(admin GET "admin/commande?numero=$N2")"
 verifier "statuts possibles depuis « en cours »" "$(champ "$corps" commande.suivants)" "['disponible', 'annulee']"

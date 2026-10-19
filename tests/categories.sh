@@ -73,11 +73,11 @@ IFS=$'\t' read -r code corps <<< "$(api GET admin/categories)"
 verifier "GET /admin/categories" "$code" "403"
 IFS=$'\t' read -r code corps <<< "$(api POST admin/categorie/creer '{"nom":"Test","description":"Test"}')"
 verifier "POST /admin/categorie/creer" "$code" "403"
-api POST login '{"identifiant":"client","mdp":"client1234"}' > /dev/null
+api POST login '{"email":"client@playstation.test","mdp":"client1234"}' > /dev/null
 IFS=$'\t' read -r code corps <<< "$(api GET admin/categories)"
 verifier "session client" "$code" "403"
 api POST logout '{}' > /dev/null
-api POST admin/login '{"identifiant":"admin","mdp":"admin1234"}' > /dev/null
+api POST admin/login '{"email":"admin@playstation.test","mdp":"admin1234"}' > /dev/null
 
 echo "2. Liste"
 IFS=$'\t' read -r code corps <<< "$(api GET admin/categories)"

@@ -22,6 +22,7 @@ use App\Controller\AdminController;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
 use App\Controller\CommandeController;
+use App\Controller\CompteController;
 use App\Controller\PanierController;
 use App\Controller\ProduitController;
 use App\Model\CategorieModel;
@@ -76,6 +77,7 @@ try {
         PanierController::class    => new PanierController(new PanierModel($pdo)),
         CommandeController::class  => new CommandeController(new PanierModel($pdo), new CommandeModel($pdo), new UtilisateurModel($pdo)),
         AuthController::class      => new AuthController(new UtilisateurModel($pdo)),
+        CompteController::class    => new CompteController(new UtilisateurModel($pdo), new CommandeModel($pdo)),
         AdminController::class     => new AdminController(new UtilisateurModel($pdo), new TableauDeBordModel($pdo)),
         AdminCommandeController::class => new AdminCommandeController(new CommandeModel($pdo)),
         AdminCategorieController::class => new AdminCategorieController(new CategorieModel($pdo)),

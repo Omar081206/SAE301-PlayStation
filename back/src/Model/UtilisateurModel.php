@@ -23,34 +23,55 @@ final class UtilisateurModel
     }
 
     /**
-     * Un compte par son adresse e-mail ou son pseudo, ou null s'il n'existe pas.
-     *
-     * Un pseudo ne contient jamais « @ », une adresse en contient toujours :
-     * une même saisie ne peut pas désigner deux comptes. La collation de la
-     * table ne distingue pas la casse.
+     * Un compte par son adresse e-mail, ou null s'il n'existe pas. La
+     * collation de la table ne distingue pas la casse.
      *
      * @return array<string, mixed>|null
      */
-    public function trouverParIdentifiant(string $identifiant): ?array
+    public function trouverParEmail(string $email): ?array
     {
         $requetePreparee = $this->pdo->prepare(
-            'SELECT id, email, pseudo, mot_de_passe, role FROM utilisateur WHERE email = :email OR pseudo = :pseudo'
+            'SELECT id, email, prenom, nom, mot_de_passe, role FROM utilisateur WHERE email = :email'
         );
-        $requetePreparee->bindValue(':email',  $identifiant, PDO::PARAM_STR);
-        $requetePreparee->bindValue(':pseudo', $identifiant, PDO::PARAM_STR);
+        $requetePreparee->bindValue(':email', $email, PDO::PARAM_STR);
         $requetePreparee->execute();
 
-        $ligne = $requetePreparee->fetch();
+        return $this->compte($requetePreparee->fetch());
+    }
 
+    /**
+     * Un compte par son identifiant, ou null s'il n'existe pas.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function trouverParId(int $id): ?array
+    {
+        $requetePreparee = $this->pdo->prepare(
+            'SELECT id, email, prenom, nom, mot_de_passe, role FROM utilisateur WHERE id = :id'
+        );
+        $requetePreparee->bindValue(':id', $id, PDO::PARAM_INT);
+        $requetePreparee->execute();
+
+        return $this->compte($requetePreparee->fetch());
+    }
+
+    /**
+     * Ligne lue en base, convertie (MySQL renvoie des chaînes), ou null.
+     *
+     * @param array<string, mixed>|false $ligne
+     * @return array<string, mixed>|null
+     */
+    private function compte(array|false $ligne): ?array
+    {
         if ($ligne === false) {
             return null;
         }
 
-        // MySQL renvoie des chaînes : on convertit avant usage.
         return [
             'id'           => (int) $ligne['id'],
             'email'        => $ligne['email'],
-            'pseudo'       => $ligne['pseudo'],
+            'prenom'       => $ligne['prenom'],
+            'nom'          => $ligne['nom'],
             'mot_de_passe' => $ligne['mot_de_passe'],
             'role'         => $ligne['role'],
         ];
@@ -75,16 +96,46 @@ final class UtilisateurModel
      * @param string $empreinte Empreinte du mot de passe (password_hash), jamais
      *                          le mot de passe lui-même.
      */
-    public function creer(string $email, string $pseudo, string $empreinte): int
+    public function creer(string $email, string $prenom, string $nom, string $empreinte): int
     {
         $requetePreparee = $this->pdo->prepare(
-            "INSERT INTO utilisateur (email, pseudo, mot_de_passe, role) VALUES (:email, :pseudo, :empreinte, 'client')"
+            "INSERT INTO utilisateur (email, prenom, nom, mot_de_passe, role)
+             VALUES (:email, :prenom, :nom, :empreinte, 'client')"
         );
         $requetePreparee->bindValue(':email',     $email,     PDO::PARAM_STR);
-        $requetePreparee->bindValue(':pseudo',    $pseudo,    PDO::PARAM_STR);
+        $requetePreparee->bindValue(':prenom',    $prenom,    PDO::PARAM_STR);
+        $requetePreparee->bindValue(':nom',       $nom,       PDO::PARAM_STR);
         $requetePreparee->bindValue(':empreinte', $empreinte, PDO::PARAM_STR);
         $requetePreparee->execute();
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+    /**
+     * Remplace le prénom, le nom et l'adresse e-mail d'un compte.
+     */
+    public function modifierProfil(int $id, string $prenom, string $nom, string $email): void
+    {
+        $requetePreparee = $this->pdo->prepare(
+            'UPDATE utilisateur SET prenom = :prenom, nom = :nom, email = :email WHERE id = :id'
+        );
+        $requetePreparee->bindValue(':prenom', $prenom, PDO::PARAM_STR);
+        $requetePreparee->bindValue(':nom',    $nom,    PDO::PARAM_STR);
+        $requetePreparee->bindValue(':email',  $email,  PDO::PARAM_STR);
+        $requetePreparee->bindValue(':id',     $id,     PDO::PARAM_INT);
+        $requetePreparee->execute();
+    }
+
+    /**
+     * Remplace l'empreinte du mot de passe d'un compte.
+     *
+     * @param string $empreinte Empreinte (password_hash), jamais le mot de passe.
+     */
+    public function modifierMotDePasse(int $id, string $empreinte): void
+    {
+        $requetePreparee = $this->pdo->prepare('UPDATE utilisateur SET mot_de_passe = :empreinte WHERE id = :id');
+        $requetePreparee->bindValue(':empreinte', $empreinte, PDO::PARAM_STR);
+        $requetePreparee->bindValue(':id',        $id,        PDO::PARAM_INT);
+        $requetePreparee->execute();
     }
 }
