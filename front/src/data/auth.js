@@ -2,9 +2,9 @@ import { getRequest, postRequest } from "../lib/api-request.js";
 
 let AuthData = {};
 
-// Dernier état de connexion renvoyé par le serveur : { connecte, email, role }.
+// Dernier état de connexion renvoyé par le serveur : { connecte, email, pseudo, role }.
 // Il ne sert qu'à l'affichage (header) : c'est le serveur qui décide des accès.
-AuthData.session = { connecte: false, email: null, role: null };
+AuthData.session = { connecte: false, email: null, pseudo: null, role: null };
 
 // Fonction appelée quand l'état de connexion change, ou null. Le layout y
 // branche la mise à jour du header : ce module ne touche pas au DOM.
@@ -24,23 +24,25 @@ AuthData.retenir = function (session) {
 };
 
 /**
- * Connexion : POST /api/login, corps { email, mdp }
+ * Connexion : POST /api/login, corps { identifiant, mdp }
+ * L'identifiant est le pseudo ou l'adresse e-mail.
  * En cas de succès, le serveur ouvre une session ; le cookie PHPSESSID qu'il
  * renvoie accompagnera ensuite chaque requête.
- * 422 si l'adresse ou le mot de passe est incorrect.
+ * 422 si l'identifiant ou le mot de passe est incorrect.
  *
- * { connecte: true, email, role }
+ * { connecte: true, email, pseudo, role }
  */
-AuthData.login = async function (email, mdp) {
-  return AuthData.retenir(await postRequest("login", { email, mdp }));
+AuthData.login = async function (identifiant, mdp) {
+  return AuthData.retenir(await postRequest("login", { identifiant, mdp }));
 };
 
 /**
- * Création de compte : POST /api/inscription, corps { email, mdp }
- * Le compte créé est aussitôt connecté. { connecte: true, email, role }
+ * Création de compte : POST /api/inscription, corps { email, pseudo, mdp }
+ * Le compte créé est aussitôt connecté. { connecte: true, email, pseudo, role }
+ * 409 si l'adresse ou le pseudo est déjà pris.
  */
-AuthData.inscription = async function (email, mdp) {
-  return AuthData.retenir(await postRequest("inscription", { email, mdp }));
+AuthData.inscription = async function (email, pseudo, mdp) {
+  return AuthData.retenir(await postRequest("inscription", { email, pseudo, mdp }));
 };
 
 /**
@@ -52,7 +54,7 @@ AuthData.logout = async function () {
 
 /**
  * Utilisateur connecté : GET /api/session
- * { connecte, email, role } (email et role à null si personne n'est connecté)
+ * { connecte, email, pseudo, role } (à null si personne n'est connecté)
  */
 AuthData.fetchSession = async function () {
   return AuthData.retenir(await getRequest("session"));

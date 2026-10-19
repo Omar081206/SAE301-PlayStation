@@ -155,13 +155,13 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `GET /api/produit?slug=…` | la fiche d'un produit et ses images |
 | `GET /api/categories` | les catégories et leur nombre de produits |
 | `POST /api/panier` | détail du panier, corps `{"lignes": [{"variantId", "quantite"}]}` : prix et totaux calculés par le serveur |
-| `POST /api/inscription` | création de compte, corps `{"email", "mdp"}` |
-| `POST /api/login` | connexion, corps `{"email", "mdp"}` |
+| `POST /api/inscription` | création de compte, corps `{"email", "pseudo", "mdp"}` |
+| `POST /api/login` | connexion, corps `{"identifiant", "mdp"}` : l'identifiant est le pseudo ou l'adresse e-mail |
 | `POST /api/logout` | déconnexion |
 | `GET /api/session` | l'utilisateur connecté, s'il y en a un |
 | `POST /api/commande` | validation de commande (client connecté), corps `{"lignes"}` |
 | `GET /api/commande?numero=…` | une commande du client connecté |
-| `POST /api/admin/login` · `POST /api/admin/logout` · `GET /api/admin/session` | connexion au back-office, séparée de celle des clients (comptes `admin` uniquement) |
+| `POST /api/admin/login` · `POST /api/admin/logout` · `GET /api/admin/session` | connexion au back-office (corps `{"identifiant", "mdp"}`), séparée de celle des clients (comptes `admin` uniquement) |
 | `GET /api/admin/tableau-de-bord` | indicateurs du back-office (admin) |
 | `POST /api/admin/commande/statut` | changement de statut d'une commande (rôle `admin`), corps `{"numero", "statut"}` ; l'annulation recrédite le stock |
 
@@ -170,8 +170,8 @@ par l'authentification HTTP d'Apache, et un 401 ferait redemander au
 navigateur les identifiants de l'IUT. Non connecté : 403 ; identifiants
 incorrects : 422.
 
-Tests (curl, sans dépendance) : `tests/commande.sh`, `tests/stock.sh` et
-`tests/mouvements-stock.sh`, avec l'URL du projet en argument. Le dernier écrit
+Tests (curl, sans dépendance) : `tests/compte.sh`, `tests/commande.sh`,
+`tests/stock.sh` et `tests/mouvements-stock.sh`, avec l'URL du projet en argument. Le dernier écrit
 en base (commandes annulées, journal) et vérifie la concurrence sur la dernière
 unité : avec `php -S`, lancer le serveur avec `PHP_CLI_SERVER_WORKERS=6`.
 
@@ -179,12 +179,14 @@ unité : avec `php -S`, lancer le serveur avec `PHP_CLI_SERVER_WORKERS=6`.
 
 Comptes de test créés par `sql/import.sql` (mots de passe stockés en bcrypt) :
 
-| Adresse e-mail | Mot de passe | Rôle |
-|---|---|---|
-| `client@playstation.test` | `client1234` | `client` |
-| `admin@playstation.test` | `admin1234` | `admin` |
+| Pseudo | Adresse e-mail | Mot de passe | Rôle |
+|---|---|---|---|
+| `client` | `client@playstation.test` | `client1234` | `client` |
+| `admin` | `admin@playstation.test` | `admin1234` | `admin` |
 
-Un visiteur peut aussi créer son compte depuis la page `/connexion`. Le compte
+On se connecte avec le pseudo ou avec l'adresse e-mail. Une fois connecté, le
+bouton « Mon compte » du header affiche le pseudo. Un visiteur peut aussi créer
+son compte (adresse, pseudo, mot de passe) depuis la page `/connexion`. Le compte
 admin se connecte uniquement par `/admin` : les deux connexions sont séparées.
 
 ## Si ça ne marche pas

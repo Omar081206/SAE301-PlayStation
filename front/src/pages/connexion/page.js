@@ -19,9 +19,11 @@ import template from "./template.html?raw";
  */
 
 let M = {
-  session: null, // { connecte, email, role } : dernier état renvoyé par le serveur
+  session: null, // { connecte, email, pseudo, role } : dernier état renvoyé par le serveur
   onglet: "connexion", // carte affichée en dessous de lg : "connexion" ou "inscription"
-  email: "", // dernière adresse saisie, pour pré-remplir les formulaires
+  // Dernière saisie de chaque formulaire, pour les pré-remplir : pseudo ou
+  // adresse à la connexion, adresse et pseudo à l'inscription.
+  saisies: { connexion: { identifiant: "", pseudo: "" }, inscription: { identifiant: "", pseudo: "" } },
   erreurs: { connexion: null, inscription: null }, // message de chaque formulaire
   message: null, // { type, texte }, ou null
 };
@@ -56,11 +58,11 @@ C.charger = async function () {
   }
 };
 
-C.handler_connexion = async function (email, mdp) {
-  M.email = email;
+C.handler_connexion = async function (identifiant, mdp) {
+  M.saisies.connexion.identifiant = identifiant;
 
   try {
-    M.session = await AuthData.login(email, mdp);
+    M.session = await AuthData.login(identifiant, mdp);
     M.erreurs = { connexion: null, inscription: null };
     M.message = { type: "succes", texte: "Vous êtes connecté." };
     if (C.retourner()) return;
@@ -71,11 +73,11 @@ C.handler_connexion = async function (email, mdp) {
   V.rafraichir();
 };
 
-C.handler_inscription = async function (email, mdp) {
-  M.email = email;
+C.handler_inscription = async function (email, mdp, pseudo) {
+  M.saisies.inscription = { identifiant: email, pseudo };
 
   try {
-    M.session = await AuthData.inscription(email, mdp);
+    M.session = await AuthData.inscription(email, pseudo, mdp);
     M.erreurs = { connexion: null, inscription: null };
     M.message = { type: "succes", texte: "Votre compte est créé : vous êtes connecté." };
     if (C.retourner()) return;
@@ -120,7 +122,7 @@ V.init = function () {
 };
 
 // Même principe que la page Catalogue : toute la page se reconstruit à partir
-// du modèle. La saisie de l'adresse survit parce qu'elle est dans le modèle.
+// du modèle. La saisie survit parce qu'elle est dans le modèle.
 V.rafraichir = function () {
   let fragment = V.createPageFragment();
   let nouvelleRacine = fragment.firstElementChild;
@@ -160,7 +162,13 @@ V.createPageFragment = function () {
   for (let mode of ["connexion", "inscription"]) {
     slots[mode].replaceWith(
       FormulaireIdentificationView.dom(
-        { mode, email: M.email, erreur: M.erreurs[mode], masqueEnMobile: M.onglet !== mode },
+        {
+          mode,
+          identifiant: M.saisies[mode].identifiant,
+          pseudo: M.saisies[mode].pseudo,
+          erreur: M.erreurs[mode],
+          masqueEnMobile: M.onglet !== mode,
+        },
         { surEnvoi: mode === "connexion" ? C.handler_connexion : C.handler_inscription }
       )
     );

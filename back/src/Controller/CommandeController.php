@@ -56,7 +56,7 @@ final class CommandeController
         $id = (int) ($_SESSION['id'] ?? 0);
 
         if ($id === 0 || !$this->utilisateurs->existe($id)) {
-            unset($_SESSION['id'], $_SESSION['utilisateur'], $_SESSION['role']);
+            unset($_SESSION['id'], $_SESSION['utilisateur'], $_SESSION['pseudo'], $_SESSION['role']);
             Response::erreur($message, 403);
         }
 
