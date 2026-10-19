@@ -1,11 +1,5 @@
-<div class="px-7 py-7 lg:px-10 lg:py-10">
-  <a href="/admin/commandes" data-link class="mb-3.5 inline-block text-sm text-lien underline">← Toutes les commandes</a>
-  <h1 class="mb-5.25 text-produit-sm font-light md:text-produit-md lg:mb-8 lg:text-produit-lg">Détail de la commande</h1>
-
+<div class="flex flex-col gap-3.5 px-5.25 pt-5.25 pb-10 lg:gap-6 lg:px-10 lg:pt-8 lg:pb-12">
   <slot name="message"></slot>
-
-  <div class="flex flex-col gap-6 lg:gap-8">
-    <slot name="confirmation"></slot>
-    <slot name="detail"></slot>
-  </div>
+  <slot name="detail"></slot>
+  <slot name="modale"></slot>
 </div>

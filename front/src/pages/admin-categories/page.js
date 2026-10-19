@@ -1,25 +1,25 @@
 import { AdminCategorieData } from "../../data/admin-categorie.js";
+import { naviguer } from "../../lib/navigation.js";
 import { htmlToFragment } from "../../lib/utils.js";
 import { ConfirmationSuppressionView } from "../../ui/confirmation-suppression/index.js";
 import { FormulaireCategorieView } from "../../ui/formulaire-categorie/index.js";
 import { MessageView } from "../../ui/message/index.js";
 import { TableauCategoriesView } from "../../ui/tableau-categories/index.js";
 import template from "./template.html?raw";
-import templateAccesRefuse from "./acces-refuse.html?raw";
 
 /**
  * Page « Catégories » du back-office : créer, modifier et supprimer les
  * catégories du catalogue.
  *
  * Comme la page Administration, elle ne protège rien : c'est le serveur qui
- * décide de l'accès (403 sans session d'administration) et qui valide chaque
- * saisie. Une suppression passe toujours par une confirmation, où l'on
+ * décide de l'accès et qui valide chaque saisie. Sans session
+ * d'administration (403), elle renvoie à /admin, qui affiche la connexion.
+ * Une suppression passe toujours par une fenêtre de confirmation, où l'on
  * choisit la catégorie qui recevra les produits.
  */
 
 let M = {
-  categories: null, // liste renvoyée par le serveur, ou null s'il l'a refusée
-  acces: true, // faux si le serveur a répondu 403
+  categories: null, // liste renvoyée par le serveur, ou null
   edition: null, // identifiant de la catégorie modifiée, ou null (création)
   suppression: null, // identifiant de la catégorie à supprimer, ou null
   saisie: { nom: "", description: "" }, // dernière saisie du formulaire
@@ -37,20 +37,21 @@ C.categorie = function (id) {
 };
 
 /**
- * Demande les catégories. Le résultat dépend de ce que décide le serveur.
+ * Demande les catégories. Renvoie faux sans session d'administration (403).
  */
 C.charger = async function () {
   try {
     M.categories = (await AdminCategorieData.fetchAll()).categories;
-    M.acces = true;
   } catch (erreur) {
     M.categories = null;
-    M.acces = erreur.statut !== 403;
 
-    if (M.acces) {
-      M.message = { type: "erreur", texte: `Impossible de charger les catégories : ${erreur.message}` };
+    if (erreur.statut === 403) {
+      return false;
     }
+    M.message = { type: "erreur", texte: `Impossible de charger les catégories : ${erreur.message}` };
   }
+
+  return true;
 };
 
 /**
@@ -133,7 +134,13 @@ C.handler_annulerSuppression = async function () {
 C.init = async function () {
   C.reinitialiser();
   M.message = null;
-  await C.charger();
+
+  if (!(await C.charger())) {
+    naviguer("/admin");
+    // Le routeur affichera la connexion : ce contenu ne sera pas montré.
+    return "";
+  }
+
   return V.init();
 };
 
@@ -148,16 +155,19 @@ V.init = function () {
 };
 
 // Même principe que la page Catalogue : toute la page se reconstruit à partir
-// du modèle. La saisie survit parce qu'elle est dans le modèle. Le focus va
-// à l'encart qui vient de s'ouvrir (confirmation, modification), pour qu'un
-// lecteur d'écran l'annonce.
+// du modèle. La saisie survit parce qu'elle est dans le modèle. La fenêtre de
+// suppression, reconstruite avec la page, est rouverte ; en modification, le
+// focus va au formulaire (sous la liste sur mobile), pour qu'un lecteur
+// d'écran l'annonce.
 V.rafraichir = function () {
   let fragment = V.createPageFragment();
   let nouvelleRacine = fragment.firstElementChild;
   V.racine.replaceWith(fragment);
   V.racine = nouvelleRacine;
 
-  if (M.suppression !== null || M.edition !== null) {
+  if (M.suppression !== null) {
+    V.racine.querySelector("dialog").showModal();
+  } else if (M.edition !== null) {
     V.racine.querySelector("[data-focus]").focus();
   }
 };
@@ -168,31 +178,21 @@ V.createPageFragment = function () {
   pageFragment.querySelector('slot[name="message"]').replaceWith(MessageView.dom(M.message));
 
   let slots = {};
-  for (let nom of ["confirmation", "formulaire", "liste"]) {
+  for (let nom of ["liste", "formulaire", "modale"]) {
     slots[nom] = pageFragment.querySelector(`slot[name="${nom}"]`);
   }
 
   if (M.categories === null) {
-    slots.confirmation.remove();
-    slots.formulaire.remove();
-    slots.liste.replaceWith(M.acces ? "" : htmlToFragment(templateAccesRefuse));
+    Object.values(slots).forEach((slot) => slot.remove());
     return pageFragment;
   }
 
-  if (M.suppression === null) {
-    slots.confirmation.remove();
-  } else {
-    slots.confirmation.replaceWith(
-      ConfirmationSuppressionView.dom(
-        {
-          categorie: C.categorie(M.suppression),
-          autres: M.categories.filter((categorie) => categorie.id !== M.suppression),
-          erreur: M.erreurs.suppression,
-        },
-        { surConfirmation: C.handler_confirmerSuppression, surAnnulation: C.handler_annulerSuppression }
-      )
-    );
-  }
+  slots.liste.replaceWith(
+    TableauCategoriesView.dom(M.categories, {
+      surModification: C.handler_modifier,
+      surSuppression: C.handler_supprimer,
+    })
+  );
 
   slots.formulaire.replaceWith(
     FormulaireCategorieView.dom(
@@ -206,12 +206,20 @@ V.createPageFragment = function () {
     )
   );
 
-  slots.liste.replaceWith(
-    TableauCategoriesView.dom(M.categories, {
-      surModification: C.handler_modifier,
-      surSuppression: C.handler_supprimer,
-    })
-  );
+  if (M.suppression === null) {
+    slots.modale.remove();
+  } else {
+    slots.modale.replaceWith(
+      ConfirmationSuppressionView.dom(
+        {
+          categorie: C.categorie(M.suppression),
+          autres: M.categories.filter((categorie) => categorie.id !== M.suppression),
+          erreur: M.erreurs.suppression,
+        },
+        { surConfirmation: C.handler_confirmerSuppression, surRetour: C.handler_annulerSuppression }
+      )
+    );
+  }
 
   return pageFragment;
 };

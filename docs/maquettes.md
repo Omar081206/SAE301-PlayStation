@@ -23,8 +23,20 @@ c'est la source des composants `front/src/ui/`.
 | K · Détail d'une commande | SUI-c | `30:1314` | `64:1581` | `30:1243` |
 | K2 · Commande renouvelée | SUI-a | `120:2417` | `120:2327` | `120:2231` |
 | Menu | navigation (header) | `64:2630` | `64:2653` | — |
+| L · Connexion administrateur | GOF-b | `33:1199` | `64:1961` | `31:739` |
+| M · Tableau de bord | GOF-b | `33:1213` | `64:1975` | `31:759` |
+| Menu admin | navigation (back-office) | `64:2676` | `64:2700` | — (barre latérale `80:2152`) |
+| N · Commandes | PIL-b | `33:1264` | `64:1991` | `31:874` |
+| N · Commandes — Modale d’annulation | PIL-b | `152:2674` | `152:2608` | `31:1070` |
+| O · Détail commande | PIL-b | `152:2079` | `64:2047` | `31:1279` |
+| P · Produits | GOF-a | `152:2175` | `64:2150` | `32:894` |
+| P · Produits — Modale de suppression | GOF-a | `152:2848` | `152:2740` | `36:1646` |
+| Q · Formulaire produit | GOF-a | `152:2287` | `64:2269` | `32:1078` |
+| R · Catégories | GOF-c | `152:2401` | `64:2394` | `32:1237` |
+| R · Catégories — Modale de suppression | GOF-c | `152:3032` | `152:2959` | `32:1338` |
+| S · Statistiques | PIL-a | `152:2461` | `64:2473` | `32:1454` |
 
-Aucune maquette pour : STK-a/b/c, OPT-a/b/c, GOF-a/b/c, PIL-a/b, PRO-a/b/c.
+Back-office : section `29:1396` (écrans L à S). Aucune maquette pour : STK-a/b/c, OPT-a/b/c, PRO-a/b/c.
 Pour ces US, l'agent s'appuie sur les composants du cadre « Composants » et **demande** à l'utilisateur
 (plutôt que d'inventer un écran) quand un écran manque.
 

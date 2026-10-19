@@ -13,11 +13,11 @@ let IndicateursView = {
   dom: function (tableau) {
     let fragment = htmlToFragment(template);
 
+    // Les deux indicateurs de la maquette. L'API en fournit d'autres
+    // (commandes en cours, variantes épuisées), réservés aux statistiques.
     let indicateurs = [
       { libelle: "Produits", valeur: tableau.produits },
       { libelle: "Commandes", valeur: tableau.commandes },
-      { libelle: "Commandes en cours", valeur: tableau.commandesEnCours },
-      { libelle: "Variantes épuisées", valeur: tableau.variantesEpuisees },
     ].map((indicateur) => htmlToFragment(genericRenderer(templateIndicateur, indicateur)));
     fragment.querySelector('slot[name="indicateurs"]').replaceWith(...indicateurs);
 

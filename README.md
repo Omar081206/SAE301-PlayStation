@@ -168,7 +168,7 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `GET /api/admin/categories` | catégories du back-office, avec leur nombre de produits (admin) |
 | `POST /api/admin/categorie/creer` · `POST /api/admin/categorie/modifier` | création (`{"nom", "description"}`) ou modification (`{"id", "nom", "description"}`) d'une catégorie (admin) ; le slug est déduit du nom |
 | `POST /api/admin/categorie/supprimer` | suppression, corps `{"id", "destination"}` : les produits sont déplacés vers `destination` ; refusée (409) si la catégorie a des produits et qu'aucune destination n'est donnée |
-| `GET /api/admin/commandes?tri=date\|statut\|montant&sens=asc\|desc` | toutes les commandes, triées (admin) |
+| `GET /api/admin/commandes?tri=numero\|date\|statut\|montant&sens=asc\|desc` | toutes les commandes, triées, avec les statuts possibles de chacune (admin) |
 | `GET /api/admin/commande?numero=…` | détail d'une commande : client, lignes, historique des changements de statut, statuts possibles (admin) |
 | `POST /api/admin/commande/statut` | changement de statut d'une commande (rôle `admin`), corps `{"numero", "statut"}` ; l'annulation recrédite le stock |
 | `POST /api/admin/commandes/statut` | changement de statut en lot, corps `{"numeros", "statut"}` : chaque commande est traitée séparément, le résultat de chacune est renvoyé |

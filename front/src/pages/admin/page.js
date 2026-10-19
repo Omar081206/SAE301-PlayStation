@@ -1,22 +1,25 @@
 import { AdminData } from "../../data/admin.js";
+import logoSony from "../../assets/logo-sony.svg";
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { FormulaireConnexionView } from "../../ui/formulaire-connexion/index.js";
 import { IndicateursView } from "../../ui/indicateurs/index.js";
 import { MessageView } from "../../ui/message/index.js";
 import template from "./template.html?raw";
+import templateConnexion from "./connexion.html?raw";
 
 /**
  * Page « Administration » : accueil du back-office.
  *
  * La page ne protège rien : c'est le serveur qui décide de l'accès. Elle
  * demande les indicateurs ; avec une session d'administration, il les
- * renvoie (200), sinon il refuse (403) et la page affiche le formulaire de
- * connexion administrateur.
+ * renvoie (200), sinon il refuse (403) et la page affiche, en plein écran,
+ * la connexion administrateur.
  */
 
 let M = {
   email: "", // dernière adresse saisie, pour pré-remplir le formulaire
   tableau: null, // indicateurs, si le serveur les a fournis
+  erreurConnexion: null, // refus de la connexion, affiché dans la carte
   message: null, // { type, texte }, ou null
 };
 
@@ -43,11 +46,11 @@ C.handler_connexion = async function (email, mdp) {
 
   try {
     await AdminData.login(email, mdp);
-    M.message = null;
+    M.erreurConnexion = null;
     // La requête suivante transporte le cookie de session reçu à l'instant.
     await C.chargerTableau();
   } catch (erreur) {
-    M.message = { type: "erreur", texte: erreur.message };
+    M.erreurConnexion = erreur.message;
   }
 
   V.rafraichir();
@@ -55,6 +58,7 @@ C.handler_connexion = async function (email, mdp) {
 
 C.init = async function () {
   M.message = null;
+  M.erreurConnexion = null;
   await C.chargerTableau();
   return V.init();
 };
@@ -79,22 +83,26 @@ V.rafraichir = function () {
 };
 
 V.createPageFragment = function () {
-  // Le titre dépend de l'accès : il est rendu avec le template.
-  let titre = M.tableau === null ? "Back-office" : "Tableau de bord";
-  let pageFragment = htmlToFragment(genericRenderer(template, { titre }));
+  // Sans accès, l'écran de connexion remplace tout le back-office.
+  if (M.tableau === null && M.message === null) {
+    let fragment = htmlToFragment(genericRenderer(templateConnexion, { logoSony }));
+    fragment
+      .querySelector('slot[name="formulaire"]')
+      .replaceWith(
+        FormulaireConnexionView.dom({ email: M.email, erreur: M.erreurConnexion }, { surConnexion: C.handler_connexion })
+      );
+    return fragment;
+  }
+
+  let pageFragment = htmlToFragment(template);
 
   pageFragment.querySelector('slot[name="message"]').replaceWith(MessageView.dom(M.message));
 
-  let slotConnexion = pageFragment.querySelector('slot[name="connexion"]');
   let slotIndicateurs = pageFragment.querySelector('slot[name="indicateurs"]');
 
   if (M.tableau === null) {
     slotIndicateurs.remove();
-    slotConnexion.replaceWith(
-      FormulaireConnexionView.dom({ email: M.email }, { surConnexion: C.handler_connexion })
-    );
   } else {
-    slotConnexion.remove();
     slotIndicateurs.replaceWith(IndicateursView.dom(M.tableau));
   }
 

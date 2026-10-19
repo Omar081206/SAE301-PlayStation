@@ -1,5 +1,9 @@
-<div class="flex min-h-screen flex-col bg-tuile-claire lg:flex-row">
-  <slot name="navigation"></slot>
+<!-- La page de connexion (data-ecran="connexion") occupe tout l'écran : la
+     navigation est alors masquée, en CSS (:has), sans logique dans le layout. -->
+<div class="group flex min-h-screen flex-col bg-tuile-claire lg:flex-row">
+  <div class="group-has-[[data-ecran=connexion]]:hidden lg:sticky lg:top-0 lg:h-screen lg:shrink-0">
+    <slot name="navigation"></slot>
+  </div>
   <main class="min-w-0 flex-1">
     <!-- Le slot sans nom reçoit la page affichée (voir lib/router.js). -->
     <slot></slot>

@@ -1,30 +1,36 @@
-import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
+import { genericRenderer } from "../../lib/utils.js";
+import { ModaleView } from "../modale/index.js";
 import template from "./template.html?raw";
+import templateLot from "./lot.html?raw";
 
-// Demande de confirmation avant d'annuler une ou plusieurs commandes : une
-// annulation rend le stock et ne se défait pas. Le composant ne décide de
-// rien : il signale la réponse de l'administrateur.
+// Fenêtre de confirmation avant d'annuler une ou plusieurs commandes : une
+// annulation rend le stock et ne se défait pas. Les explications sont dans
+// les templates ; la fenêtre elle-même est ui/modale.
 let ConfirmationAnnulationView = {
-  html: function (numeros) {
-    let titre = numeros.length === 1 ? `Annuler la commande ${numeros[0]} ?` : `Annuler ${numeros.length} commandes ?`;
-    let explication =
-      numeros.length === 1
-        ? "Les articles de la commande seront remis en stock. Une commande annulée ne peut plus changer de statut."
-        : "Les articles de ces commandes seront remis en stock. Les commandes déjà retirées ou annulées ne changeront pas. Une commande annulée ne peut plus changer de statut.";
-    return genericRenderer(template, { titre, explication });
-  },
-
   /**
-   * @param {string[]} numeros  Commandes à annuler.
+   * @param {{numeros: string[], articles: number, erreur: string|null}} data
+   *   articles : nombre d'articles de la commande (une seule commande).
    * @param {{surConfirmation: () => void, surRetour: () => void}} actions
    */
-  dom: function (numeros, actions) {
-    let fragment = htmlToFragment(ConfirmationAnnulationView.html(numeros));
+  dom: function (data, actions) {
+    let seule = data.numeros.length === 1;
+    let remise =
+      data.articles > 1
+        ? `Les ${data.articles} articles de cette commande seront remis en stock.`
+        : "L’article de cette commande sera remis en stock.";
 
-    fragment.querySelector('[data-action="confirmer"]').addEventListener("click", () => actions.surConfirmation());
-    fragment.querySelector('[data-action="retour"]').addEventListener("click", () => actions.surRetour());
-
-    return fragment;
+    return ModaleView.dom(
+      {
+        titre: seule ? `Annuler la commande ${data.numeros[0]} ?` : `Annuler ${data.numeros.length} commandes ?`,
+        // Explications : template.html (une commande), lot.html (plusieurs).
+        texte: seule ? genericRenderer(template, { remise }).trim() : templateLot.trim(),
+        retour: seule ? "Garder la commande" : "Garder les commandes",
+        confirmer: "Confirmer l’annulation",
+        erreur: data.erreur,
+        contenu: null,
+      },
+      { surConfirmation: () => actions.surConfirmation(), surRetour: actions.surRetour }
+    );
   },
 };
 

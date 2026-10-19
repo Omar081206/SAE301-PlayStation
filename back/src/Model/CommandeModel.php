@@ -20,6 +20,7 @@ final class CommandeModel
      * déclaration (en cours, disponible, retirée, annulée).
      */
     private const TRIS = [
+        'numero'  => 'commande.id',
         'date'    => 'commande.cree_le',
         'statut'  => 'commande.statut',
         'montant' => 'commande.total',
@@ -364,7 +365,7 @@ final class CommandeModel
      * Toutes les commandes, pour le back-office : numéro, date, client,
      * nombre d'articles, total et statut.
      *
-     * @param string $tri  Clé de TRIS (date, statut ou montant), déjà
+     * @param string $tri  Clé de TRIS (numero, date, statut ou montant), déjà
      *                     validée par le contrôleur.
      * @param bool   $croissant Sens du tri ; à valeur égale, la plus récente
      *                          d'abord.
@@ -435,7 +436,7 @@ final class CommandeModel
         // Un administrateur supprimé depuis : l'auteur reste inconnu (NULL).
         $requeteJournal = $this->pdo->prepare(
             'SELECT journal_admin.ancien_statut, journal_admin.nouveau_statut, journal_admin.cree_le,
-                    utilisateur.prenom, utilisateur.nom
+                    utilisateur.email
                FROM journal_admin
           LEFT JOIN utilisateur ON utilisateur.id = journal_admin.utilisateur_id
               WHERE journal_admin.commande_id = :id
@@ -451,7 +452,7 @@ final class CommandeModel
                 'ancien'  => $ligne['ancien_statut'],
                 'nouveau' => $ligne['nouveau_statut'],
                 'le'      => $ligne['cree_le'],
-                'par'     => $ligne['prenom'] === null ? null : trim($ligne['prenom'] . ' ' . $ligne['nom']),
+                'par'     => $ligne['email'],
             ];
         }
 

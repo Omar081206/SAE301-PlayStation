@@ -4,10 +4,11 @@ let AdminCommandeData = {};
 
 /**
  * Toutes les commandes : GET /api/admin/commandes?tri=…&sens=…
- * tri : "date", "statut" ou "montant" ; sens : "asc" ou "desc".
+ * tri : "numero", "date", "statut" ou "montant" ; sens : "asc" ou "desc".
  * 403 sans connexion administrateur.
  *
- * { commandes: [ { numero, statut, total, cree_le, client, articles } ], tri, sens }
+ * { commandes: [ { numero, statut, total, cree_le, client, articles, suivants } ], tri, sens }
+ * suivants : statuts vers lesquels chaque commande peut passer.
  */
 AdminCommandeData.fetchAll = async function (tri, sens) {
   return getRequest(`admin/commandes?tri=${encodeURIComponent(tri)}&sens=${encodeURIComponent(sens)}`);

@@ -1,14 +1,17 @@
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import template from "./template.html?raw";
 import templateLigne from "./ligne.html?raw";
+import templateElement from "./element.html?raw";
+import templateActions from "./actions.html?raw";
 import templateVide from "./vide.html?raw";
 
 // Liste des catégories du back-office, telles que les renvoie l'API :
-// { id, nom, slug, description, nombre }. Le composant ne décide de rien : il
-// affiche et signale les demandes de modification et de suppression.
+// { id, nom, slug, description, nombre }. Tableau à partir de lg, liste en
+// dessous. Le composant ne décide de rien : il affiche et signale les
+// demandes de modification et de suppression.
 let TableauCategoriesView = {
   /**
-   * @param {Array<{id: number, nom: string, slug: string, description: string, nombre: number}>} categories
+   * @param {Array<{id: number, nom: string}>} categories
    * @param {{surModification: (id: number) => void, surSuppression: (id: number) => void}} actions
    */
   dom: function (categories, actions) {
@@ -17,26 +20,29 @@ let TableauCategoriesView = {
     }
 
     let fragment = htmlToFragment(template);
+    let lignes = [];
+    let elements = [];
 
-    let lignes = categories.map((categorie) => {
-      let ligne = htmlToFragment(
-        genericRenderer(templateLigne, {
-          nom: categorie.nom,
-          slug: categorie.slug,
-          description: categorie.description,
-          produits: categorie.nombre > 1 ? `${categorie.nombre} produits` : `${categorie.nombre} produit`,
-        })
-      );
-      ligne
-        .querySelector('[data-action="modifier"]')
-        .addEventListener("click", () => actions.surModification(categorie.id));
-      ligne
-        .querySelector('[data-action="supprimer"]')
-        .addEventListener("click", () => actions.surSuppression(categorie.id));
-      return ligne;
-    });
+    for (let categorie of categories) {
+      for (let [modele, liste] of [
+        [templateLigne, lignes],
+        [templateElement, elements],
+      ]) {
+        let element = htmlToFragment(genericRenderer(modele, { nom: categorie.nom }));
+        let boutons = htmlToFragment(genericRenderer(templateActions, { nom: categorie.nom }));
+        boutons
+          .querySelector('[data-action="modifier"]')
+          .addEventListener("click", () => actions.surModification(categorie.id));
+        boutons
+          .querySelector('[data-action="supprimer"]')
+          .addEventListener("click", () => actions.surSuppression(categorie.id));
+        element.querySelector('slot[name="actions"]').replaceWith(boutons);
+        liste.push(element);
+      }
+    }
 
-    fragment.querySelector('slot[name="lignes"]').replaceWith(...lignes);
+    fragment.querySelector("tbody").append(...lignes);
+    fragment.querySelector('slot[name="elements"]').replaceWith(...elements);
     return fragment;
   },
 };

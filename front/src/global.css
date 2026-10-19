@@ -19,6 +19,7 @@
   --clr-lavande-claire: #f7f8fd;
   --clr-orange: #d53b00;
   --clr-vert: #007a62;
+  --clr-rouge: #c81b3a;
   --clr-jaune: #fcc71d;
   --clr-gris-nav: #1f1f1f;
   --clr-gris-champ: #6b6b6b;
@@ -46,6 +47,7 @@
   --color-desactive: var(--clr-noir-32);
   --color-succes: var(--clr-vert);
   --color-alerte: var(--clr-jaune);
+  --color-erreur: var(--clr-rouge);
   --color-trait: var(--clr-noir-12);
   --color-champ: var(--clr-gris-champ);
   --color-secondaire: var(--clr-noir-06);

@@ -1,0 +1,9 @@
+<li class="flex flex-col gap-2 rounded-xl border border-trait bg-page p-3.5">
+  <div class="flex items-center gap-2.5">
+    <input type="checkbox" data-action="choisir" aria-label="Sélectionner la commande {{numero}}" class="size-4.5 accent-action">
+    <p class="font-bold">{{numero}}</p>
+    <span class="ml-auto"><slot name="statut"></slot></span>
+  </div>
+  <p class="text-sm text-texte-attenue">{{dateCourte}} · {{total}}</p>
+  <slot name="actions"></slot>
+</li>
