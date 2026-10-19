@@ -11,7 +11,7 @@ pages et composants, avec un routeur côté client. Construite sur le starter
   serveur ;
 - comptes clients (mots de passe en bcrypt, session PHP), validation de
   commande avec numéro unique ;
-- page Administration du starter réservée au rôle `admin`.
+- back-office `/admin` (tableau de bord), avec sa propre connexion réservée aux comptes `admin`.
 
 ## Arborescence
 
@@ -161,7 +161,8 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `GET /api/session` | l'utilisateur connecté, s'il y en a un |
 | `POST /api/commande` | validation de commande (client connecté), corps `{"lignes"}` |
 | `GET /api/commande?numero=…` | une commande du client connecté |
-| `GET /api/admin/stats` | statistiques du starter, réservées au rôle `admin` |
+| `POST /api/admin/login` · `POST /api/admin/logout` · `GET /api/admin/session` | connexion au back-office, séparée de celle des clients (comptes `admin` uniquement) |
+| `GET /api/admin/tableau-de-bord` | indicateurs du back-office (admin) |
 | `POST /api/admin/commande/statut` | changement de statut d'une commande (rôle `admin`), corps `{"numero", "statut"}` ; l'annulation recrédite le stock |
 
 L'API ne répond jamais 401 : sur mmi.unilim.fr, l'espace web est déjà protégé
@@ -183,7 +184,8 @@ Comptes de test créés par `sql/import.sql` (mots de passe stockés en bcrypt) 
 | `client@playstation.test` | `client1234` | `client` |
 | `admin@playstation.test` | `admin1234` | `admin` |
 
-Un visiteur peut aussi créer son compte depuis la page `/connexion`.
+Un visiteur peut aussi créer son compte depuis la page `/connexion`. Le compte
+admin se connecte uniquement par `/admin` : les deux connexions sont séparées.
 
 ## Si ça ne marche pas
 

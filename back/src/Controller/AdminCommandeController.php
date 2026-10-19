@@ -40,8 +40,9 @@ final class AdminCommandeController
      */
     public function statut(Request $requete): void
     {
-        // La session est déjà ouverte par index.php.
-        if (($_SESSION['role'] ?? '') !== 'admin') {
+        // La session est déjà ouverte par index.php. Session d'administration
+        // uniquement (voir AdminController).
+        if (!isset($_SESSION['admin'])) {
             Response::erreur('Accès réservé aux administrateurs', 403);
         }
 
@@ -58,7 +59,7 @@ final class AdminCommandeController
             $nouveau,
             self::TRANSITIONS[$nouveau],
             $nouveau === 'annulee',
-            (int) $_SESSION['id']
+            (int) $_SESSION['admin']['id']
         );
 
         if ($resultat === null) {

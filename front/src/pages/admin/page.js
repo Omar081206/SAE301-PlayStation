@@ -1,66 +1,51 @@
-import { AuthData } from "../../data/auth.js";
-import { StatsData } from "../../data/stats.js";
-import { htmlToFragment } from "../../lib/utils.js";
+import { AdminData } from "../../data/admin.js";
+import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { FormulaireConnexionView } from "../../ui/formulaire-connexion/index.js";
+import { IndicateursView } from "../../ui/indicateurs/index.js";
 import { MessageView } from "../../ui/message/index.js";
-import { StatistiquesView } from "../../ui/statistiques/index.js";
 import template from "./template.html?raw";
 
 /**
- * Page « Administration ».
+ * Page « Administration » : accueil du back-office.
  *
- * La page ne protège rien : le formulaire et la zone de statistiques sont
- * toujours là. C'est le serveur qui décide de l'accès, et la page affiche sa
- * réponse : 200 avec les statistiques, 401 ou 403 sinon.
+ * La page ne protège rien : c'est le serveur qui décide de l'accès. Elle
+ * demande les indicateurs ; avec une session d'administration, il les
+ * renvoie (200), sinon il refuse (403) et la page affiche le formulaire de
+ * connexion administrateur.
  */
 
 let M = {
-  login: "", // dernier identifiant saisi, pour pré-remplir le formulaire
-  stats: null, // statistiques, si le serveur les a fournies
+  email: "", // dernière adresse saisie, pour pré-remplir le formulaire
+  tableau: null, // indicateurs, si le serveur les a fournis
   message: null, // { type, texte }, ou null
 };
 
 let C = {};
 
 /**
- * Demande les statistiques. Le résultat dépend de ce que décide le serveur.
+ * Demande les indicateurs. Le résultat dépend de ce que décide le serveur.
  */
-C.chargerStats = async function () {
+C.chargerTableau = async function () {
   try {
-    M.stats = await StatsData.fetch();
+    M.tableau = await AdminData.fetchTableauDeBord();
   } catch (erreur) {
-    M.stats = null;
+    M.tableau = null;
 
-    let texte = erreur.message;
-    if (erreur.statut === 401) texte = "Vous n'êtes pas connecté.";
-    if (erreur.statut === 403) texte = "Accès réservé aux administrateurs.";
-
-    M.message = { type: "erreur", texte };
+    // 403 : pas de session d'administration, le formulaire suffit.
+    if (erreur.statut !== 403) {
+      M.message = { type: "erreur", texte: `Impossible de charger le tableau de bord : ${erreur.message}` };
+    }
   }
 };
 
-C.handler_connexion = async function (login, mdp) {
-  M.login = login;
+C.handler_connexion = async function (email, mdp) {
+  M.email = email;
 
   try {
-    await AuthData.login(login, mdp);
-    M.message = { type: "succes", texte: `Connecté en tant que ${login}.` };
-    // La requête suivante transporte le cookie de session reçu à l'instant.
-    await C.chargerStats();
-  } catch (erreur) {
-    M.message = { type: "erreur", texte: erreur.message };
-  }
-
-  V.rafraichir();
-};
-
-C.handler_deconnexion = async function () {
-  try {
-    await AuthData.logout();
+    await AdminData.login(email, mdp);
     M.message = null;
-    // On redemande les statistiques : c'est la réponse du serveur, et non le
-    // clic, qui dit si la déconnexion a réellement eu lieu.
-    await C.chargerStats();
+    // La requête suivante transporte le cookie de session reçu à l'instant.
+    await C.chargerTableau();
   } catch (erreur) {
     M.message = { type: "erreur", texte: erreur.message };
   }
@@ -70,7 +55,7 @@ C.handler_deconnexion = async function () {
 
 C.init = async function () {
   M.message = null;
-  await C.chargerStats();
+  await C.chargerTableau();
   return V.init();
 };
 
@@ -85,7 +70,7 @@ V.init = function () {
 };
 
 // Même principe que la page Catalogue : toute la page se reconstruit à partir
-// du modèle. L'identifiant saisi survit parce qu'il est dans le modèle.
+// du modèle. L'adresse saisie survit parce qu'elle est dans le modèle.
 V.rafraichir = function () {
   let fragment = V.createPageFragment();
   let nouvelleRacine = fragment.firstElementChild;
@@ -94,22 +79,23 @@ V.rafraichir = function () {
 };
 
 V.createPageFragment = function () {
-  let pageFragment = htmlToFragment(template);
-
-  pageFragment.querySelector('slot[name="connexion"]').replaceWith(
-    FormulaireConnexionView.dom(
-      { login: M.login },
-      { surConnexion: C.handler_connexion, surDeconnexion: C.handler_deconnexion }
-    )
-  );
+  // Le titre dépend de l'accès : il est rendu avec le template.
+  let titre = M.tableau === null ? "Back-office" : "Tableau de bord";
+  let pageFragment = htmlToFragment(genericRenderer(template, { titre }));
 
   pageFragment.querySelector('slot[name="message"]').replaceWith(MessageView.dom(M.message));
 
-  let slotStats = pageFragment.querySelector('slot[name="statistiques"]');
-  if (M.stats === null) {
-    slotStats.remove();
+  let slotConnexion = pageFragment.querySelector('slot[name="connexion"]');
+  let slotIndicateurs = pageFragment.querySelector('slot[name="indicateurs"]');
+
+  if (M.tableau === null) {
+    slotIndicateurs.remove();
+    slotConnexion.replaceWith(
+      FormulaireConnexionView.dom({ email: M.email }, { surConnexion: C.handler_connexion })
+    );
   } else {
-    slotStats.replaceWith(StatistiquesView.dom(M.stats));
+    slotConnexion.remove();
+    slotIndicateurs.replaceWith(IndicateursView.dom(M.tableau));
   }
 
   return pageFragment;

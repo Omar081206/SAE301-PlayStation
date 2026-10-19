@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use App\Controller\AdminCommandeController;
+use App\Controller\AdminController;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
 use App\Controller\CommandeController;
 use App\Controller\PanierController;
 use App\Controller\ProduitController;
-use App\Controller\StatsController;
 
 /**
  * Table des routes de l'API.
@@ -31,6 +31,9 @@ return [
     'POST /api/logout'      => [AuthController::class,      'logout'],
     'POST /api/inscription' => [AuthController::class,      'inscription'],
     'GET  /api/session'     => [AuthController::class,      'session'],
-    'GET  /api/admin/stats' => [StatsController::class,     'index'],
+    'POST /api/admin/login'           => [AdminController::class, 'login'],
+    'POST /api/admin/logout'          => [AdminController::class, 'logout'],
+    'GET  /api/admin/session'         => [AdminController::class, 'session'],
+    'GET  /api/admin/tableau-de-bord' => [AdminController::class, 'tableauDeBord'],
     'POST /api/admin/commande/statut' => [AdminCommandeController::class, 'statut'],
 ];

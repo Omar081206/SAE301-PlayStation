@@ -84,11 +84,18 @@ IFS=$'\t' read -r code corps <<< "$(api POST commande "$PANIER")"
 NUMERO2="$(champ "$corps" commande.numero)"
 verifier "numéros différents" "$([ "$NUMERO1" != "$NUMERO2" ] && echo oui)" "oui"
 
-echo "7. Un autre client ne voit pas cette commande"
+echo "7. Séparation client / administrateur"
+IFS=$'\t' read -r code corps <<< "$(api POST login '{"email":"admin@playstation.test","mdp":"admin1234"}')"
+verifier "un compte admin ne se connecte pas côté boutique" "$code" "422"
+IFS=$'\t' read -r code corps <<< "$(api POST admin/commande/statut "{\"numero\":\"$NUMERO1\",\"statut\":\"annulee\"}")"
+verifier "une session client n'a pas accès à l'administration" "$code" "403"
 api POST logout '{}' > /dev/null
-api POST login '{"email":"admin@playstation.test","mdp":"admin1234"}' > /dev/null
 IFS=$'\t' read -r code corps <<< "$(api GET "commande?numero=$NUMERO1")"
-verifier "GET /commande d'un autre client" "$code" "404"
+verifier "GET /commande après déconnexion" "$code" "403"
+IFS=$'\t' read -r code corps <<< "$(api POST admin/login '{"email":"admin@playstation.test","mdp":"admin1234"}')"
+verifier "connexion au back-office" "$code" "200"
+IFS=$'\t' read -r code corps <<< "$(api GET "commande?numero=$NUMERO1")"
+verifier "une session admin ne voit pas les commandes côté client" "$code" "403"
 
 echo "8. Remise en état : annulation des deux commandes (stock rendu)"
 for n in "$NUMERO1" "$NUMERO2"; do
