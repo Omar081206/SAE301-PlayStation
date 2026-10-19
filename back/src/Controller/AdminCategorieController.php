@@ -50,17 +50,18 @@ final class AdminCategorieController
 
     /**
      * Slug d'un nom : minuscules sans accents, mots séparés par des tirets.
-     * « Casques & accessoires » donne « casques-accessoires ».
+     * « Casques & accessoires » donne « casques-accessoires ». Partagé avec
+     * AdminProduitController.
      */
-    private function slug(string $nom): string
+    public static function slug(string $nom): string
     {
         $sansAccents = strtr(mb_strtolower($nom), [
             'à' => 'a', 'â' => 'a', 'ä' => 'a', 'á' => 'a', 'ã' => 'a',
             'ç' => 'c',
             'é' => 'e', 'è' => 'e', 'ê' => 'e', 'ë' => 'e',
             'î' => 'i', 'ï' => 'i', 'í' => 'i',
-            'ô' => 'o', 'ö' => 'o', 'ó' => 'o', 'õ' => 'o',
-            'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ú' => 'u',
+            'ô' => 'o', 'ö' => 'o', 'ó' => 'o', 'õ' => 'o', 'ō' => 'o',
+            'ù' => 'u', 'û' => 'u', 'ü' => 'u', 'ú' => 'u', 'ū' => 'u',
             'ÿ' => 'y', 'ñ' => 'n', 'œ' => 'oe', 'æ' => 'ae',
         ]);
 
@@ -79,7 +80,7 @@ final class AdminCategorieController
         $corps       = $requete->corps();
         $nom         = trim((string) ($corps['nom'] ?? ''));
         $description = trim((string) ($corps['description'] ?? ''));
-        $slug        = $this->slug($nom);
+        $slug        = self::slug($nom);
 
         if (mb_strlen($nom) < self::NOM_MIN || mb_strlen($nom) > self::NOM_MAX) {
             Response::erreur('Le nom doit contenir de 2 à 60 caractères.', 422);

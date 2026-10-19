@@ -1,0 +1,11 @@
+<section class="flex flex-col gap-3.5 rounded-xl border border-trait bg-page p-5.25 lg:gap-4 lg:p-6">
+  <h2 class="text-prix-sm font-bold">Paramètre de stock</h2>
+  <slot name="message"></slot>
+  <form class="flex flex-wrap items-end gap-2.5 text-sm">
+    <label class="flex w-full max-w-72 flex-col gap-2">
+      Seuil « Bientôt épuisé » (unités)
+      <input name="seuil" type="number" required min="0" max="99" step="1" value="{{seuil}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+    </label>
+    <button type="submit" class="rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien">Enregistrer</button>
+  </form>
+</section>

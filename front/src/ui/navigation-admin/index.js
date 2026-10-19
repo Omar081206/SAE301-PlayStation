@@ -5,8 +5,8 @@ import templateAVenir from "./a-venir.html?raw";
 
 // Sections du back-office qui n'existent pas encore : elles figurent déjà
 // dans le menu, grisées, et deviennent des liens avec leur user story
-// (Produits : GOF-a, Statistiques : PIL-a).
-const SECTIONS_A_VENIR = { produits: "Produits", statistiques: "Statistiques" };
+// (Statistiques : PIL-a).
+const SECTIONS_A_VENIR = { statistiques: "Statistiques" };
 
 // Mise en forme d'une section à venir dans chacun des deux menus : le menu
 // plein écran (mobile, tablette) puis la barre latérale (desktop). Les

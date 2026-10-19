@@ -166,6 +166,10 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `GET /api/commande?numero=…` | une commande du client connecté |
 | `POST /api/admin/login` · `POST /api/admin/logout` · `GET /api/admin/session` | connexion au back-office (corps `{"email", "mdp"}`), séparée de celle des clients (comptes `admin` uniquement) |
 | `GET /api/admin/tableau-de-bord` | indicateurs du back-office (admin) |
+| `GET /api/admin/produits` · `GET /api/admin/produit?id=…` | produits du back-office (prix le plus bas, stock total, variantes) et seuil « Bientôt épuisé » ; un produit complet (options, variantes, images) et les catégories (admin) |
+| `POST /api/admin/produit/enregistrer` · `POST /api/admin/produit/supprimer` | création ou modification d'un produit avec ses options et ses variantes (prix, stock ; chaque changement de stock est inscrit au journal, motif « ajustement ») ; suppression (admin) |
+| `POST /api/admin/produit/image` (+ `/supprimer`, `/principale`, `/variante`) | téléversement d'une image (data URL, réduite à 1200 px et convertie en WebP, rangée dans `uploads/produits/`), suppression, image principale, rattachement à une variante (admin) |
+| `POST /api/admin/parametre/seuil` | seuil « Bientôt épuisé », corps `{"seuil"}` (admin) |
 | `GET /api/admin/categories` | catégories du back-office, avec leur nombre de produits (admin) |
 | `POST /api/admin/categorie/creer` · `POST /api/admin/categorie/modifier` | création (`{"nom", "description"}`) ou modification (`{"id", "nom", "description"}`) d'une catégorie (admin) ; le slug est déduit du nom |
 | `POST /api/admin/categorie/supprimer` | suppression, corps `{"id", "destination"}` : les produits sont déplacés vers `destination` ; refusée (409) si la catégorie a des produits et qu'aucune destination n'est donnée |
@@ -215,3 +219,12 @@ admin se connecte uniquement par `/admin` : les deux connexions sont séparées.
 | « Impossible de charger le catalogue » | identifiants de `config.php`, ou tables non importées |
 | Les réglages ne sont jamais retenus, la connexion ne tient pas | `chemin` de `config.php` ne correspond pas au dossier de dépôt |
 | En développement, l'API répond 404 | le back n'est pas déployé sur le serveur, ou `BASE` est faux |
+
+## Images téléversées
+
+Les images ajoutées depuis le back-office (`/admin/produits`) sont rangées
+dans `uploads/produits/` (hors du build : `npm run build` ne les efface pas),
+sous un nom commençant par `u-`. Le `.htaccess` les sert à l'adresse
+`images/produits/u-…`, comme les images déposées dans
+`front/public/images/produits/`. Le dossier doit être accessible en écriture
+pour PHP.
