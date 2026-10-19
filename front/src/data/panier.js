@@ -113,6 +113,39 @@ PanierData.ajouterLignes = async function (ajouts) {
 };
 
 /**
+ * Change la variante d'une ligne (modifier les options d'un article) : la
+ * quantité passe à la nouvelle variante, ajoutée à celle qui y est peut-être
+ * déjà, dans la limite de 99.
+ *
+ * Le serveur vérifie d'abord le stock (POST /api/panier) : on enregistre ce
+ * qu'il accorde. Renvoie l'ajustement de la nouvelle variante
+ * ({ variantId, nom, demandee, accordee }), ou null si toute la quantité a
+ * été accordée.
+ */
+PanierData.remplacer = async function (ancienId, nouveauId) {
+  let lignes = PanierData.lire();
+  let ancienne = lignes.find((element) => element.variantId === ancienId);
+
+  if (ancienne === undefined || ancienId === nouveauId) {
+    return null;
+  }
+
+  lignes = lignes.filter((element) => element !== ancienne);
+  let existante = lignes.find((element) => element.variantId === nouveauId);
+
+  if (existante === undefined) {
+    lignes.push({ variantId: nouveauId, quantite: ancienne.quantite });
+  } else {
+    existante.quantite = Math.min(existante.quantite + ancienne.quantite, QUANTITE_MAX);
+  }
+
+  let detail = await PanierData.fetchDetail(lignes);
+  PanierData.aligner(detail);
+
+  return detail.ajustements.find((ajustement) => ajustement.variantId === nouveauId) ?? null;
+};
+
+/**
  * Remplace le panier enregistré par les lignes accordées par le serveur
  * (réponse de fetchDetail) : quantités ramenées au stock, lignes épuisées ou
  * inconnues retirées.

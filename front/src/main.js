@@ -28,6 +28,8 @@ router.addLayout("/admin", AdminLayout);
 router.addRoute("/", CataloguePage);
 router.addRoute("/categorie/:slug", CataloguePage);
 router.addRoute("/produit/:slug", ProduitPage);
+// « Modifier les options » d'un article du panier : même fiche, variante présélectionnée.
+router.addRoute("/produit/:slug/options/:variante", ProduitPage);
 router.addRoute("/panier", PanierPage);
 router.addRoute("/connexion", ConnexionPage);
 router.addRoute("/commande", CommandePage);
