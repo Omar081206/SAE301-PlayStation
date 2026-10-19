@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controller\AdminCategorieController;
 use App\Controller\AdminCommandeController;
 use App\Controller\AdminController;
 use App\Controller\AuthController;
@@ -36,4 +37,8 @@ return [
     'GET  /api/admin/session'         => [AdminController::class, 'session'],
     'GET  /api/admin/tableau-de-bord' => [AdminController::class, 'tableauDeBord'],
     'POST /api/admin/commande/statut' => [AdminCommandeController::class, 'statut'],
+    'GET  /api/admin/categories'         => [AdminCategorieController::class, 'index'],
+    'POST /api/admin/categorie/creer'     => [AdminCategorieController::class, 'creer'],
+    'POST /api/admin/categorie/modifier'  => [AdminCategorieController::class, 'modifier'],
+    'POST /api/admin/categorie/supprimer' => [AdminCategorieController::class, 'supprimer'],
 ];
