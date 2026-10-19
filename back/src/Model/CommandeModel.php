@@ -329,6 +329,70 @@ final class CommandeModel
     }
 
     /**
+     * Une page des commandes d'un utilisateur, la plus récente d'abord, et le
+     * nombre de commandes par statut sur la période (pour les filtres).
+     *
+     * @param string|null $statut   Statut à garder, ou null pour tous (déjà
+     *                              validé par le contrôleur).
+     * @param int|null    $jours    Période en jours avant aujourd'hui, ou null
+     *                              pour toutes les commandes.
+     * @return array{commandes: array<int, array<string, mixed>>, total: int,
+     *               compteurs: array<string, int>}
+     *         total : nombre de commandes qui correspondent aux filtres.
+     */
+    public function historique(int $utilisateurId, ?string $statut, ?int $jours, int $limite, int $decalage): array
+    {
+        // Conditions communes : le client, et la période s'il y en a une.
+        $conditions = 'utilisateur_id = :utilisateur AND (:jours IS NULL OR cree_le >= NOW() - INTERVAL :jours_valeur DAY)';
+
+        $requeteCompteurs = $this->pdo->prepare(
+            "SELECT statut, COUNT(*) AS nombre FROM commande WHERE {$conditions} GROUP BY statut"
+        );
+        $requeteCompteurs->bindValue(':utilisateur',  $utilisateurId, PDO::PARAM_INT);
+        $requeteCompteurs->bindValue(':jours',        $jours,         $jours === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+        $requeteCompteurs->bindValue(':jours_valeur', $jours ?? 0,    PDO::PARAM_INT);
+        $requeteCompteurs->execute();
+
+        $compteurs = ['en_cours' => 0, 'disponible' => 0, 'retiree' => 0, 'annulee' => 0];
+        foreach ($requeteCompteurs->fetchAll() as $ligne) {
+            $compteurs[$ligne['statut']] = (int) $ligne['nombre'];
+        }
+
+        $requetePreparee = $this->pdo->prepare(
+            "SELECT numero, statut, total, cree_le
+               FROM commande
+              WHERE {$conditions} AND (:statut IS NULL OR statut = :statut_valeur)
+           ORDER BY cree_le DESC, id DESC
+              LIMIT :limite OFFSET :decalage"
+        );
+        $requetePreparee->bindValue(':utilisateur',   $utilisateurId, PDO::PARAM_INT);
+        $requetePreparee->bindValue(':jours',         $jours,         $jours === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+        $requetePreparee->bindValue(':jours_valeur',  $jours ?? 0,    PDO::PARAM_INT);
+        $requetePreparee->bindValue(':statut',        $statut,        $statut === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+        $requetePreparee->bindValue(':statut_valeur', $statut ?? '',  PDO::PARAM_STR);
+        $requetePreparee->bindValue(':limite',        $limite,        PDO::PARAM_INT);
+        $requetePreparee->bindValue(':decalage',      $decalage,      PDO::PARAM_INT);
+        $requetePreparee->execute();
+
+        $commandes = [];
+
+        foreach ($requetePreparee->fetchAll() as $ligne) {
+            $commandes[] = [
+                'numero'  => $ligne['numero'],
+                'statut'  => $ligne['statut'],
+                'total'   => (float) $ligne['total'],
+                'cree_le' => $ligne['cree_le'],
+            ];
+        }
+
+        return [
+            'commandes' => $commandes,
+            'total'     => $statut === null ? array_sum($compteurs) : $compteurs[$statut],
+            'compteurs' => $compteurs,
+        ];
+    }
+
+    /**
      * Les lignes d'une commande, prix figés à la commande.
      *
      * @return array<int, array<string, mixed>>

@@ -34,6 +34,7 @@ return [
     'POST /api/inscription' => [AuthController::class,      'inscription'],
     'GET  /api/session'     => [AuthController::class,      'session'],
     'GET  /api/compte'        => [CompteController::class, 'index'],
+    'GET  /api/compte/commandes' => [CompteController::class, 'commandes'],
     'POST /api/compte/profil' => [CompteController::class, 'profil'],
     'POST /api/admin/login'           => [AdminController::class, 'login'],
     'POST /api/admin/logout'          => [AdminController::class, 'logout'],

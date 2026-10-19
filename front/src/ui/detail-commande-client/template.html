@@ -1,0 +1,16 @@
+<div class="flex flex-col items-start gap-5.25 lg:gap-6">
+  <a href="/compte/commandes" data-link class="text-sm font-bold text-lien lg:text-base"><span aria-hidden="true">‹</span> Retour à mes commandes</a>
+  <slot name="statut"></slot>
+
+  <section class="flex w-full flex-col gap-3.5 rounded-xl bg-page p-5.25 shadow-panneau lg:gap-4 lg:rounded-2xl lg:p-6">
+    <h2 class="text-prix-sm font-medium">Articles</h2>
+    <ul class="flex flex-col gap-3.5">
+      <slot name="lignes"></slot>
+    </ul>
+    <hr class="border-trait">
+    <p class="flex justify-between font-bold">
+      <span>Total TTC</span>
+      <span>{{total}}</span>
+    </p>
+  </section>
+</div>
