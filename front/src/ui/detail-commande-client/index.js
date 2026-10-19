@@ -1,20 +1,20 @@
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { formaterPrix } from "../../lib/format.js";
-import { BadgeStatutView } from "../badge-statut/index.js";
 import template from "./template.html?raw";
 import templateLigne from "./ligne.html?raw";
 
-// Détail d'une commande du client, tel que le renvoie l'API : statut,
-// articles (prix figés, options choisies) et total.
+// Détail d'une commande du client, tel que le renvoie l'API : articles
+// (prix figés, options choisies) et total, puis le bouton
+// « Commander à nouveau ». Le composant ne décide de rien : il signale la
+// demande, et la page remet les articles au panier.
 let DetailCommandeClientView = {
   /**
-   * @param {{statut: string, total: number,
+   * @param {{total: number,
    *          lignes: Array<{nom: string, coloris: string|null, quantite: number, sous_total: number}>}} commande
+   * @param {{surRenouvellement: () => void}} actions
    */
-  dom: function (commande) {
+  dom: function (commande, actions) {
     let fragment = htmlToFragment(genericRenderer(template, { total: formaterPrix(commande.total) }));
-
-    fragment.querySelector('slot[name="statut"]').replaceWith(BadgeStatutView.dom(commande.statut));
 
     let lignes = commande.lignes.map((ligne) => {
       let element = htmlToFragment(
@@ -33,6 +33,10 @@ let DetailCommandeClientView = {
       return element;
     });
     fragment.querySelector('slot[name="lignes"]').replaceWith(...lignes);
+
+    fragment
+      .querySelector('[data-action="renouveler"]')
+      .addEventListener("click", () => actions.surRenouvellement());
 
     return fragment;
   },

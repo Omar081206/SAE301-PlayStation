@@ -1,5 +1,6 @@
-<!-- Mobile : titre, menu en pastilles, contenu. À partir de lg : menu à
-     gauche sur toute la hauteur, titre et contenu à droite. -->
+<!-- Même mise en page que l'accueil de l'espace personnel (pages/compte).
+     Les messages (« Commander à nouveau ») se placent entre le statut et le
+     détail, comme sur la maquette. -->
 <div class="grid gap-5.25 px-7 py-7 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-x-10 lg:gap-y-6 lg:px-20 lg:py-8">
   <h1 class="text-intertitre-sm font-light lg:col-start-2 lg:row-start-1 lg:text-produit-lg">{{titre}}</h1>
 
@@ -7,8 +8,10 @@
     <slot name="navigation"></slot>
   </div>
 
-  <div class="flex min-w-0 flex-col gap-5.25 lg:col-start-2 lg:gap-6">
-    <slot name="message"></slot>
+  <div class="flex min-w-0 flex-col items-start gap-5.25 lg:col-start-2 lg:gap-6">
+    <a href="/compte/commandes" data-link class="text-sm font-bold text-lien lg:text-base"><span aria-hidden="true">‹</span> Retour à mes commandes</a>
+    <slot name="statut"></slot>
+    <div class="flex w-full flex-col gap-3.5 *:mb-0 empty:hidden lg:gap-4"><slot name="message"></slot></div>
     <slot name="contenu"></slot>
   </div>
 </div>

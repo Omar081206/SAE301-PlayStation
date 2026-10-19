@@ -393,14 +393,16 @@ final class CommandeModel
     }
 
     /**
-     * Les lignes d'une commande, prix figés à la commande.
+     * Les lignes d'une commande, prix figés à la commande. variantId : la
+     * variante commandée (pour la commander à nouveau), null si elle a été
+     * supprimée depuis.
      *
      * @return array<int, array<string, mixed>>
      */
     private function lignes(int $commandeId): array
     {
         $requeteLignes = $this->pdo->prepare(
-            'SELECT nom, coloris, prix_unitaire, quantite
+            'SELECT variante_id, nom, coloris, prix_unitaire, quantite
                FROM ligne_commande
               WHERE commande_id = :id
            ORDER BY id'
@@ -414,6 +416,7 @@ final class CommandeModel
 
         foreach ($requeteLignes->fetchAll() as $ligne) {
             $lignes[] = [
+                'variantId'     => $ligne['variante_id'] === null ? null : (int) $ligne['variante_id'],
                 'nom'           => $ligne['nom'],
                 'coloris'       => $ligne['coloris'],
                 'prix_unitaire' => (float) $ligne['prix_unitaire'],

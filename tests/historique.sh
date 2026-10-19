@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# Test de l'historique des commandes du client (SUI-c), contre l'API.
+# Test de l'historique des commandes du client (SUI-c, SUI-a), contre l'API.
 #
 # Usage : tests/historique.sh [URL du projet]
 #   URL par défaut : http://localhost:8099/~hadj-zekri1/SAE301
@@ -102,6 +102,7 @@ echo "4. Détail : options visibles, commandes des autres refusées"
 IFS=$'\t' read -r code corps <<< "$(api GET "commande?numero=${NUMEROS[0]}")"
 verifier "GET /commande d'une de ses commandes" "$code" "200"
 verifier "coloris de la ligne" "$(champ "$corps" commande.lignes.0.coloris)" "Noir"
+verifier "variante de la ligne (commander à nouveau)" "$(champ "$corps" commande.lignes.0.variantId)" "17"
 IFS=$'\t' read -r code corps <<< "$(admin GET 'admin/commandes')"
 AUTRE="$(python3 -c 'import json,sys
 for c in json.loads(sys.argv[1])["commandes"]:
