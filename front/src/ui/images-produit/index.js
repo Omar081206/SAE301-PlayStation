@@ -24,18 +24,22 @@ function lireFichiers(fichiers) {
 
 // Carte « Images » du formulaire produit : zone de dépôt (clic ou
 // glisser-déposer) et miniatures. Sous chaque miniature : « Principale » ou
-// le bouton pour qu'elle le devienne, « Supprimer », et la variante à
-// laquelle elle est rattachée (un coloris), s'il y en a plusieurs. Le
+// le bouton pour qu'elle le devienne, « Supprimer », où elle s'affiche
+// (catalogue et fiche, catalogue seulement : une jaquette carrée, fiche
+// seulement : un visuel en paysage), et la variante à laquelle elle est
+// rattachée (un coloris), s'il y en a plusieurs. Le
 // composant ne garde rien : il lit les fichiers et signale les demandes.
 let ImagesProduitView = {
   /**
    * @param {{actif: boolean, message: {type: string, texte: string}|null,
-   *          images: Array<{id: number, variante_id: number|null, fichier: string, alt: string, ordre: number}>,
+   *          images: Array<{id: number, variante_id: number|null, fichier: string, alt: string, ordre: number,
+   *                         affichage: string}>,
    *          variantes: Array<{id: number, libelle: string}>}} data
    *   actif : le produit est enregistré (on peut lui ajouter des images) ;
    *   variantes : celles auxquelles une image peut être rattachée.
    * @param {{surFichiers: (contenus: string[]) => void, surSupprimer: (id: number) => void,
-   *          surPrincipale: (id: number) => void, surVariante: (id: number, variante: number|null) => void}} actions
+   *          surPrincipale: (id: number) => void, surVariante: (id: number, variante: number|null) => void,
+   *          surAffichage: (id: number, affichage: string) => void}} actions
    */
   dom: function (data, actions) {
     let fragment = htmlToFragment(template);
@@ -85,10 +89,14 @@ let ImagesProduitView = {
       }
       element.querySelector('[data-action="supprimer"]').addEventListener("click", () => actions.surSupprimer(image.id));
 
+      let affichage = element.querySelector('[data-role="affichage"]');
+      affichage.value = image.affichage;
+      affichage.addEventListener("change", () => actions.surAffichage(image.id, affichage.value));
+
       if (data.variantes.length < 2) {
         element.querySelector('[data-role="variante"]').remove();
       } else {
-        let liste = element.querySelector("select");
+        let liste = element.querySelector('[data-role="variante"] select');
         liste.append(...data.variantes.map((variante) => htmlToFragment(genericRenderer(templateVariante, variante))));
         liste.value = image.variante_id === null ? "" : String(image.variante_id);
         liste.addEventListener("change", () => actions.surVariante(image.id, liste.value === "" ? null : Number(liste.value)));

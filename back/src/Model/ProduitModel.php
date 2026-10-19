@@ -28,9 +28,10 @@ final class ProduitModel
      * Le prix affiché est le plus bas des variantes du produit. variante_id
      * est la variante par défaut : la première créée qui est en stock, ou, si
      * toutes sont épuisées, la première créée. C'est elle qu'ajoute le bouton
-     * « Ajouter au panier » ; stock est le sien, et l'image est son image
-     * principale (ordre 1), celle du produit si elle n'en a pas en propre, ou
-     * null si le produit n'en a pas encore.
+     * « Ajouter au panier » ; stock est le sien, et l'image est sa première
+     * image pour le catalogue (affichage « partout » ou « catalogue » : une
+     * jaquette carrée pour un jeu), celle du produit si elle n'en a pas en
+     * propre, ou null si le produit n'en a pas encore.
      *
      * @param string|null $categorie Slug de la catégorie à afficher, ou null
      *                               pour tout le catalogue.
@@ -59,10 +60,16 @@ final class ProduitModel
                                   ORDER BY candidate.stock = 0, candidate.id
                                      LIMIT 1)
              LEFT JOIN image AS image_variante
-                    ON image_variante.variante_id = defaut.id AND image_variante.ordre = 1
+                    ON image_variante.id = (SELECT premiere.id FROM image AS premiere
+                                             WHERE premiere.variante_id = defaut.id
+                                               AND premiere.affichage <> \'fiche\'
+                                          ORDER BY premiere.ordre LIMIT 1)
              LEFT JOIN image AS image_produit
-                    ON image_produit.produit_id = produit.id AND image_produit.variante_id IS NULL
-                   AND image_produit.ordre = 1
+                    ON image_produit.id = (SELECT premiere.id FROM image AS premiere
+                                            WHERE premiere.produit_id = produit.id
+                                              AND premiere.variante_id IS NULL
+                                              AND premiere.affichage <> \'fiche\'
+                                         ORDER BY premiere.ordre LIMIT 1)
                  WHERE :categorie IS NULL OR categorie.slug = :categorie_slug
               ORDER BY categorie.id, produit.id';
 
@@ -142,22 +149,37 @@ final class ProduitModel
 
         $produitId = (int) $ligne['id'];
 
+        // Images de la galerie : affichage « partout » ou « fiche » (des
+        // visuels en paysage pour un jeu). Un produit qui n'en a pas garde
+        // toutes ses images, plutôt qu'une galerie vide.
         $requeteImages = $this->pdo->prepare(
-            'SELECT variante_id, fichier, alt FROM image WHERE produit_id = :id ORDER BY ordre'
+            "SELECT variante_id, fichier, alt, affichage FROM image WHERE produit_id = :id ORDER BY affichage = 'catalogue', ordre"
         );
         $requeteImages->bindValue(':id', $produitId, PDO::PARAM_INT);
         $requeteImages->execute();
 
-        // Images du produit (variante_id NULL), et images propres à certaines
-        // variantes, indexées par variante.
+        // Images du produit (groupe « produit »), et images propres à
+        // certaines variantes, indexées par variante. Chaque groupe garde
+        // ses images de galerie, ou toutes s'il n'en a aucune.
+        $groupes = [];
+        foreach ($requeteImages->fetchAll() as $image) {
+            $groupe  = $image['variante_id'] === null ? 'produit' : (int) $image['variante_id'];
+            $donnees = ['fichier' => $image['fichier'], 'alt' => $image['alt']];
+
+            $groupes[$groupe]['toutes'][] = $donnees;
+            if ($image['affichage'] !== 'catalogue') {
+                $groupes[$groupe]['galerie'][] = $donnees;
+            }
+        }
+
         $imagesProduit   = [];
         $imagesVariantes = [];
-        foreach ($requeteImages->fetchAll() as $image) {
-            $donnees = ['fichier' => $image['fichier'], 'alt' => $image['alt']];
-            if ($image['variante_id'] === null) {
-                $imagesProduit[] = $donnees;
+        foreach ($groupes as $groupe => $images) {
+            $galerie = $images['galerie'] ?? $images['toutes'];
+            if ($groupe === 'produit') {
+                $imagesProduit = $galerie;
             } else {
-                $imagesVariantes[(int) $image['variante_id']][] = $donnees;
+                $imagesVariantes[$groupe] = $galerie;
             }
         }
 

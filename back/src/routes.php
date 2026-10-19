@@ -53,6 +53,7 @@ return [
     'POST /api/admin/produit/image/supprimer'  => [AdminProduitController::class, 'imageSupprimer'],
     'POST /api/admin/produit/image/principale' => [AdminProduitController::class, 'imagePrincipale'],
     'POST /api/admin/produit/image/variante'   => [AdminProduitController::class, 'imageVariante'],
+    'POST /api/admin/produit/image/affichage'  => [AdminProduitController::class, 'imageAffichage'],
     'POST /api/admin/parametre/seuil'          => [AdminProduitController::class, 'seuilModifier'],
     'GET  /api/admin/categories'         => [AdminCategorieController::class, 'index'],
     'POST /api/admin/categorie/creer'     => [AdminCategorieController::class, 'creer'],

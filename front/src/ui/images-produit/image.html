@@ -3,6 +3,14 @@
   <span data-role="principale" class="font-medium">Principale</span>
   <button type="button" data-action="principale" aria-label="Faire de l’image {{alt}} l’image principale" class="text-texte-attenue underline">Principale ?</button>
   <button type="button" data-action="supprimer" aria-label="Supprimer l’image {{alt}}" class="font-medium text-texte-attenue">Supprimer</button>
+  <label class="w-full">
+    <span class="sr-only">Où afficher l’image {{alt}}</span>
+    <select data-role="affichage" class="w-full rounded-md border border-trait bg-page px-1 py-1 text-xs">
+      <option value="partout">Catalogue et fiche</option>
+      <option value="catalogue">Catalogue</option>
+      <option value="fiche">Fiche</option>
+    </select>
+  </label>
   <label data-role="variante" class="w-full">
     <span class="sr-only">Variante de l’image {{alt}}</span>
     <select class="w-full rounded-md border border-trait bg-page px-1 py-1 text-xs">

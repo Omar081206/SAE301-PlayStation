@@ -332,6 +332,10 @@ C.handler_varianteImage = async function (id, variante) {
   await C.surImages(() => AdminProduitData.rattacherImage(id, variante), null);
 };
 
+C.handler_affichage = async function (id, affichage) {
+  await C.surImages(() => AdminProduitData.changerAffichage(id, affichage), null);
+};
+
 C.handler_supprimer = async function () {
   M.suppression = { nom: M.enregistre.nom, erreur: null };
   V.rafraichir();
@@ -469,6 +473,7 @@ V.createPageFragment = function () {
         surSupprimer: C.handler_supprimerImage,
         surPrincipale: C.handler_principale,
         surVariante: C.handler_varianteImage,
+        surAffichage: C.handler_affichage,
       }
     )
   );

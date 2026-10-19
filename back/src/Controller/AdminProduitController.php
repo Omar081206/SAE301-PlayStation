@@ -498,6 +498,26 @@ final class AdminProduitController
     }
 
     /**
+     * POST /api/admin/produit/image/affichage, corps JSON { image, affichage } :
+     * « partout », « catalogue » (cartes du catalogue, panier : une jaquette
+     * carrée) ou « fiche » (galerie : un visuel en paysage).
+     */
+    public function imageAffichage(Request $requete): void
+    {
+        $this->adminConnecte();
+        $image     = $this->imageExistante($requete);
+        $affichage = $requete->corps()['affichage'] ?? null;
+
+        if (!in_array($affichage, ['partout', 'catalogue', 'fiche'], true)) {
+            Response::erreur("Affichage d'image invalide", 422);
+        }
+
+        $this->produits->changerAffichage($image['id'], $affichage);
+
+        Response::json(['produit' => $this->produits->trouver($image['produit_id'])]);
+    }
+
+    /**
      * POST /api/admin/parametre/seuil, corps JSON { seuil } : le seuil
      * « Bientôt épuisé » (de 0 à 99 unités).
      */

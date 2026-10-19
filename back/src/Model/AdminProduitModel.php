@@ -123,7 +123,7 @@ final class AdminProduitModel
         }
 
         $requeteImages = $this->pdo->prepare(
-            'SELECT id, variante_id, fichier, alt, ordre FROM image
+            'SELECT id, variante_id, fichier, alt, ordre, affichage FROM image
               WHERE produit_id = :id
            ORDER BY variante_id IS NOT NULL, variante_id, ordre'
         );
@@ -138,6 +138,7 @@ final class AdminProduitModel
                 'fichier'     => $ligne['fichier'],
                 'alt'         => $ligne['alt'],
                 'ordre'       => (int) $ligne['ordre'],
+                'affichage'   => $ligne['affichage'],
             ];
         }
 
@@ -488,6 +489,18 @@ final class AdminProduitModel
     {
         $image = $this->trouverImage($id);
         $this->renumeroter($image['produit_id'], $image['variante_id'], $id, null);
+    }
+
+    /**
+     * Où l'image sert : « partout », « catalogue » (cartes, panier) ou
+     * « fiche » (galerie). Valeur déjà validée par le contrôleur.
+     */
+    public function changerAffichage(int $id, string $affichage): void
+    {
+        $requetePreparee = $this->pdo->prepare('UPDATE image SET affichage = :affichage WHERE id = :id');
+        $requetePreparee->bindValue(':affichage', $affichage, PDO::PARAM_STR);
+        $requetePreparee->bindValue(':id',        $id,        PDO::PARAM_INT);
+        $requetePreparee->execute();
     }
 
     /**
