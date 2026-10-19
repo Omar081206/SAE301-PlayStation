@@ -34,9 +34,10 @@ C.charger = async function (slug) {
     M.produit = (await ProduitData.fetchOne(slug)).produit;
     M.imageActive = 0;
 
-    // Au départ, les options de la variante par défaut (la première).
+    // Au départ, les options de la variante par défaut (la première en
+    // stock, choisie par le serveur).
     M.choix = {};
-    let parDefaut = M.produit.variantes[0];
+    let parDefaut = M.produit.variantes.find((variante) => variante.id === M.produit.variante_id);
     for (let option of M.produit.options) {
       M.choix[option.id] = option.valeurs.find((valeur) => parDefaut.valeurs.includes(valeur.id))?.id ?? option.valeurs[0].id;
     }
@@ -56,12 +57,32 @@ C.charger = async function (slug) {
  * ou null si cette combinaison n'existe pas. Un produit sans option n'a
  * qu'une variante.
  */
-C.variante = function () {
+C.variante = function (choix = M.choix) {
   return (
     M.produit.variantes.find((variante) =>
-      M.produit.options.every((option) => variante.valeurs.includes(M.choix[option.id]))
+      M.produit.options.every((option) => variante.valeurs.includes(choix[option.id]))
     ) ?? null
   );
+};
+
+/**
+ * Pour chaque valeur d'option, ce qu'on obtiendrait en la choisissant (les
+ * autres options restant comme elles sont) : « disponible », « epuise » ou
+ * « inexistante » (aucune variante pour cette combinaison).
+ */
+C.etats = function () {
+  let etats = {};
+
+  for (let option of M.produit.options) {
+    for (let valeur of option.valeurs) {
+      let variante = C.variante({ ...M.choix, [option.id]: valeur.id });
+      if (variante === null) etats[valeur.id] = "inexistante";
+      else if (variante.etat_stock === "epuise") etats[valeur.id] = "epuise";
+      else etats[valeur.id] = "disponible";
+    }
+  }
+
+  return etats;
 };
 
 /**
@@ -170,7 +191,7 @@ V.createPageFragment = function () {
 
   let variante = C.variante();
   let fiche = FicheProduitView.dom(
-    { produit: M.produit, variante, choix: M.choix, libelle: C.libelle() },
+    { produit: M.produit, variante, choix: M.choix, etats: C.etats(), libelle: C.libelle() },
     { surChoix: C.handler_choisir, surAjout: C.handler_ajouter }
   );
   fiche.querySelector('slot[name="galerie"]').replaceWith(

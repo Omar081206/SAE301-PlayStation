@@ -25,10 +25,12 @@ final class ProduitModel
     /**
      * Les produits du catalogue, regroupés par catégorie.
      *
-     * Le prix affiché est le plus bas des variantes du produit, l'image celle
-     * d'ordre 1 (image principale), ou null si le produit n'en a pas encore.
-     * variante_id est la variante par défaut (la première créée) : c'est elle
-     * qu'ajoute le bouton « Ajouter au panier », et stock est le sien.
+     * Le prix affiché est le plus bas des variantes du produit. variante_id
+     * est la variante par défaut : la première créée qui est en stock, ou, si
+     * toutes sont épuisées, la première créée. C'est elle qu'ajoute le bouton
+     * « Ajouter au panier » ; stock est le sien, et l'image est son image
+     * principale (ordre 1), celle du produit si elle n'en a pas en propre, ou
+     * null si le produit n'en a pas encore.
      *
      * @param string|null $categorie Slug de la catégorie à afficher, ou null
      *                               pour tout le catalogue.
@@ -36,27 +38,31 @@ final class ProduitModel
      */
     public function lister(?string $categorie): array
     {
+        // ORDER BY stock = 0 : les variantes en stock passent avant les
+        // épuisées, puis la plus ancienne d'abord.
         $sql = 'SELECT produit.id,
                        produit.nom,
                        produit.slug,
                        categorie.nom  AS categorie,
-                       MIN(variante.id)   AS variante_id,
-                       MIN(variante.prix) AS prix,
-                       (SELECT defaut.stock
-                          FROM variante AS defaut
-                         WHERE defaut.produit_id = produit.id
-                      ORDER BY defaut.id
-                         LIMIT 1) AS stock,
-                       image.fichier  AS image,
-                       image.alt      AS image_alt
+                       defaut.id      AS variante_id,
+                       defaut.stock,
+                       (SELECT MIN(toutes.prix) FROM variante AS toutes
+                         WHERE toutes.produit_id = produit.id) AS prix,
+                       COALESCE(image_variante.fichier, image_produit.fichier) AS image,
+                       COALESCE(image_variante.alt, image_produit.alt)         AS image_alt
                   FROM produit
             INNER JOIN categorie ON categorie.id = produit.categorie_id
-            INNER JOIN variante  ON variante.produit_id = produit.id
-             LEFT JOIN image     ON image.produit_id = produit.id AND image.ordre = 1
-                                  AND image.variante_id IS NULL
+            INNER JOIN variante AS defaut
+                    ON defaut.id = (SELECT candidate.id FROM variante AS candidate
+                                     WHERE candidate.produit_id = produit.id
+                                  ORDER BY candidate.stock = 0, candidate.id
+                                     LIMIT 1)
+             LEFT JOIN image AS image_variante
+                    ON image_variante.variante_id = defaut.id AND image_variante.ordre = 1
+             LEFT JOIN image AS image_produit
+                    ON image_produit.produit_id = produit.id AND image_produit.variante_id IS NULL
+                   AND image_produit.ordre = 1
                  WHERE :categorie IS NULL OR categorie.slug = :categorie_slug
-              GROUP BY produit.id, produit.nom, produit.slug, categorie.id, categorie.nom,
-                       image.fichier, image.alt
               ORDER BY categorie.id, produit.id';
 
         $requetePreparee = $this->pdo->prepare($sql);
@@ -92,7 +98,8 @@ final class ProduitModel
     }
 
     /**
-     * Un produit par son slug, avec les images de sa variante par défaut, ses
+     * Un produit par son slug, avec sa variante par défaut (la première en
+     * stock, comme dans le catalogue), les images du produit, ses
      * options (et leurs valeurs) et ses variantes, ou null s'il n'existe pas.
      *
      * Chaque variante donne son prix, son stock, ses valeurs (une par option)
@@ -110,7 +117,10 @@ final class ProduitModel
                     produit.description,
                     categorie.nom  AS categorie,
                     categorie.slug AS categorie_slug,
-                    MIN(variante.id)   AS variante_id,
+                    (SELECT candidate.id FROM variante AS candidate
+                      WHERE candidate.produit_id = produit.id
+                   ORDER BY candidate.stock = 0, candidate.id
+                      LIMIT 1) AS variante_id,
                     MIN(variante.prix) AS prix
                FROM produit
          INNER JOIN categorie ON categorie.id = produit.categorie_id
