@@ -11,7 +11,7 @@ import templateLigne from "./ligne.html?raw";
 let ConfirmationCommandeView = {
   /**
    * @param {{numero: string, statut: string, total: number,
-   *          lignes: Array<{nom: string, coloris: string|null, quantite: number, sous_total: number}>}} commande
+   *          lignes: Array<{nom: string, options: string|null, quantite: number, sous_total: number}>}} commande
    */
   dom: function (commande) {
     let fragment = htmlToFragment(
@@ -25,7 +25,7 @@ let ConfirmationCommandeView = {
       htmlToFragment(
         genericRenderer(templateLigne, {
           nom: ligne.nom,
-          details: ligne.coloris === null ? `Qté ${ligne.quantite}` : `Coloris : ${ligne.coloris} · Qté ${ligne.quantite}`,
+          details: ligne.options === null ? `Qté ${ligne.quantite}` : `${ligne.options} · Qté ${ligne.quantite}`,
           sousTotal: formaterPrix(ligne.sous_total),
         })
       )

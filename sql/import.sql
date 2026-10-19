@@ -6,8 +6,9 @@
 -- la colonne de gauche, puis importez ce fichier depuis l'onglet « Importer ».
 --
 -- Boutique : 15 produits en 4 catégories (3 manettes, 4 produits ailleurs). Chaque produit a une variante par
--- défaut, qui porte son prix et son stock (six produits ont aussi une variante
--- de coloris « Noir »), et une image principale (ordre 1) ;
+-- défaut, qui porte son prix et son stock (six produits ont une option
+-- « Coloris » : une variante « Blanc » et une « Noir »), et une image
+-- principale (ordre 1) ;
 -- les produits photographiés sous plusieurs angles ont une galerie.
 -- Les tables film et genre du starter ne sont plus créées : leurs DROP restent
 -- pour les retirer d'une base importée avant le back-office.
@@ -30,6 +31,9 @@ DROP TABLE IF EXISTS ligne_commande;
 DROP TABLE IF EXISTS commande;
 DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS image;
+DROP TABLE IF EXISTS variante_valeur;
+DROP TABLE IF EXISTS valeur_option;
+DROP TABLE IF EXISTS option_produit;
 DROP TABLE IF EXISTS variante;
 DROP TABLE IF EXISTS produit;
 DROP TABLE IF EXISTS categorie;
@@ -79,15 +83,14 @@ CREATE TABLE produit (
 -- Variantes
 --
 -- Une variante par défaut dès le départ : le panier et les commandes
--- désignent toujours une variante, et les options viendront s'y greffer sans
--- migration. Le stock ne peut pas être négatif (UNSIGNED).
--- coloris : NULL pour un produit sans choix de couleur ; sinon, chaque coloris
--- est une variante, avec son propre stock (la DualSense blanche, la noire…).
+-- désignent toujours une variante. Le stock ne peut pas être négatif
+-- (UNSIGNED). Un produit à options a une variante par combinaison de valeurs
+-- (la DualSense blanche, la noire…), chacune avec son prix et son stock : voir
+-- les tables d'options ci-dessous.
 -- ---------------------------------------------------------------------------
 CREATE TABLE variante (
     id         INT UNSIGNED      NOT NULL AUTO_INCREMENT,
     produit_id SMALLINT UNSIGNED NOT NULL,
-    coloris    VARCHAR(40)       NULL,
     prix       DECIMAL(8,2)      NOT NULL,
     stock      SMALLINT UNSIGNED NOT NULL DEFAULT 0,
 
@@ -103,11 +106,74 @@ CREATE TABLE variante (
   COLLATE = utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
+-- Options
+--
+-- Les options sont définies par produit (option_produit : « Coloris »,
+-- « Édition »…), avec leurs valeurs possibles (valeur_option : « Blanc »,
+-- « Noir »…). Une variante est une combinaison de valeurs, une par option du
+-- produit (variante_valeur). Un produit sans option a une seule variante, sans
+-- valeur. ordre : ordre d'affichage sur la fiche.
+-- ---------------------------------------------------------------------------
+CREATE TABLE option_produit (
+    id         INT UNSIGNED      NOT NULL AUTO_INCREMENT,
+    produit_id SMALLINT UNSIGNED NOT NULL,
+    nom        VARCHAR(40)       NOT NULL,
+    ordre      TINYINT UNSIGNED  NOT NULL DEFAULT 1,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_option_nom (produit_id, nom),
+
+    CONSTRAINT fk_option_produit
+        FOREIGN KEY (produit_id) REFERENCES produit (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE valeur_option (
+    id        INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    option_id INT UNSIGNED     NOT NULL,
+    valeur    VARCHAR(60)      NOT NULL,
+    ordre     TINYINT UNSIGNED NOT NULL DEFAULT 1,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_valeur_option (option_id, valeur),
+
+    CONSTRAINT fk_valeur_option
+        FOREIGN KEY (option_id) REFERENCES option_produit (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+CREATE TABLE variante_valeur (
+    variante_id INT UNSIGNED NOT NULL,
+    valeur_id   INT UNSIGNED NOT NULL,
+
+    PRIMARY KEY (variante_id, valeur_id),
+    KEY idx_variante_valeur (valeur_id),
+
+    CONSTRAINT fk_variante_valeur_variante
+        FOREIGN KEY (variante_id) REFERENCES variante (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_variante_valeur_valeur
+        FOREIGN KEY (valeur_id) REFERENCES valeur_option (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------------
 -- Images
 --
 -- fichier : nom du fichier dans front/public/images/produits/.
--- variante_id : NULL pour les images du produit (son coloris par défaut) ;
--- sinon, l'image montre ce coloris-là et ne sert qu'à lui.
+-- variante_id : NULL pour les images du produit (sa variante par défaut) ;
+-- sinon, l'image montre cette variante-là (un coloris) et ne sert qu'à elle.
 -- L'image d'ordre 1 est l'image principale, affichée dans le catalogue.
 -- ---------------------------------------------------------------------------
 CREATE TABLE image (
@@ -165,29 +231,55 @@ INSERT INTO produit (id, categorie_id, nom, slug, description) VALUES
 -- Stocks choisis pour couvrir les trois états : en stock, bientôt épuisé
 -- (PlayStation Portal, DualSense Edge) et épuisé (PS5 Pro).
 -- Les produits proposés en deux coloris ont une variante « Blanc » (celle des
--- images du produit) et une variante « Noir », au même prix.
-INSERT INTO variante (id, produit_id, coloris, prix, stock) VALUES
-    ( 1,  1, NULL,    549.99, 12),
-    ( 2,  2, NULL,    499.99,  8),
-    ( 3,  3, NULL,    799.99,  0),
-    ( 4,  4, 'Blanc', 219.99,  2),
-    ( 5,  5, 'Blanc',  74.99, 25),
-    ( 6,  6, 'Blanc', 239.99,  3),
-    ( 7,  7, 'Blanc',  84.99, 10),
-    ( 8,  9, 'Blanc', 149.99,  9),
-    ( 9, 10, 'Blanc', 219.99,  7),
-    (10, 11, NULL,     39.99, 15),
-    (11, 12, NULL,     29.99, 20),
-    (12, 13, NULL,     79.99, 14),
-    (13, 14, NULL,     69.99, 11),
-    (14, 15, NULL,     79.99,  9),
-    (15, 16, NULL,     49.99, 18),
-    (16,  4, 'Noir',  219.99,  5),
-    (17,  5, 'Noir',   74.99, 18),
-    (18,  6, 'Noir',  239.99,  4),
-    (19,  7, 'Noir',   84.99,  6),
-    (20,  9, 'Noir',  149.99,  8),
-    (21, 10, 'Noir',  219.99,  0);
+-- images du produit) et une variante « Noir », au même prix (voir les options).
+INSERT INTO variante (id, produit_id, prix, stock) VALUES
+    ( 1,  1,  549.99, 12),
+    ( 2,  2,  499.99,  8),
+    ( 3,  3,  799.99,  0),
+    ( 4,  4,  219.99,  2),
+    ( 5,  5,   74.99, 25),
+    ( 6,  6,  239.99,  3),
+    ( 7,  7,   84.99, 10),
+    ( 8,  9,  149.99,  9),
+    ( 9, 10,  219.99,  7),
+    (10, 11,   39.99, 15),
+    (11, 12,   29.99, 20),
+    (12, 13,   79.99, 14),
+    (13, 14,   69.99, 11),
+    (14, 15,   79.99,  9),
+    (15, 16,   49.99, 18),
+    (16,  4,  219.99,  5),
+    (17,  5,   74.99, 18),
+    (18,  6,  239.99,  4),
+    (19,  7,   84.99,  6),
+    (20,  9,  149.99,  8),
+    (21, 10,  219.99,  0);
+
+-- Option « Coloris » des six produits proposés en blanc et en noir. La
+-- variante « Blanc » est celle des images du produit.
+INSERT INTO option_produit (id, produit_id, nom, ordre) VALUES
+    (1,  4, 'Coloris', 1),
+    (2,  5, 'Coloris', 1),
+    (3,  6, 'Coloris', 1),
+    (4,  7, 'Coloris', 1),
+    (5,  9, 'Coloris', 1),
+    (6, 10, 'Coloris', 1);
+
+INSERT INTO valeur_option (id, option_id, valeur, ordre) VALUES
+    ( 1, 1, 'Blanc', 1), ( 2, 1, 'Noir', 2),
+    ( 3, 2, 'Blanc', 1), ( 4, 2, 'Noir', 2),
+    ( 5, 3, 'Blanc', 1), ( 6, 3, 'Noir', 2),
+    ( 7, 4, 'Blanc', 1), ( 8, 4, 'Noir', 2),
+    ( 9, 5, 'Blanc', 1), (10, 5, 'Noir', 2),
+    (11, 6, 'Blanc', 1), (12, 6, 'Noir', 2);
+
+INSERT INTO variante_valeur (variante_id, valeur_id) VALUES
+    ( 4,  1), (16,  2),
+    ( 5,  3), (17,  4),
+    ( 6,  5), (18,  6),
+    ( 7,  7), (19,  8),
+    ( 8,  9), (20, 10),
+    ( 9, 11), (21, 12);
 
 INSERT INTO image (produit_id, fichier, alt, ordre) VALUES
     ( 1, 'console-ps5.webp',                              'Console PS5 blanche, posée à la verticale',             1),
@@ -207,7 +299,7 @@ INSERT INTO image (produit_id, fichier, alt, ordre) VALUES
     (16, 'gran-turismo-7.webp',                           'Jaquette du jeu Gran Turismo 7',                        1);
 
 -- Autres vues du même produit, pour la galerie de la fiche produit. Les
--- coloris (fichiers -noir, -blanc) n'en font pas partie : ils serviront aux
+-- coloris (fichiers -noir, -blanc) n'en font pas partie : ils servent aux
 -- options de couleur.
 INSERT INTO image (produit_id, fichier, alt, ordre) VALUES
     ( 1, 'console-ps5-2.webp',                   'Console PS5, vue 2',                   2),
@@ -332,16 +424,16 @@ CREATE TABLE commande (
 -- ---------------------------------------------------------------------------
 -- Lignes de commande
 --
--- Le nom, le coloris et le prix unitaire sont recopiés au moment de la
--- commande : un changement de prix ou de nom ultérieur ne modifie pas une
--- commande passée. variante_id passe à NULL si la variante est supprimée.
+-- Le nom, les options choisies (texte figé, « Coloris : Noir ») et le prix
+-- unitaire sont recopiés au moment de la commande : un changement de prix, de
+-- nom ou d'options ultérieur ne modifie pas une commande passée. variante_id passe à NULL si la variante est supprimée.
 -- ---------------------------------------------------------------------------
 CREATE TABLE ligne_commande (
     id            INT UNSIGNED      NOT NULL AUTO_INCREMENT,
     commande_id   INT UNSIGNED      NOT NULL,
     variante_id   INT UNSIGNED      NULL,
     nom           VARCHAR(120)      NOT NULL,
-    coloris       VARCHAR(40)       NULL,
+    options       VARCHAR(255)      NULL,
     prix_unitaire DECIMAL(8,2)      NOT NULL,
     quantite      SMALLINT UNSIGNED NOT NULL,
 

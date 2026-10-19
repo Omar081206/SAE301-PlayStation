@@ -152,7 +152,7 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | Route | Effet |
 |---|---|
 | `GET /api/produits?categorie=manettes` | le catalogue, entier ou d'une catégorie |
-| `GET /api/produit?slug=…` | la fiche d'un produit et ses images |
+| `GET /api/produit?slug=…` | la fiche d'un produit : ses options (Coloris…) et leurs valeurs, et pour chaque variante son prix, son état de stock, ses valeurs et ses images |
 | `GET /api/categories` | les catégories et leur nombre de produits |
 | `POST /api/panier` | détail du panier, corps `{"lignes": [{"variantId", "quantite"}]}` : prix et totaux calculés par le serveur |
 | `POST /api/inscription` | création de compte, corps `{"prenom", "nom", "email", "mdp"}` |
@@ -184,7 +184,7 @@ navigateur les identifiants de l'IUT. Non connecté : 403 ; identifiants
 incorrects : 422.
 
 Tests (curl, sans dépendance) : `tests/compte.sh`, `tests/commande.sh`,
-`tests/stock.sh`, `tests/categories.sh`, `tests/commandes-admin.sh`, `tests/historique.sh` et `tests/mouvements-stock.sh`, avec l'URL du projet en argument.
+`tests/stock.sh`, `tests/options.sh`, `tests/categories.sh`, `tests/commandes-admin.sh`, `tests/historique.sh` et `tests/mouvements-stock.sh`, avec l'URL du projet en argument.
 `tests/categories.sh` écrit en base (catégories de test, supprimées à la fin), `tests/commandes-admin.sh`
 aussi (trois commandes de test, dont une reste « retirée » ; le stock est rendu). Le dernier écrit
 en base (commandes annulées, journal) et vérifie la concurrence sur la dernière

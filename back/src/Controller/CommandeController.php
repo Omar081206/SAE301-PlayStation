@@ -115,7 +115,7 @@ final class CommandeController
             $aEnregistrer[] = [
                 'variantId' => $id,
                 'nom'       => $variantes[$id]['nom'],
-                'coloris'   => $variantes[$id]['coloris'],
+                'options'   => $variantes[$id]['options'],
                 'prix'      => $variantes[$id]['prix'],
                 'quantite'  => $quantite,
             ];

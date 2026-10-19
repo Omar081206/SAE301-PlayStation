@@ -72,7 +72,7 @@ verifier "format du numéro" "$(echo "$NUMERO1" | grep -Ec '^PS-[0-9]{8}-[0-9]{4
 verifier "statut" "$(champ "$corps" commande.statut)" "en_cours"
 verifier "total (2 × 74,99 + 74,99)" "$(champ "$corps" commande.total)" "224.97"
 verifier "prix unitaire figé" "$(champ "$corps" commande.lignes.0.prix_unitaire)" "74.99"
-verifier "coloris recopié" "$(champ "$corps" commande.lignes.1.coloris)" "Noir"
+verifier "options recopiées" "$(champ "$corps" commande.lignes.1.options)" "Coloris : Noir"
 
 echo "5. La commande se relit"
 IFS=$'\t' read -r code corps <<< "$(api GET "commande?numero=$NUMERO1")"

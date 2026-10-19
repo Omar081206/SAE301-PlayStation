@@ -101,7 +101,7 @@ verifier "page 0 refusée" "$code" "400"
 echo "4. Détail : options visibles, commandes des autres refusées"
 IFS=$'\t' read -r code corps <<< "$(api GET "commande?numero=${NUMEROS[0]}")"
 verifier "GET /commande d'une de ses commandes" "$code" "200"
-verifier "coloris de la ligne" "$(champ "$corps" commande.lignes.0.coloris)" "Noir"
+verifier "options de la ligne" "$(champ "$corps" commande.lignes.0.options)" "Coloris : Noir"
 verifier "variante de la ligne (commander à nouveau)" "$(champ "$corps" commande.lignes.0.variantId)" "17"
 IFS=$'\t' read -r code corps <<< "$(admin GET 'admin/commandes')"
 AUTRE="$(python3 -c 'import json,sys

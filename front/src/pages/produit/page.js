@@ -10,13 +10,17 @@ import template from "./template.html?raw";
  * Page « Produit » : la fiche d'un produit, désigné par son slug dans l'URL
  * (/produit/manette-sans-fil-dualsense).
  *
- * L'image affichée dans la galerie fait partie de l'état de la page : changer
- * d'image modifie le modèle, puis la page se reconstruit.
+ * L'image affichée dans la galerie et les options choisies font partie de
+ * l'état de la page : changer d'image ou d'option modifie le modèle, puis la
+ * page se reconstruit. Les options désignent une variante : son prix, son
+ * stock et ses images sont affichés, et c'est elle qui est ajoutée au panier.
  */
 
 let M = {
   produit: null, // dernière réponse de l'API : la fiche du produit
-  imageActive: 0, // position, dans produit.images, de l'image affichée
+  choix: {}, // valeur choisie pour chaque option : { optionId: valeurId }
+  optionModifiee: null, // option qui vient de changer : son choix reprend le focus
+  imageActive: 0, // position, dans les images de la variante, de l'image affichée
   message: null, // { type, texte }, ou null
 };
 
@@ -29,6 +33,13 @@ C.charger = async function (slug) {
   try {
     M.produit = (await ProduitData.fetchOne(slug)).produit;
     M.imageActive = 0;
+
+    // Au départ, les options de la variante par défaut (la première).
+    M.choix = {};
+    let parDefaut = M.produit.variantes[0];
+    for (let option of M.produit.options) {
+      M.choix[option.id] = option.valeurs.find((valeur) => parDefaut.valeurs.includes(valeur.id))?.id ?? option.valeurs[0].id;
+    }
     M.message = null;
   } catch (erreur) {
     M.produit = null;
@@ -38,6 +49,38 @@ C.charger = async function (slug) {
 
     M.message = { type: "erreur", texte };
   }
+};
+
+/**
+ * La variante qui correspond aux options choisies (une valeur par option),
+ * ou null si cette combinaison n'existe pas. Un produit sans option n'a
+ * qu'une variante.
+ */
+C.variante = function () {
+  return (
+    M.produit.variantes.find((variante) =>
+      M.produit.options.every((option) => variante.valeurs.includes(M.choix[option.id]))
+    ) ?? null
+  );
+};
+
+/**
+ * Nom du produit et options choisies, pour les messages : « Manette sans fil
+ * DualSense (Noir) ».
+ */
+C.libelle = function () {
+  let valeurs = M.produit.options.map((option) => option.valeurs.find((valeur) => valeur.id === M.choix[option.id]).valeur);
+  return valeurs.length === 0 ? M.produit.nom : `${M.produit.nom} (${valeurs.join(", ")})`;
+};
+
+C.handler_choisir = async function (optionId, valeurId) {
+  M.choix[optionId] = valeurId;
+  // Les images changent avec la variante : on repart de la première.
+  M.imageActive = 0;
+  M.message = null;
+  M.optionModifiee = optionId;
+  V.rafraichir();
+  M.optionModifiee = null;
 };
 
 C.handler_changerImage = async function (position) {
@@ -85,13 +128,20 @@ V.init = function () {
 };
 
 // Même principe que la page Catalogue : toute la page se reconstruit à partir
-// du modèle. L'image affichée survit parce qu'elle est dans le modèle.
+// du modèle. L'image affichée et les options choisies survivent parce
+// qu'elles sont dans le modèle.
 V.rafraichir = function () {
   let fragment = V.createPageFragment();
   let nouvelleRacine = fragment.firstElementChild;
   V.racine.replaceWith(fragment);
   V.racine = nouvelleRacine;
   V.updateMetadata();
+
+  // Après un changement d'option, la page reconstruite a perdu le focus : on
+  // le rend au choix fait, pour continuer au clavier (flèches dans le groupe).
+  if (M.optionModifiee !== null) {
+    V.racine.querySelector(`input[name="option-${M.optionModifiee}"]:checked`)?.focus();
+  }
 };
 
 /**
@@ -118,10 +168,14 @@ V.createPageFragment = function () {
     return pageFragment;
   }
 
-  let fiche = FicheProduitView.dom(M.produit, { surAjout: C.handler_ajouter });
+  let variante = C.variante();
+  let fiche = FicheProduitView.dom(
+    { produit: M.produit, variante, choix: M.choix, libelle: C.libelle() },
+    { surChoix: C.handler_choisir, surAjout: C.handler_ajouter }
+  );
   fiche.querySelector('slot[name="galerie"]').replaceWith(
     GalerieProduitView.dom(
-      { images: M.produit.images, active: M.imageActive },
+      { images: variante === null ? M.produit.images : variante.images, active: M.imageActive },
       { surImage: C.handler_changerImage }
     )
   );
