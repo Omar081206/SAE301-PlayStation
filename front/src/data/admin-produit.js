@@ -21,7 +21,7 @@ AdminProduitData.fetchAll = async function () {
  * { produit: { id, categorie_id, nom, slug, description,
  *              options: [ { id, nom, valeurs: [ { id, valeur } ] } ],
  *              variantes: [ { id, prix, stock, valeurs } ],
- *              images: [ { id, variante_id, fichier, alt, ordre } ] } | null,
+ *              images: [ { id, variante_id, fichier, alt, ordre, affichage } ] } | null,
  *   categories: [ { id, nom } ] }
  */
 AdminProduitData.fetchOne = async function (id) {
@@ -74,6 +74,14 @@ AdminProduitData.rendrePrincipale = async function (image) {
  */
 AdminProduitData.rattacherImage = async function (image, variante) {
   return postRequest("admin/produit/image/variante", { image, variante });
+};
+
+/**
+ * Où une image sert : POST /api/admin/produit/image/affichage, corps
+ * { image, affichage } (« partout », « catalogue » ou « fiche »). { produit }
+ */
+AdminProduitData.changerAffichage = async function (image, affichage) {
+  return postRequest("admin/produit/image/affichage", { image, affichage });
 };
 
 /**

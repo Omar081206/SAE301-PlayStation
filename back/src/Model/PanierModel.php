@@ -27,8 +27,8 @@ final class PanierModel
      * Les variantes demandées, indexées par leur identifiant, avec leur stock
      * actuel. Une variante inconnue est simplement absente du résultat.
      *
-     * L'image est l'image principale de la variante (un coloris) s'il en a
-     * une, sinon celle du produit. options : les valeurs de la variante, en
+     * L'image est la première image « catalogue » (ou « partout ») de la
+     * variante (un coloris) s'il en a une, sinon celle du produit. options : les valeurs de la variante, en
      * texte (« Coloris : Noir »), ou null pour un produit sans option.
      *
      * @param  array<int, int> $ids Identifiants de variantes, déjà validés.
@@ -61,10 +61,16 @@ final class PanierModel
                FROM variante
          INNER JOIN produit ON produit.id = variante.produit_id
           LEFT JOIN image AS image_coloris
-                 ON image_coloris.variante_id = variante.id AND image_coloris.ordre = 1
+                 ON image_coloris.id = (SELECT premiere.id FROM image AS premiere
+                                         WHERE premiere.variante_id = variante.id
+                                           AND premiere.affichage <> 'fiche'
+                                      ORDER BY premiere.ordre LIMIT 1)
           LEFT JOIN image AS image_produit
-                 ON image_produit.produit_id = produit.id AND image_produit.variante_id IS NULL
-                AND image_produit.ordre = 1
+                 ON image_produit.id = (SELECT premiere.id FROM image AS premiere
+                                         WHERE premiere.produit_id = produit.id
+                                           AND premiere.variante_id IS NULL
+                                           AND premiere.affichage <> 'fiche'
+                                      ORDER BY premiere.ordre LIMIT 1)
               WHERE variante.id IN ({$marqueurs})"
         );
 

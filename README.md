@@ -168,7 +168,7 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 | `GET /api/admin/tableau-de-bord` | indicateurs du back-office (admin) |
 | `GET /api/admin/produits` · `GET /api/admin/produit?id=…` | produits du back-office (prix le plus bas, stock total, variantes) et seuil « Bientôt épuisé » ; un produit complet (options, variantes, images) et les catégories (admin) |
 | `POST /api/admin/produit/enregistrer` · `POST /api/admin/produit/supprimer` | création ou modification d'un produit avec ses options et ses variantes (prix, stock ; chaque changement de stock est inscrit au journal, motif « ajustement ») ; suppression (admin) |
-| `POST /api/admin/produit/image` (+ `/supprimer`, `/principale`, `/variante`) | téléversement d'une image (data URL, réduite à 1200 px et convertie en WebP, rangée dans `uploads/produits/`), suppression, image principale, rattachement à une variante (admin) |
+| `POST /api/admin/produit/image` (+ `/supprimer`, `/principale`, `/variante`, `/affichage`) | téléversement d'une image (data URL, réduite à 1200 px et convertie en WebP, rangée dans `uploads/produits/`), suppression, image principale, rattachement à une variante, lieu d'affichage (admin) |
 | `POST /api/admin/parametre/seuil` | seuil « Bientôt épuisé », corps `{"seuil"}` (admin) |
 | `GET /api/admin/categories` | catégories du back-office, avec leur nombre de produits (admin) |
 | `POST /api/admin/categorie/creer` · `POST /api/admin/categorie/modifier` | création (`{"nom", "description"}`) ou modification (`{"id", "nom", "description"}`) d'une catégorie (admin) ; le slug est déduit du nom |
@@ -229,3 +229,10 @@ sous un nom commençant par `u-`. Le `.htaccess` les sert à l'adresse
 `images/produits/u-…`, comme les images déposées dans
 `front/public/images/produits/`. Le dossier doit être accessible en écriture
 pour PHP.
+
+Chaque image a un lieu d'affichage (colonne `image.affichage`, choisi sous la
+vignette dans le back-office) : « Catalogue et fiche » (par défaut),
+« Catalogue » seulement (une jaquette carrée de jeu, pour la carte) ou
+« Fiche » seulement (visuels et captures en paysage, pour la galerie). Un
+groupe d'images sans image pour la fiche garde toutes ses images dans la
+galerie.

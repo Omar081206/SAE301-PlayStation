@@ -174,7 +174,10 @@ CREATE TABLE variante_valeur (
 -- fichier : nom du fichier dans front/public/images/produits/.
 -- variante_id : NULL pour les images du produit (sa variante par défaut) ;
 -- sinon, l'image montre cette variante-là (un coloris) et ne sert qu'à elle.
--- L'image d'ordre 1 est l'image principale, affichée dans le catalogue.
+-- L'image d'ordre 1 est l'image principale. affichage : où l'image sert. Les
+-- cartes du catalogue et le panier prennent la première image « partout » ou
+-- « catalogue » (une jaquette carrée) ; la galerie de la fiche, les images
+-- « partout » ou « fiche » (des visuels en paysage).
 -- ---------------------------------------------------------------------------
 CREATE TABLE image (
     id          INT UNSIGNED      NOT NULL AUTO_INCREMENT,
@@ -183,6 +186,7 @@ CREATE TABLE image (
     fichier     VARCHAR(160)      NOT NULL,
     alt         VARCHAR(160)      NOT NULL,
     ordre       TINYINT UNSIGNED  NOT NULL DEFAULT 1,
+    affichage   ENUM('partout', 'catalogue', 'fiche') NOT NULL DEFAULT 'partout',
 
     PRIMARY KEY (id),
     UNIQUE KEY uq_image_ordre (produit_id, variante_id, ordre),
