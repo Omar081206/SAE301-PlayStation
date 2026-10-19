@@ -5,7 +5,7 @@ import templateAVenir from "./a-venir.html?raw";
 
 // Sections du back-office qui n'existent pas encore : elles figurent déjà
 // dans le menu, grisées, et deviennent des liens avec leur user story.
-const SECTIONS_A_VENIR = ["Produits", "Catégories", "Commandes", "Statistiques"];
+const SECTIONS_A_VENIR = ["Produits", "Commandes", "Statistiques"];
 
 // Navigation du back-office. Elle ne décide de rien : elle signale la demande
 // de déconnexion, et le layout s'en charge.

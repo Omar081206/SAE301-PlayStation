@@ -1,0 +1,22 @@
+<section class="flex flex-col gap-3.5 rounded-xl bg-page p-5.25 shadow-panneau-sm lg:max-w-200 lg:gap-4 lg:rounded-2xl lg:p-6">
+  <h2 data-focus tabindex="-1" class="text-prix-sm font-light lg:text-prix-lg">{{titre}}</h2>
+
+  <slot name="message"></slot>
+
+  <form class="flex flex-col gap-3.5 lg:gap-4">
+    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+      <span>Nom <span class="text-texte-attenue">(2 à 60 caractères ; l’adresse /categorie/… en est déduite)</span></span>
+      <input name="nom" type="text" required minlength="2" maxlength="60" value="{{nom}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">
+    </label>
+
+    <label class="flex flex-col gap-1.75 text-sm lg:gap-2">
+      <span>Description <span class="text-texte-attenue">(500 caractères au plus)</span></span>
+      <textarea name="description" required maxlength="500" rows="3" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6">{{description}}</textarea>
+    </label>
+
+    <div class="flex flex-wrap gap-3.5">
+      <button type="submit" class="rounded-full bg-action px-4 py-3 text-sm leading-3.5 font-bold text-texte-inverse">{{bouton}}</button>
+      <button type="button" data-action="annuler" class="rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien">Annuler</button>
+    </div>
+  </form>
+</section>

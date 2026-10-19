@@ -16,6 +16,7 @@ use App\Core\Database;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
+use App\Controller\AdminCategorieController;
 use App\Controller\AdminCommandeController;
 use App\Controller\AdminController;
 use App\Controller\AuthController;
@@ -77,6 +78,7 @@ try {
         AuthController::class      => new AuthController(new UtilisateurModel($pdo)),
         AdminController::class     => new AdminController(new UtilisateurModel($pdo), new TableauDeBordModel($pdo)),
         AdminCommandeController::class => new AdminCommandeController(new CommandeModel($pdo)),
+        AdminCategorieController::class => new AdminCategorieController(new CategorieModel($pdo)),
     ];
 
     $routes = require __DIR__ . '/src/routes.php';
