@@ -1,7 +1,7 @@
 <div class="flex flex-wrap items-center gap-2 text-sm font-medium">
-  <button type="button" data-statut="disponible" class="rounded-full bg-secondaire px-4 py-3 text-xs leading-3 font-bold text-lien">Disponible</button>
-  <button type="button" data-statut="retiree" class="rounded-full bg-secondaire px-4 py-3 text-xs leading-3 font-bold text-lien">Retirée</button>
-  <button type="button" data-statut="annulee" aria-label="Annuler la commande {{numero}}" class="underline">Annuler</button>
+  <button type="button" data-statut="disponible" class="rounded-full bg-secondaire px-4 py-3 text-xs leading-3 font-bold text-lien enabled:hover:bg-secondaire-survol">Disponible</button>
+  <button type="button" data-statut="retiree" class="rounded-full bg-secondaire px-4 py-3 text-xs leading-3 font-bold text-lien enabled:hover:bg-secondaire-survol">Retirée</button>
+  <button type="button" data-statut="annulee" aria-label="Annuler la commande {{numero}}" class="underline enabled:hover:text-lien">Annuler</button>
   <span data-role="aucune" aria-hidden="true" class="font-normal text-texte-attenue">—</span>
-  <a href="/admin/commandes/{{numero}}" data-link aria-label="Détail de la commande {{numero}}" class="underline">Détail</a>
+  <a href="/admin/commandes/{{numero}}" data-link aria-label="Détail de la commande {{numero}}" class="underline hover:text-lien">Détail</a>
 </div>

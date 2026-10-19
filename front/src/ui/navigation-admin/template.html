@@ -1,13 +1,13 @@
 <!-- En dessous de lg : barre du haut, et menu plein écran (<dialog>). -->
 <div class="flex h-11 items-center gap-3 bg-pied px-5.25 text-texte-inverse lg:hidden">
-  <button type="button" data-action="ouvrir" aria-label="Ouvrir le menu du back-office" class="-ml-2 flex size-10 items-center justify-center">
+  <button type="button" data-action="ouvrir" aria-label="Ouvrir le menu du back-office" class="-ml-2 flex size-10 items-center justify-center rounded-full hover:bg-texte-inverse/10">
     <svg aria-hidden="true" width="20" height="16" viewBox="0 0 20 16"><path d="M0 1h20M0 8h20M0 15h20" stroke="currentColor" stroke-width="2"/></svg>
   </button>
   <a href="/admin" data-link class="flex items-center gap-2 text-base font-semibold">
     <img src="{{logo}}" alt="" width="26" height="20" class="h-5 w-auto">
     <span>Back-office</span>
   </a>
-  <button type="button" data-action="deconnexion" class="ml-auto text-sm">Déconnexion</button>
+  <button type="button" data-action="deconnexion" class="ml-auto text-sm hover:underline">Déconnexion</button>
 </div>
 
 <dialog aria-label="Menu du back-office" class="m-0 h-dvh max-h-none w-full max-w-none bg-pied px-5.25 py-4 text-texte-inverse lg:hidden">
@@ -16,19 +16,19 @@
       <img src="{{logo}}" alt="" width="26" height="20" class="h-5 w-auto">
       Back-office
     </span>
-    <button type="button" data-action="fermer" aria-label="Fermer le menu" class="-mr-2 flex size-10 items-center justify-center text-xl">✕</button>
+    <button type="button" data-action="fermer" aria-label="Fermer le menu" class="-mr-2 flex size-10 items-center justify-center rounded-full text-xl hover:bg-texte-inverse/10">✕</button>
   </div>
   <nav aria-label="Back-office">
     <ul class="flex flex-col text-lg font-semibold">
-      <li class="border-b border-texte-inverse/30"><a href="/admin" data-link class="flex justify-between py-3">Tableau de bord <span aria-hidden="true">›</span></a></li>
-      <li class="border-b border-texte-inverse/30"><a href="/admin/commandes" data-link class="flex justify-between py-3">Commandes <span aria-hidden="true">›</span></a></li>
-      <li class="border-b border-texte-inverse/30"><a href="/admin/produits" data-link class="flex justify-between py-3">Produits <span aria-hidden="true">›</span></a></li>
-      <li class="border-b border-texte-inverse/30"><a href="/admin/categories" data-link class="flex justify-between py-3">Catégories <span aria-hidden="true">›</span></a></li>
+      <li class="border-b border-texte-inverse/30"><a href="/admin" data-link class="flex justify-between py-3 hover:underline">Tableau de bord <span aria-hidden="true">›</span></a></li>
+      <li class="border-b border-texte-inverse/30"><a href="/admin/commandes" data-link class="flex justify-between py-3 hover:underline">Commandes <span aria-hidden="true">›</span></a></li>
+      <li class="border-b border-texte-inverse/30"><a href="/admin/produits" data-link class="flex justify-between py-3 hover:underline">Produits <span aria-hidden="true">›</span></a></li>
+      <li class="border-b border-texte-inverse/30"><a href="/admin/categories" data-link class="flex justify-between py-3 hover:underline">Catégories <span aria-hidden="true">›</span></a></li>
       <slot name="a-venir-statistiques"></slot>
     </ul>
     <ul class="mt-5.25 flex flex-col items-start gap-3 text-sm font-medium">
-      <li><a href="/" data-link>Voir le site <span aria-hidden="true">↗</span></a></li>
-      <li><button type="button" data-action="deconnexion">Se déconnecter</button></li>
+      <li><a href="/" data-link class="hover:underline">Voir le site <span aria-hidden="true">↗</span></a></li>
+      <li><button type="button" data-action="deconnexion" class="hover:underline">Se déconnecter</button></li>
     </ul>
   </nav>
 </dialog>
@@ -50,7 +50,7 @@
     </ul>
   </div>
   <ul class="flex flex-col items-start gap-3 text-sm font-medium">
-    <li><a href="/" data-link>Voir le site <span aria-hidden="true">↗</span></a></li>
-    <li><button type="button" data-action="deconnexion">Se déconnecter</button></li>
+    <li><a href="/" data-link class="hover:underline">Voir le site <span aria-hidden="true">↗</span></a></li>
+    <li><button type="button" data-action="deconnexion" class="hover:underline">Se déconnecter</button></li>
   </ul>
 </nav>

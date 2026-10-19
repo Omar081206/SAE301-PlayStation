@@ -14,9 +14,9 @@ const DATE = new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "
 // Bouton de chaque statut vers lequel une commande peut passer. Les classes
 // sont écrites en entier, comme dans ui/message.
 const BOUTONS = {
-  disponible: { libelle: "Passer à « disponible »", couleurs: "bg-action text-texte-inverse" },
-  retiree: { libelle: "Passer à « retirée »", couleurs: "bg-action text-texte-inverse" },
-  annulee: { libelle: "Annuler la commande", couleurs: "bg-secondaire text-lien" },
+  disponible: { libelle: "Passer à « disponible »", couleurs: "bg-action text-texte-inverse enabled:hover:bg-action-survol" },
+  retiree: { libelle: "Passer à « retirée »", couleurs: "bg-action text-texte-inverse enabled:hover:bg-action-survol" },
+  annulee: { libelle: "Annuler la commande", couleurs: "bg-secondaire text-lien enabled:hover:bg-secondaire-survol" },
 };
 
 /**

@@ -1,5 +1,5 @@
 <div>
-  <a href="/categorie/{{categorieSlug}}" data-link class="mb-3.5 inline-block text-sm font-bold text-lien lg:mb-6">‹ Retour à {{categorie}}</a>
+  <a href="/categorie/{{categorieSlug}}" data-link class="mb-3.5 inline-block text-sm font-bold text-lien lg:mb-6 hover:text-lien-survol">‹ Retour à {{categorie}}</a>
 
   <div class="grid gap-5.25 lg:grid-cols-[1fr_32.5rem] lg:gap-x-12 lg:gap-y-4">
     <slot name="galerie"></slot>
@@ -15,7 +15,7 @@
 
         <!-- Un groupe de choix par option du produit (Coloris…). -->
         <slot name="options"></slot>
-        <button type="button" data-action="ajouter" class="rounded-full bg-achat px-3.5 py-2.5 text-sm leading-3.5 font-bold text-texte-inverse disabled:bg-trait disabled:text-texte-attenue lg:px-4 lg:py-3">Ajouter au panier</button>
+        <button type="button" data-action="ajouter" class="rounded-full bg-achat px-3.5 py-2.5 text-sm leading-3.5 font-bold text-texte-inverse disabled:bg-trait disabled:text-texte-attenue lg:px-4 lg:py-3 enabled:hover:bg-achat-survol">Ajouter au panier</button>
       </div>
 
       <div class="flex flex-col gap-2.5 lg:col-start-1 lg:row-start-2 lg:gap-3">

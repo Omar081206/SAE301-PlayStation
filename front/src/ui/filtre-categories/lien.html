@@ -2,7 +2,7 @@
   <!-- En dessous de lg : une pastille « Manettes (3) ». À partir de lg : une
        ligne avec bouton radio, nom et nombre. Le lien de la page affichée
        reçoit aria-current="page" du routeur. -->
-  <a href="{{chemin}}" data-link class="group flex items-center gap-1 rounded-md border-2 border-trait px-3.5 py-1.75 text-sm leading-3.5 font-bold whitespace-nowrap aria-[current=page]:border-action aria-[current=page]:bg-action/10 aria-[current=page]:text-lien lg:gap-3 lg:rounded-none lg:border-0 lg:border-b lg:px-0 lg:py-3 lg:leading-5.25 lg:font-normal lg:whitespace-normal lg:aria-[current=page]:border-trait lg:aria-[current=page]:bg-transparent lg:aria-[current=page]:font-bold">
+  <a href="{{chemin}}" data-link class="group flex items-center gap-1 rounded-md border-2 border-trait px-3.5 py-1.75 text-sm leading-3.5 font-bold whitespace-nowrap hover:text-lien aria-[current=page]:border-action aria-[current=page]:bg-action/10 aria-[current=page]:text-lien lg:gap-3 lg:rounded-none lg:border-0 lg:border-b lg:px-0 lg:py-3 lg:leading-5.25 lg:font-normal lg:whitespace-normal lg:aria-[current=page]:border-trait lg:aria-[current=page]:bg-transparent lg:aria-[current=page]:font-bold">
     <img src="{{radio}}" alt="" width="16" height="16" class="hidden lg:block lg:group-aria-[current=page]:hidden">
     <img src="{{radioCoche}}" alt="" width="16" height="16" class="hidden lg:group-aria-[current=page]:block">
     <span class="lg:flex-1">{{nom}}</span>

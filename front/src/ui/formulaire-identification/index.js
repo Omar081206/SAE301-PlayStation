@@ -10,13 +10,13 @@ const MODES = {
     titre: "J’ai déjà un compte",
     bouton: "Se connecter",
     autocomplete: "current-password",
-    couleurs: "bg-action text-texte-inverse",
+    couleurs: "bg-action text-texte-inverse enabled:hover:bg-action-survol",
   },
   inscription: {
     titre: "Je crée mon compte",
     bouton: "Créer mon compte",
     autocomplete: "new-password",
-    couleurs: "bg-secondaire text-lien",
+    couleurs: "bg-secondaire text-lien enabled:hover:bg-secondaire-survol",
   },
 };
 
