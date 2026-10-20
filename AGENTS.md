@@ -97,7 +97,7 @@ La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non con
   data `data/categorie.js` (et `data/panier.js` pour le stockage), contrôleur `CategorieController.php`
   (`AdminCategorieController.php` pour une route admin), modèle `CategorieModel.php`.
   - aucune constante, aucune logique, aucun cas particulier que la référence n'a pas sans le signaler ;
-  - en cas de conflit avec une règle de `.agents/` ou un gabarit, **le code de référence l'emporte** (s'il fait la même
+  - en cas de conflit avec une règle de `.claude/` ou un gabarit, **le code de référence l'emporte** (s'il fait la même
     chose dans le même contexte) ;
   - si deux architectures se défendent, ou si la maquette / l'US impose un écart, arrête-toi et demande ;
   - signale dans le compte rendu tout écart restant avec la référence.
@@ -106,8 +106,8 @@ La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non con
 
 ### Front (`front/`)
 
-- Détail : règle `.agents/rules/front-mvc.md` (pages, composants, data, routes) et
-  `.agents/rules/integration-ui.md` (maquette, Tailwind, accessibilité, W3C).
+- Détail : règle `.claude/rules/front-mvc.md` (pages, composants, data, routes) et
+  `.claude/rules/integration-ui.md` (maquette, Tailwind, accessibilité, W3C).
 - Pages en M / C / V ; composants sans logique métier ; seul `data/` appelle l'API, seul `lib/api-request.js` appelle `fetch`.
 - Persistance navigateur : `localStorage` dans `data/` uniquement, accès protégés par `try/catch`, jamais de prix stocké.
 - Le routeur compare l'adresse et **perd la query string des liens `data-link`** : passe les paramètres dans le chemin
@@ -119,7 +119,7 @@ La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non con
 
 ### Back (`back/`, `sql/`)
 
-- Détail : règle `.agents/rules/back-php.md`.
+- Détail : règle `.claude/rules/back-php.md`.
 - Une route = une ligne dans `routes.php` + l'instance du contrôleur dans `$controleurs` de `back/index.php`.
   Pas de paramètre dans le chemin : `GET /api/produit?slug=...`. Écritures en `POST /api/<ressource>/<action>`.
 - Droits : client → `$_SESSION['id']`, admin → `$_SESSION['admin']` ; absent → **403** (jamais 401 :
@@ -140,4 +140,6 @@ de l'US suivante », pas « implémente sans confirmer ».
 
 Ne commence pas une US dont une dépendance bloquante n'est pas terminée (voir `docs/ordre-us.md`), sauf demande explicite.
 
-Les skills sont dans `.agents/skills/` ; `.claude/skills/` contient des liens vers eux pour que Claude Code les trouve.
+Tout l'outillage de l'agent est dans `.claude/` : `rules/` (chargées selon les fichiers touchés), `skills/`, `scripts/`.
+Les sous-skills vivent dans `.claude/skills/implementer-us/skills/` ; un lien par sous-skill dans `.claude/skills/`
+les rend appelables seuls.

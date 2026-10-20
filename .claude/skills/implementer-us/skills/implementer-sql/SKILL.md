@@ -5,7 +5,7 @@ description: Crée ou modifie le schéma et les seeds MySQL d'une US (table, col
 
 # Implémenter la partie SQL d'une US
 
-Règle de détail : `.agents/rules/back-php.md` (section SQL). Référence : `sql/import.sql` (tables existantes).
+Règle de détail : `.claude/rules/back-php.md` (section SQL). Référence : `sql/import.sql` (tables existantes).
 
 ## Étapes
 

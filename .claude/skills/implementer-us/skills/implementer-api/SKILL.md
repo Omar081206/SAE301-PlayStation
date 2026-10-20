@@ -5,7 +5,7 @@ description: Ajoute ou modifie une route de l'API PHP (routes.php, enregistremen
 
 # Implémenter la partie API d'une US
 
-Règle de détail : `.agents/rules/back-php.md`. Gabarits : `examples/Controller.php`, `examples/Model.php`.
+Règle de détail : `.claude/rules/back-php.md`. Gabarits : `examples/Controller.php`, `examples/Model.php`.
 Références dans le code : `CategorieController.php` + `CategorieModel.php` (lecture publique),
 `AdminCategorieController.php` (route admin, validation, 409), `CommandeModel.php` (transaction, `FOR UPDATE`).
 

@@ -1,13 +1,13 @@
 ---
-trigger: glob
-globs: "front/src/**/*.js"
+paths:
+  - "front/src/**/*.js"
 ---
 
 # Front : pages, composants, data (conventions du starter)
 
 Modèles à calquer : page `pages/catalogue/page.js` (et `pages/commande` pour une page réservée) · composants
 `ui/carte-produit`, `ui/grille-produits`, `ui/message` · data `data/categorie.js` (`data/panier.js` pour le stockage)
-· routes `main.js`. Copie leur forme exacte. Gabarits prêts à remplir : `.agents/skills/implementer-us/skills/implementer-<couche>/examples/`.
+· routes `main.js`. Copie leur forme exacte. Gabarits prêts à remplir : `.claude/skills/implementer-us/skills/implementer-<couche>/examples/`.
 
 ## Page (`pages/<nom>/page.js` + `template.html`)
 
