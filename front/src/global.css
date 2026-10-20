@@ -66,13 +66,51 @@
 }
 
 /*
-  Typographie. Inter n'est pas chargée (pas de CDN) : elle s'applique si elle
-  est installée, sinon la police du système prend le relais.
+  Police SST de PlayStation, servie depuis front/public/fonts/. SST n'a pas de
+  semi-gras : font-semibold (600) prend le Medium, plus proche du rendu de
+  playstation.com que le Bold. « swap » affiche le texte en Inter (ou police du
+  système) le temps du chargement.
+*/
+@font-face {
+  font-family: "SST";
+  src: url("/fonts/sst-light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SST";
+  src: url("/fonts/sst-roman.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SST";
+  src: url("/fonts/sst-medium.ttf") format("truetype");
+  font-weight: 500 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SST";
+  src: url("/fonts/sst-bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/*
+  Typographie. SST d'abord ; Inter (si elle est installée) puis la police du
+  système prennent le relais si SST ne se charge pas.
   Le titre du bandeau change de taille à chaque format de la maquette :
   29 px (mobile), 43 px (tablette), 49 px (desktop).
 */
 @theme {
-  --font-sans: Inter, system-ui, sans-serif;
+  --font-sans: "SST", Inter, system-ui, sans-serif;
   --tracking-ps: -0.0125rem;
 
   --text-bandeau-sm: 1.8125rem;
