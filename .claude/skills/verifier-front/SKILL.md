@@ -5,11 +5,11 @@ description: Vérifie le front (front/src) : conventions pages M/C/V, composants
 
 # Vérifier le front
 
-Script partagé : `.agents/scripts/check-conventions.mjs` (depuis la racine du projet).
+Script partagé : `.claude/scripts/check-conventions.mjs` (depuis la racine du projet).
 
 ## Étapes
 
-1. **Conventions.** `node .agents/scripts/check-conventions.mjs --front` (fichiers modifiés selon git ;
+1. **Conventions.** `node .claude/scripts/check-conventions.mjs --front` (fichiers modifiés selon git ;
    `--all` pour tout le front). Corriger chaque erreur (fichier, ligne, règle), relancer jusqu'à « OK ».
    Les avertissements se lisent un par un : corrigés, ou justifiés dans le compte rendu.
 2. **Build.** `cd front && npm run build` sans erreur ni avertissement nouveau.

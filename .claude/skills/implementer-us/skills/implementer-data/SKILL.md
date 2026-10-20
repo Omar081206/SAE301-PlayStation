@@ -5,7 +5,7 @@ description: Ajoute ou modifie un module front/src/data/ (appel d'une route de l
 
 # Implémenter la partie data d'une US
 
-Règle de détail : `.agents/rules/front-mvc.md` (section Data). Gabarit : `examples/data.js`.
+Règle de détail : `.claude/rules/front-mvc.md` (section Data). Gabarit : `examples/data.js`.
 Références dans le code : `data/categorie.js` (lecture), `data/compte.js` (lecture + écriture),
 `data/panier.js` (localStorage).
 

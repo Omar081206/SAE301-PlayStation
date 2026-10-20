@@ -1,6 +1,8 @@
 ---
-trigger: glob
-globs: "{front/src/**/*.html,front/src/**/*.css,front/index.html}"
+paths:
+  - "front/src/**/*.html"
+  - "front/src/**/*.css"
+  - "front/index.html"
 ---
 
 # Intégration de maquette : Tailwind, responsive, accessibilité, W3C

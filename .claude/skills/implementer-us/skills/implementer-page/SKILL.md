@@ -5,7 +5,7 @@ description: Crée ou modifie une page front/src/pages/<nom>/ (page.js en M / C 
 
 # Implémenter une page d'une US
 
-Règle de détail : `.agents/rules/front-mvc.md` (sections Page et Routes). Gabarits : `examples/page.js`,
+Règle de détail : `.claude/rules/front-mvc.md` (sections Page et Routes). Gabarits : `examples/page.js`,
 `examples/template.html`. Références dans le code : `pages/catalogue` (lecture + action),
 `pages/commande` (page réservée, redirection), `pages/admin-categories` (back-office, modale).
 

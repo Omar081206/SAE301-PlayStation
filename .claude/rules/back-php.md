@@ -1,13 +1,14 @@
 ---
-trigger: glob
-globs: "{back/**/*.php,sql/**/*.sql}"
+paths:
+  - "back/**/*.php"
+  - "sql/**/*.sql"
 ---
 
 # Back PHP et SQL (conventions du starter)
 
 Modèles : `Controller/CategorieController.php`, `Controller/AdminCategorieController.php` (route admin),
 `Model/CategorieModel.php`, `Model/CommandeModel.php` (transaction), `routes.php`, `index.php`.
-Gabarits : `.agents/skills/implementer-us/skills/implementer-api/examples/`.
+Gabarits : `.claude/skills/implementer-us/skills/implementer-api/examples/`.
 
 - Chaque fichier : `<?php` + `declare(strict_types=1);`, `namespace App\Controller|App\Model`, `final class`,
   propriétés / paramètres / retours typés, PHPDoc en français.

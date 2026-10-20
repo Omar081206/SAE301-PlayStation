@@ -5,7 +5,7 @@ description: Crée ou modifie un composant front/src/ui/<nom>/ (index.js + templ
 
 # Implémenter un composant d'une US
 
-Règles de détail : `.agents/rules/front-mvc.md` (section Composant) et `.agents/rules/integration-ui.md`.
+Règles de détail : `.claude/rules/front-mvc.md` (section Composant) et `.claude/rules/integration-ui.md`.
 Gabarits : `examples/index.js`, `examples/template.html`, `examples/ligne.html`, `examples/vide.html`.
 Références dans le code : `ui/carte-produit` (élément avec actions), `ui/grille-produits` (liste + état vide),
 `ui/message` (messages `role="status"`), `ui/modale` (dialogue).

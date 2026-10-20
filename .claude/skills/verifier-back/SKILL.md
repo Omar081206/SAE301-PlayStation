@@ -5,12 +5,12 @@ description: Vérifie le back (back/src, sql/import.sql) : conventions PHP (cont
 
 # Vérifier le back
 
-Script partagé : `.agents/scripts/check-conventions.mjs` (depuis la racine du projet).
+Script partagé : `.claude/scripts/check-conventions.mjs` (depuis la racine du projet).
 
 ## Étapes
 
 1. **Syntaxe.** `php -l` sur chaque fichier PHP modifié : le back est servi en direct, une erreur casse le site.
-2. **Conventions.** `node .agents/scripts/check-conventions.mjs --back` (fichiers modifiés selon git ;
+2. **Conventions.** `node .claude/scripts/check-conventions.mjs --back` (fichiers modifiés selon git ;
    `--all` pour tout le back). Corriger chaque erreur, relancer jusqu'à « OK ».
    Avertissements « variable insérée dans du SQL » : vérifier à la main que la variable est une liste de marqueurs
    `?` liés ou un identifiant d'une liste blanche ; sinon, corriger.
