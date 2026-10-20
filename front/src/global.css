@@ -125,7 +125,7 @@
   Survol des boutons pleins, relevé sur playstation.com : un anneau de la
   couleur du bouton s'écarte de 3 px, et un reflet blanc glisse en diagonale
   sur le fond. Le suffixe donne la couleur de l'anneau (anneau-action,
-  anneau-achat…). Le focus clavier reprend le même anneau.
+  anneau-lien…). Le focus clavier reprend le même anneau.
 */
 @utility anneau-* {
   --anneau: --value(--color-*);
