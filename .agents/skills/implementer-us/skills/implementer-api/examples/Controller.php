@@ -11,6 +11,7 @@ use App\Model\ExempleModel;
 /**
  * Gabarit de contrôleur : valide la requête, orchestre le modèle, répond en JSON.
  * Enregistrer aussi la route (routes.php) et l'instance (index.php).
+ * Route admin : vérifier $_SESSION['admin'] (voir AdminCategorieController::verifierAdmin).
  */
 final class ExempleController
 {
@@ -46,8 +47,9 @@ final class ExempleController
 
     public function enregistrer(Request $requete): void
     {
-        if (!isset($_SESSION['utilisateur'])) {
-            Response::erreur('Connexion requise', 401);
+        // Jamais 401 : l'espace web est derrière l'authentification HTTP d'Apache.
+        if (!isset($_SESSION['id'])) {
+            Response::erreur('Connexion requise', 403);
         }
 
         $id = (int) ($requete->corps()['id'] ?? 0);

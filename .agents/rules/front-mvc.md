@@ -5,9 +5,9 @@ globs: "front/src/**/*.js"
 
 # Front : pages, composants, data (conventions du starter)
 
-Modèles à calquer : page `pages/catalogue/page.js` et `pages/admin/page.js` · composant `ui/barre-outils`,
-`ui/grille-films`, `ui/statistiques` · data `data/film.js` · routes `main.js`. Copie leur forme exacte.
-Gabarits prêts à remplir : `.agents/skills/implementer-us/examples/`.
+Modèles à calquer : page `pages/catalogue/page.js` (et `pages/commande` pour une page réservée) · composants
+`ui/carte-produit`, `ui/grille-produits`, `ui/message` · data `data/categorie.js` (`data/panier.js` pour le stockage)
+· routes `main.js`. Copie leur forme exacte. Gabarits prêts à remplir : `.agents/skills/implementer-us/skills/implementer-<couche>/examples/`.
 
 ## Page (`pages/<nom>/page.js` + `template.html`)
 
@@ -17,7 +17,8 @@ Ordre fixe du fichier : imports → commentaire de page → `let M` → `let C` 
   Pas de DOM, pas de référence à `C` ni `V`.
 - **C** : `let C = {}`. Seul à appeler `data/`. Méthodes :
   - `C.charger = async function (...)` : `try` appelle `XxxData`, range le résultat dans `M`, `M.message = null` ;
-    `catch` met `M.<donnée> = null` et `M.message = { type: "erreur", texte }` (`erreur.statut` pour 401 / 403) ;
+    `catch` met `M.<donnée> = null` et `M.message = { type: "erreur", texte }` (`erreur.statut` : 403, 404, 409, 422 ;
+    l'API ne renvoie jamais 401) ;
   - `C.handler_<action> = async function (...)` : modifie `M` (directement ou via `C.charger`), puis `V.rafraichir()` ;
   - `C.init = async function (...)` : remet `M.message = null`, charge, `return V.init();`.
   Pas d'accès au DOM (seul `window.scrollTo` est toléré, comme dans le starter).
@@ -40,24 +41,29 @@ Ordre fixe du fichier : imports → commentaire de page → `let M` → `let C` 
 - Un composant imbriqué prend la place d'un `<slot name="...">`.
 - Le composant ne décide de rien : ni `fetch`, ni import de `data/`, ni référence à `M` / `C` / `V`.
   Il appelle `actions.surXxx(...)` ; les écouteurs se posent sur les éléments du fragment.
-- JSDoc de `dom` avec `@param {{...}} data` et `@param {{surXxx: (...) => void}} actions`.
+- JSDoc de `dom` comme dans le starter : `@param` pour `data` (et `actions`) quand `dom` reçoit des `actions` ou
+  construit lui-même le rendu à partir de données structurées (starter : `formulaire-connexion`, `statistiques` ;
+  ici : `ui/carte-produit`) ; aucun `@param` pour un simple `dom(x)` qui délègue à `html` (`ui/message`, `ui/header`).
 
 ## Data (`data/<nom>.js`)
 
 `let XxxData = {}` ; `XxxData.fetchXxx = async function (...)` renvoie `getRequest(...)` / `postRequest(...)` de
 `lib/api-request.js` (seul module autorisé à appeler `fetch`). `encodeURIComponent` sur toute valeur d'URL.
-JSDoc : route appelée + forme de la réponse. Stockage navigateur : `localStorage` par défaut (panier : `data/panier.js`, clé `panier`, lignes `{ variantId, quantite }`), jamais de prix stocké ;
+JSDoc : route appelée + forme de la réponse. Stockage navigateur : `localStorage`, jamais de prix stocké ;
 `try/catch` à chaque lecture / écriture et `JSON.parse` protégé, comme `data/panier.js` : la page doit fonctionner storage vide ou indisponible.
+Un module data ne touche pas au DOM : pour prévenir le layout, il expose un rappel (`PanierData.surChangement`).
 Calcul pur réutilisable (totaux, formats) : fonction exportée dans `lib/`, sur le modèle de `lib/format.js`.
 
 ## Routes (`main.js`)
 
 `router.addRoute("/categorie/:slug", CategoriePage)` avant la route `"*"`. URLs imposées : `/categorie/nom-categorie`,
 `/produit/nom-produit`. Lien interne : `<a href="/chemin" data-link>` sans le chemin du projet.
-Page réservée : la page appelle l'API, le serveur décide (401 / 403), la page affiche ; ne jamais protéger côté client seulement.
+Le routeur perd la query string des liens `data-link` : paramètres dans le chemin (`/produit/:slug/options/:variante`).
+Redirection par le code : `naviguer(chemin)`, lecture d'un paramètre `?retour=` : `parametre(nom)` (`lib/navigation.js`).
+Page réservée : la page appelle l'API, le serveur décide (403), la page affiche ou redirige ; ne jamais protéger côté client seulement.
 
 ## Nommage (langue du starter)
 
-Domaine, composants et actions en **français** (`CarteFilmView`, `surTri`, `charger`, `rafraichir`) ;
+Domaine, composants et actions en **français** (`CarteProduitView`, `surAjout`, `charger`, `rafraichir`) ;
 mécanismes techniques en **anglais** (`createPageFragment`, `handler_`, `fetchPage`, `genericRenderer`).
-Un équivalent existe dans le starter → reprends son nom, adapté au domaine (`CarteFilmView` → `CarteProduitView`).
+Un équivalent existe déjà → reprends sa forme de nom (`TableauCategoriesView` → `TableauProduitsAdminView`).

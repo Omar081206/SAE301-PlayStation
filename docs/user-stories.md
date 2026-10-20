@@ -1,6 +1,6 @@
 # User stories — SAé 3.01 (extrait du sujet)
 
-Source : sujet officiel. Ordre de réalisation : section « Analyse » du `README.md`.
+Source : sujet officiel. Ordre de réalisation : `docs/ordre-us.md`.
 
 ## Definition of Done commune (toute US)
 

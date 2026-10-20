@@ -2,7 +2,7 @@
 /**
  * Vérifie les conventions du starter SAE301 (front M/C/V, composants, data, PHP, SQL).
  *
- * Usage : node check-conventions.mjs [--all] [--root <dossier>] [fichier...]
+ * Usage : node check-conventions.mjs [--front | --back] [--all] [--root <dossier>] [fichier...]
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { execSync } from "node:child_process";
@@ -10,10 +10,12 @@ import { join, relative, sep } from "node:path";
 
 const AIDE = `Vérifie les conventions du starter SAE301.
 
-Usage : node check-conventions.mjs [--all] [--root <dossier>] [fichier...]
+Usage : node check-conventions.mjs [--front | --back] [--all] [--root <dossier>] [fichier...]
 
   (aucun argument)  fichiers modifiés ou nouveaux selon git (sinon, tous)
-  --all             tous les fichiers de front/src/{pages,ui,data,layouts}, back/src/{Controller,Model}, sql/
+  --front           seulement front/src/{pages,ui,data,layouts} (skill verifier-front)
+  --back            seulement back/src/{Controller,Model} et sql/ (skill verifier-back)
+  --all             tous les fichiers de la cible, pas seulement ceux modifiés
   --root <dossier>  racine du projet (défaut : dossier courant)
   fichier...        fichiers précis
 
@@ -32,7 +34,13 @@ const racine = indexRoot >= 0 ? args[indexRoot + 1] : process.cwd();
 const toutes = args.includes("--all");
 const fichiersDemandes = args.filter((a, i) => !a.startsWith("--") && !(indexRoot >= 0 && i === indexRoot + 1));
 
-const DOSSIERS = ["front/src/pages", "front/src/ui", "front/src/data", "front/src/layouts", "back/src/Controller", "back/src/Model", "sql"];
+const DOSSIERS_FRONT = ["front/src/pages", "front/src/ui", "front/src/data", "front/src/layouts"];
+const DOSSIERS_BACK = ["back/src/Controller", "back/src/Model", "sql"];
+
+// --front / --back restreignent la vérification à une moitié du projet ; sans eux, les deux.
+let DOSSIERS = [...DOSSIERS_FRONT, ...DOSSIERS_BACK];
+if (args.includes("--front") && !args.includes("--back")) DOSSIERS = DOSSIERS_FRONT;
+if (args.includes("--back") && !args.includes("--front")) DOSSIERS = DOSSIERS_BACK;
 
 /** Liste récursive des fichiers d'un dossier. */
 function lister(dossier) {

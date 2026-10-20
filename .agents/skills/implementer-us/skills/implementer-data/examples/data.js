@@ -13,10 +13,10 @@ ExempleData.fetchOne = async function (slug) {
 };
 
 /**
- * Enregistrement : POST /api/exemple, corps JSON { id }.
+ * Enregistrement : POST /api/exemple/enregistrer, corps JSON { id }.
  */
 ExempleData.save = async function (id) {
-  return postRequest("exemple", { id });
+  return postRequest("exemple/enregistrer", { id });
 };
 
 export { ExempleData };
