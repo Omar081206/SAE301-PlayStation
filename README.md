@@ -187,13 +187,6 @@ par l'authentification HTTP d'Apache, et un 401 ferait redemander au
 navigateur les identifiants de l'IUT. Non connecté : 403 ; identifiants
 incorrects : 422.
 
-Tests (curl, sans dépendance) : `tests/compte.sh`, `tests/commande.sh`,
-`tests/stock.sh`, `tests/options.sh`, `tests/categories.sh`, `tests/commandes-admin.sh`, `tests/historique.sh` et `tests/mouvements-stock.sh`, avec l'URL du projet en argument.
-`tests/categories.sh` écrit en base (catégories de test, supprimées à la fin), `tests/commandes-admin.sh`
-aussi (trois commandes de test, dont une reste « retirée » ; le stock est rendu). Le dernier écrit
-en base (commandes annulées, journal) et vérifie la concurrence sur la dernière
-unité : avec `php -S`, lancer le serveur avec `PHP_CLI_SERVER_WORKERS=6`.
-
 ## Comptes
 
 Comptes de test créés par `sql/import.sql` (mots de passe stockés en bcrypt) :
