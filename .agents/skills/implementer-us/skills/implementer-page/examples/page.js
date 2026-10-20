@@ -28,7 +28,7 @@ C.charger = async function (slug) {
   } catch (erreur) {
     M.exemple = null;
     let texte = erreur.message;
-    if (erreur.statut === 401) texte = "Vous n'êtes pas connecté.";
+    if (erreur.statut === 403) texte = "Connectez-vous pour accéder à cette page.";
     M.message = { type: "erreur", texte };
   }
 };
