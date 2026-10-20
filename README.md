@@ -1,23 +1,18 @@
-# SAE301 — PlayStation Click & Collect
+# SAE301-Starter
 
-Boutique click & collect PlayStation (consoles, manettes, casques et
-accessoires, jeux) : une API PHP en trois couches (routage / contrôleur /
+Catalogue de films : une API PHP en trois couches (routage / contrôleur /
 modèle) au-dessus de MySQL, et un front en JavaScript organisé en layouts,
-pages et composants, avec un routeur côté client. Construite sur le starter
-« catalogue de films » du module, dont elle garde l'architecture.
+pages et composants, avec un routeur côté client.
 
-- catalogue filtrable par catégorie, fiche produit avec galerie ;
-- panier conservé dans le navigateur (`localStorage`), prix recalculés par le
-  serveur ;
-- comptes clients (mots de passe en bcrypt, session PHP), validation de
-  commande avec numéro unique ;
-- back-office `/admin` (tableau de bord), avec sa propre connexion réservée aux comptes `admin`.
+- préférences de tri et de pagination mémorisées dans des cookies ;
+- connexion par session, page Administration réservée au rôle `admin` ;
+- thème clair / sombre en `localStorage`.
 
 ## Arborescence
 
 ```
 .htaccess            /api/... vers le back, tout le reste vers front/dist/
-sql/import.sql       tables de la boutique (+ film et genre pour /admin)
+sql/import.sql       tables film et genre, à importer dans votre base
 back/                API PHP, ne renvoie que du JSON
 ├── index.php        point d'entrée : assemble les dépendances, délègue
 ├── config/          identifiants de la base, chemin du projet
@@ -28,7 +23,7 @@ front/               sources du front (Vite + Tailwind)
 ├── vite.config.js   chemin du projet, proxy de développement
 ├── src/
 │   ├── main.js      déclaration des routes et des layouts
-│   ├── global.css   Tailwind, tokens de la maquette Figma
+│   ├── global.css   Tailwind, thème sombre
 │   ├── layouts/     structures de page (en-tête + slot de la page)
 │   ├── pages/       une page par route : page.js + template.html
 │   ├── ui/          composants réutilisables : index.js + template.html
@@ -39,11 +34,11 @@ front/               sources du front (Vite + Tailwind)
 
 ## Installation
 
-1. Importez `sql/import.sql` dans votre base depuis phpMyAdmin. Il crée les
-   tables de la boutique, des produits et des comptes de test. **Toute table
-   existante de même nom est remplacée : comptes et commandes sont perdus.**
+1. Importez `sql/import.sql` dans votre base depuis phpMyAdmin (il crée les
+   tables `film` et `genre` ; une table existante de même nom serait
+   remplacée).
 2. Dans `back/config/config.php`, renseignez les identifiants de la base et
-   le chemin du projet (`/~votre_login/SAE301/`).
+   le chemin du projet (`/~votre_login/Base/`).
 3. Dans `front/vite.config.js`, donnez à `BASE` **exactement** le même chemin.
 4. Dans `front/`, installez les dépendances :
 
@@ -61,8 +56,8 @@ Le chemin du projet apparaît donc à deux endroits, et seulement là :
 npm run dev
 ```
 
-Le front est servi par Vite à `http://localhost:5173/~votre_login/SAE301/`, avec
-rechargement à chaque modification. Les requêtes `/~votre_login/SAE301/api/...`
+Le front est servi par Vite à `http://localhost:5173/~votre_login/Base/`, avec
+rechargement à chaque modification. Les requêtes `/~votre_login/Base/api/...`
 sont relayées par Vite vers l'API déployée sur `mmi.unilim.fr` : le back doit
 donc être en place sur le serveur (voir Déployer).
 
@@ -83,10 +78,10 @@ npm run build
 ```
 
 Le front compilé est produit dans `front/dist/`. Déposez ensuite dans votre
-espace web, dans le dossier `SAE301/` : `.htaccess`, `back/` et `front/dist/`
+espace web, dans le dossier `Base/` : `.htaccess`, `back/` et `front/dist/`
 (en gardant ce chemin). Inutile de déposer `front/node_modules/`.
 
-L'application est alors à `https://mmi.unilim.fr/~votre_login/SAE301/`. Le
+L'application est alors à `https://mmi.unilim.fr/~votre_login/Base/`. Le
 `.htaccess` sert les fichiers de `front/dist/`, et répond par
 `front/dist/index.html` à toute autre adresse (`/admin`…) : c'est le routeur
 du front qui affiche la bonne page, ou la page 404.
@@ -101,7 +96,7 @@ Déclaré dans `main.js`, sur le modèle de `react-router` :
 router.addLayout("/", RootLayout);
 router.addRoute("/", CataloguePage);
 router.addRoute("/admin", AdminPage);
-router.addRoute("/produit/:slug", ProduitPage);   // params.slug dans la page
+router.addRoute("/films/:id", FilmPage);   // params.id dans la page
 router.addRoute("*", The404Page);          // toujours en dernier
 ```
 
@@ -151,81 +146,30 @@ Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
 
 | Route | Effet |
 |---|---|
-| `GET /api/produits?categorie=manettes` | le catalogue, entier ou d'une catégorie |
-| `GET /api/produit?slug=…` | la fiche d'un produit : ses options (Coloris…) et leurs valeurs, et pour chaque variante son prix, son état de stock, ses valeurs et ses images |
-| `GET /api/categories` | les catégories et leur nombre de produits |
-| `POST /api/panier` | détail du panier, corps `{"lignes": [{"variantId", "quantite"}]}` : prix et totaux calculés par le serveur |
-| `POST /api/inscription` | création de compte, corps `{"prenom", "nom", "email", "mdp"}` |
-| `POST /api/login` | connexion, corps `{"email", "mdp"}` |
+| `GET /api/films?page=2&tri=note&parPage=24` | une page du catalogue |
+| `POST /api/login` | connexion, corps JSON `{"login": …, "mdp": …}` |
 | `POST /api/logout` | déconnexion |
-| `GET /api/session` | l'utilisateur connecté, s'il y en a un |
-| `GET /api/compte` | espace personnel : profil et 3 dernières commandes (client connecté) |
-| `GET /api/compte/commandes?statut=…&periode=…&page=…` | historique des commandes du client connecté, la plus récente d'abord, 10 par page ; `periode` : `30j`, `6m` (défaut), `12m`, `tout` ; renvoie aussi le nombre de commandes par statut |
-| `POST /api/compte/profil` | modification du profil, corps `{"prenom", "nom", "email", "mdpActuel", "nouveauMdp"}` ; le mot de passe actuel est exigé pour changer d'adresse ou de mot de passe |
-| `POST /api/commande` | validation de commande (client connecté), corps `{"lignes"}` |
-| `GET /api/commande?numero=…` | une commande du client connecté |
-| `POST /api/admin/login` · `POST /api/admin/logout` · `GET /api/admin/session` | connexion au back-office (corps `{"email", "mdp"}`), séparée de celle des clients (comptes `admin` uniquement) |
-| `GET /api/admin/tableau-de-bord` | indicateurs du back-office (admin) |
-| `GET /api/admin/produits` · `GET /api/admin/produit?id=…` | produits du back-office (prix le plus bas, stock total, variantes) et seuil « Bientôt épuisé » ; un produit complet (options, variantes, images) et les catégories (admin) |
-| `POST /api/admin/produit/enregistrer` · `POST /api/admin/produit/supprimer` | création ou modification d'un produit avec ses options et ses variantes (prix, stock ; chaque changement de stock est inscrit au journal, motif « ajustement ») ; suppression (admin) |
-| `POST /api/admin/produit/image` (+ `/supprimer`, `/principale`, `/variante`, `/affichage`) | téléversement d'une image (data URL, réduite à 1200 px et convertie en WebP, rangée dans `uploads/produits/`), suppression, image principale, rattachement à une variante, lieu d'affichage (admin) |
-| `POST /api/admin/parametre/seuil` | seuil « Bientôt épuisé », corps `{"seuil"}` (admin) |
-| `GET /api/admin/categories` | catégories du back-office, avec leur nombre de produits (admin) |
-| `POST /api/admin/categorie/creer` · `POST /api/admin/categorie/modifier` | création (`{"nom", "description"}`) ou modification (`{"id", "nom", "description"}`) d'une catégorie (admin) ; le slug est déduit du nom |
-| `POST /api/admin/categorie/supprimer` | suppression, corps `{"id", "destination"}` : les produits sont déplacés vers `destination` ; refusée (409) si la catégorie a des produits et qu'aucune destination n'est donnée |
-| `GET /api/admin/commandes?tri=numero\|date\|statut\|montant&sens=asc\|desc` | toutes les commandes, triées, avec les statuts possibles de chacune (admin) |
-| `GET /api/admin/commande?numero=…` | détail d'une commande : client, lignes, historique des changements de statut, statuts possibles (admin) |
-| `POST /api/admin/commande/statut` | changement de statut d'une commande (rôle `admin`), corps `{"numero", "statut"}` ; l'annulation recrédite le stock |
-| `POST /api/admin/commandes/statut` | changement de statut en lot, corps `{"numeros", "statut"}` : chaque commande est traitée séparément, le résultat de chacune est renvoyé |
+| `GET /api/admin/stats` | statistiques, réservées au rôle `admin` |
 
-Chaque changement de statut fait depuis le back-office est inscrit dans la
-table `journal_admin` (qui, quand, ancien → nouveau statut), affichée dans le
-détail de la commande.
-
-L'API ne répond jamais 401 : sur mmi.unilim.fr, l'espace web est déjà protégé
-par l'authentification HTTP d'Apache, et un 401 ferait redemander au
-navigateur les identifiants de l'IUT. Non connecté : 403 ; identifiants
-incorrects : 422.
+Tris acceptés : `titre`, `annee`, `note`. Valeurs de `parPage` : `12`, `24`,
+`48`. `tri` et `parPage` sont facultatifs : sans eux, le serveur applique les
+préférences mémorisées dans les cookies. La réponse rappelle les réglages
+appliqués (`tri`, `parPage`, `page`, `pagesTotal`, `total`) : le front n'a
+jamais besoin de lire les cookies, qui sont en `HttpOnly`.
 
 ## Comptes
 
-Comptes de test créés par `sql/import.sql` (mots de passe stockés en bcrypt) :
-
-| Prénom Nom | Adresse e-mail | Mot de passe | Rôle |
-|---|---|---|---|
-| Nathan Drake | `client@playstation.test` | `client1234` | `client` |
-| Admin PlayStation | `admin@playstation.test` | `admin1234` | `admin` |
-
-On se connecte avec l'adresse e-mail. Une fois connecté, le bouton du header
-affiche « Prénom N. » et mène à l'espace personnel (`/compte`, `/compte/commandes`,
-`/compte/profil`).
-Un visiteur peut aussi créer son compte (prénom, nom, adresse, mot de passe)
-depuis la page `/connexion`. Le compte
-admin se connecte uniquement par `/admin` : les deux connexions sont séparées.
+| Login | Mot de passe | Rôle |
+|---|---|---|
+| `alice` | `azerty` | `user` |
+| `admin` | `motdepasse` | `admin` |
 
 ## Si ça ne marche pas
 
 | Symptôme | Cause probable |
 |---|---|
 | Un listing de dossiers, ou une erreur 404 sur la racine | le `.htaccess` n'a pas été déposé, ou `front/dist/` est absent (lancer `npm run build`) |
-| « L'image n'a pas pu être enregistrée » (back-office, Produits) | PHP (utilisateur `www-data`) ne peut pas écrire dans `uploads/produits/` : `setfacl -m g:www-data:rwx uploads/produits` puis `setfacl -d -m g:www-data:rwx uploads/produits` (git ne garde pas ces droits) |
 | Page blanche, fichiers `assets/…` en 404 | `BASE` de `vite.config.js` ne correspond pas au dossier de dépôt |
 | « Impossible de charger le catalogue » | identifiants de `config.php`, ou tables non importées |
 | Les réglages ne sont jamais retenus, la connexion ne tient pas | `chemin` de `config.php` ne correspond pas au dossier de dépôt |
 | En développement, l'API répond 404 | le back n'est pas déployé sur le serveur, ou `BASE` est faux |
-
-## Images téléversées
-
-Les images ajoutées depuis le back-office (`/admin/produits`) sont rangées
-dans `uploads/produits/` (hors du build : `npm run build` ne les efface pas),
-sous un nom commençant par `u-`. Le `.htaccess` les sert à l'adresse
-`images/produits/u-…`, comme les images déposées dans
-`front/public/images/produits/`. Le dossier doit être accessible en écriture
-pour PHP.
-
-Chaque image a un lieu d'affichage (colonne `image.affichage`, choisi sous la
-vignette dans le back-office) : « Catalogue et fiche » (par défaut),
-« Catalogue » seulement (une jaquette carrée de jeu, pour la carte) ou
-« Fiche » seulement (visuels et captures en paysage, pour la galerie). Un
-groupe d'images sans image pour la fiche garde toutes ses images dans la
-galerie.
