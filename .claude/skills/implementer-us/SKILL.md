@@ -42,16 +42,18 @@ d'affichage n'a pas d'API). **N'en charge aucun qui ne soit pas dans le plan val
    - les changements de schéma (la base vivante sera modifiée par `ALTER`) ;
    - les questions ouvertes (écran ou état manquant dans la maquette, écart avec le code de référence).
    **N'écris rien (code, base, branche) avant le feu vert.** « go » ne vaut pas validation d'un plan non présenté.
+   Après le feu vert, première action : créer la branche `us/<us>-<nom>` (AGENTS.md, section Git).
 5. **Implémenter**, uniquement cette US, en appelant chaque sous-skill retenu dans l'ordre du plan
    (outil Skill avec son nom, ou lecture de `skills/<nom>/SKILL.md`). Un besoin hors plan apparaît (fichier,
    table, route) : arrête-toi et demande avant de l'ajouter.
 6. **Vérifier** : `verifier-back` si le plan touche `back/` ou `sql/`, `verifier-front` s'il touche `front/`.
 7. **Compte rendu** : fichiers créés / modifiés ; sous-skills utilisés ; tableau critère → couvert / non couvert /
    non vérifié ; écarts avec la maquette et avec le code de référence ; tokens ajoutés ; modifications de la base ;
-   résultats des vérifications ; prochaine US (ordre de `docs/ordre-us.md`).
+   résultats des vérifications ; **commit proposé** (fichiers + message, en attente de mon accord) ;
+   prochaine US (ordre de `docs/ordre-us.md`).
 
 ## Contraintes
 
-- Ne committe pas sans demande (voir AGENTS.md, Git). Ne touche pas aux autres US, même proches.
+- Ne committe pas sans mon accord, ne pousse jamais (AGENTS.md, section Git). Ne touche pas aux autres US, même proches.
 - Pas d'écran inventé : si la maquette manque un état (vide, erreur, chargement), propose-le dans le plan.
 - Si un test révèle un bug, signale-le au lieu d'affaiblir le test ou le critère.

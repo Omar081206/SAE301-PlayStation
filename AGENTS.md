@@ -83,9 +83,7 @@ La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non con
 - **Ne modifie aucun code existant sans le demander.** Un fichier existant ne se modifie que s'il figure dans un plan
   que j'ai validé ; sinon, arrête-toi et demande. C'est d'autant plus vrai pour les briques du starter : `front/src/lib/`,
   `back/src/Core/`, `back/index.php` (hors enregistrement d'un contrôleur), `.htaccess`, `README.md` (jamais modifié).
-- **Git** : pas de commit ni de push sans demande explicite. Quand je le demande : une branche `us/<us>-<nom>`
-  (ou `correctif/<nom>`), messages `(US-x): …`, fusion `git merge --no-ff` dans `main`, jamais de `Co-Authored-By`.
-  Je pousse moi-même.
+- **Git** : branche d'abord, commit seulement après mon accord, jamais de push (voir la section Git).
 - Aucune nouvelle dépendance (npm, composer, CDN) sans accord. Pas de Sass : Tailwind 4 uniquement.
 - Aucun secret ni identifiant réel dans le dépôt.
 - Tout HTML et tout CSS produits doivent passer le validateur W3C.
@@ -129,6 +127,29 @@ La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non con
   tables touchées), **et** la même modification reportée dans `import.sql`. Pas de fichier de migration séparé.
 - Données de test : crée et supprime tes propres lignes ; ne touche pas aux comptes et commandes existants.
 - Vérification : skill `verifier-back`.
+
+## Git
+
+Méthode pour tout travail qui modifie le dépôt (US, correctif, nettoyage, outillage) :
+
+1. **Créer une branche** avant la première modification, depuis `main` à jour et propre (`git status` vide ;
+   sinon, demande) : `git switch -c <type>/<nom>`.
+   - `us/<us>-<nom>` pour une US (`us/pil-a-statistiques`) ;
+   - `correctif/<nom>` pour une correction (`correctif/galerie-hauteur`) ;
+   - `chore/<nom>` pour l'outillage, la doc, le nettoyage (`chore/methode-git`).
+   Ne travaille jamais directement sur `main`.
+2. **Travailler et vérifier** sur la branche (skills `verifier-front` / `verifier-back`).
+3. **Proposer le commit**, sans le faire : liste des fichiers (`git status --short`) et message proposé, puis attendre
+   mon accord. Message en français : `(<US>): <résumé>` pour une US (`(GOF-a): gestion des produits`),
+   `(UI): …` pour une retouche d'interface, `chore: …` pour l'outillage ; corps en liste à tirets si utile.
+4. **Après mon accord** : `git add` des seuls fichiers concernés (pas de `git add -A` à l'aveugle), commit, puis
+   fusion dans `main` : `git switch main && git merge --no-ff <branche> -m "merge: <résumé>"`.
+   La branche est gardée.
+5. **Ne jamais pousser** (`git push`) : je pousse moi-même. À la fin, rappelle combien de commits de `main`
+   attendent un push.
+
+Jamais sans demande explicite : `push`, `rebase`, `reset --hard`, `commit --amend` sur un commit fusionné,
+suppression de branche, réécriture d'historique.
 
 ## Demander une US
 
