@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Core\Request;
 use App\Core\Response;
+use App\Model\CodePromoModel;
 use App\Model\CommandeModel;
 use App\Model\PanierModel;
 use App\Model\UtilisateurModel;
@@ -19,6 +20,10 @@ use App\Model\UtilisateurModel;
  *
  * Une quantité supérieure au stock fait refuser la commande (409). Le stock
  * est décrémenté à l'enregistrement, dans la même transaction (CommandeModel).
+ *
+ * Un code promo est revérifié au moment de la commande (il a pu être supprimé
+ * depuis l'affichage du récapitulatif) et sa remise recalculée, avec les
+ * règles du panier (PanierController).
  *
  * Non connecté : 403, et non 401 (voir AuthController : un 401 se confond
  * avec l'authentification HTTP d'Apache sur mmi.unilim.fr).
@@ -40,11 +45,15 @@ final class CommandeController
     /** Le modèle des comptes, pour vérifier celui de la session. */
     private UtilisateurModel $utilisateurs;
 
-    public function __construct(PanierModel $paniers, CommandeModel $commandes, UtilisateurModel $utilisateurs)
+    /** Le modèle des codes promo, pour vérifier le code saisi. */
+    private CodePromoModel $codes;
+
+    public function __construct(PanierModel $paniers, CommandeModel $commandes, UtilisateurModel $utilisateurs, CodePromoModel $codes)
     {
         $this->paniers      = $paniers;
         $this->commandes    = $commandes;
         $this->utilisateurs = $utilisateurs;
+        $this->codes        = $codes;
     }
 
     /**
@@ -64,7 +73,8 @@ final class CommandeController
     }
 
     /**
-     * POST /api/commande, corps JSON { lignes: [ { variantId, quantite } ] }.
+     * POST /api/commande, corps JSON { lignes: [ { variantId, quantite } ], code }.
+     * code : code promo saisi, facultatif (422 s'il n'existe pas ou plus).
      *
      * Enregistre la commande au statut « en cours » et répond avec elle.
      */
@@ -73,6 +83,7 @@ final class CommandeController
         $client = $this->clientConnecte('Connectez-vous pour valider votre commande.');
 
         $lignes = $requete->corps()['lignes'] ?? null;
+        $promo  = PanierController::codeValide($this->codes, $requete->corps()['code'] ?? null);
 
         if (!is_array($lignes) || count($lignes) > self::LIGNES_MAX) {
             Response::erreur('Panier invalide', 422);
@@ -125,7 +136,10 @@ final class CommandeController
             Response::erreur('Votre panier est vide.', 422);
         }
 
-        $numero = $this->commandes->creer($client, $aEnregistrer, round($total, 2));
+        // Le total enregistré est le montant payé, remise déduite.
+        $sousTotal = round($total, 2);
+        $remise    = $promo === null ? 0.0 : PanierController::remise($sousTotal, $promo['pourcentage']);
+        $numero    = $this->commandes->creer($client, $aEnregistrer, round($sousTotal - $remise, 2), $promo, $remise);
 
         // Stock épuisé entre la vérification ci-dessus et l'enregistrement
         // (une autre commande est passée avant) : rien n'a été enregistré.
