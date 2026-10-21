@@ -25,6 +25,9 @@ export default defineConfig({
   server: {
     proxy: {
       [BASE + "api"]: { target: SERVEUR, changeOrigin: true },
+      // Images téléversées depuis le back-office : servies par le serveur
+      // (uploads/produits/, règle 1 bis du .htaccess), absentes de public/.
+      [BASE + "images/produits/u-"]: { target: SERVEUR, changeOrigin: true },
     },
   },
 
