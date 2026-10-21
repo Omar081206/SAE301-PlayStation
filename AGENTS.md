@@ -113,7 +113,7 @@ La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non con
 - `lib/api-request.js` ne fait que GET et POST (JSON) : un envoi de fichier passe en data URL dans du JSON.
 - Points de rupture : base = 375 px (mobile), `md:` = 768 px, `lg:` = **1024 px** (Tailwind par défaut) ;
   la maquette Desktop 1440 s'applique à partir de `lg:`.
-- Vérification : skill `verifier-front`.
+- Vérification : skill `verifier-front`, puis `verifier-tests`.
 
 ### Back (`back/`, `sql/`)
 
@@ -126,7 +126,7 @@ La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non con
   commandes de test). Un changement de schéma = `ALTER` ciblé sur la base vivante, après sauvegarde (`mysqldump` des
   tables touchées), **et** la même modification reportée dans `import.sql`. Pas de fichier de migration séparé.
 - Données de test : crée et supprime tes propres lignes ; ne touche pas aux comptes et commandes existants.
-- Vérification : skill `verifier-back`.
+- Vérification : skill `verifier-back`, puis `verifier-tests`.
 
 ## Git
 
@@ -138,7 +138,8 @@ Méthode pour tout travail qui modifie le dépôt (US, correctif, nettoyage, out
    - `correctif/<nom>` pour une correction (`correctif/galerie-hauteur`) ;
    - `chore/<nom>` pour l'outillage, la doc, le nettoyage (`chore/methode-git`).
    Ne travaille jamais directement sur `main`.
-2. **Travailler et vérifier** sur la branche (skills `verifier-front` / `verifier-back`).
+2. **Travailler, tester et vérifier** sur la branche (skills `implementer-tests`, puis `verifier-front` /
+   `verifier-back` et `verifier-tests`).
 3. **Proposer le commit**, sans le faire : liste des fichiers (`git status --short`) et message proposé, puis attendre
    mon accord. Message en français : `(<US>): <résumé>` pour une US (`(GOF-a): gestion des produits`),
    `(UI): …` pour une retouche d'interface, `chore: …` pour l'outillage ; corps en liste à tirets si utile.
@@ -159,7 +160,16 @@ Figma, propose un plan qui dit **quels sous-skills** il utilisera (`implementer-
 et lance la vérification (`verifier-back`, `verifier-front`). « go » ou « US suivante » veut dire « présente le plan
 de l'US suivante », pas « implémente sans confirmer ».
 
+**Chaque US se termine par ses tests** : une fois l'implémentation faite, `implementer-tests` écrit
+`front/tests/<epic>/<us>.spec.js` (un test par point de DoD, spécifique et commune, et par critère d'acceptation),
+puis `verifier-tests` les lance avec toute la suite. Une US dont un test échoue n'est pas terminée : on corrige le
+code, jamais le test. Le plan de l'US dit quels tests `@ecriture` seront lancés ; sa validation vaut accord.
+
 Ne commence pas une US dont une dépendance bloquante n'est pas terminée (voir `docs/ordre-us.md`), sauf demande explicite.
+
+Tests : Playwright dans `front/tests/<epic>/` (un fichier par US), écrits par `implementer-tests`, lancés par
+`verifier-tests` (`cd front && npm test` ; les tests `@ecriture`, qui créent puis suppriment leurs propres données
+`e2e`, seulement s'ils sont prévus dans le plan validé ou sur demande).
 
 Tout l'outillage de l'agent est dans `.claude/` : `rules/` (chargées selon les fichiers touchés), `skills/`, `scripts/`.
 Les sous-skills vivent dans `.claude/skills/implementer-us/skills/` ; un lien par sous-skill dans `.claude/skills/`

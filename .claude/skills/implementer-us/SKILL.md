@@ -21,9 +21,11 @@ Dans `skills/` (aussi appelables seuls par leur nom, via `.claude/skills/`) :
 | `implementer-data` | le front appelle une route nouvelle ou modifiée, ou stocke côté navigateur | `front/src/data/` |
 | `implementer-composant` | un bloc de la maquette n'existe pas encore dans `ui/`, ou change | `front/src/ui/<nom>/`, tokens `global.css` |
 | `implementer-page` | l'US ajoute un écran, ou change le comportement d'une page | `front/src/pages/<nom>/`, `main.js`, layouts |
+| `implementer-tests` | **toujours**, après les autres | `front/tests/<epic>/<us>.spec.js` : un test par point de DoD et par critère |
 
-Une US n'utilise souvent qu'une partie d'entre eux (une US purement back n'a pas de composant ; une retouche
-d'affichage n'a pas d'API). **N'en charge aucun qui ne soit pas dans le plan validé.**
+Une US n'utilise souvent qu'une partie des cinq premiers (une US purement back n'a pas de composant ; une retouche
+d'affichage n'a pas d'API). **N'en charge aucun qui ne soit pas dans le plan validé.** `implementer-tests` est
+toujours dans le plan.
 
 ## Étapes
 
@@ -38,7 +40,8 @@ d'affichage n'a pas d'API). **N'en charge aucun qui ne soit pas dans le plan val
    - les **sous-skills retenus** (et pourquoi les autres ne servent pas) ;
    - un tableau fichier par fichier, dans l'ordre SQL → API → data → composants → page, avec « créé » ou
      « modifié » : **tout fichier existant à modifier doit y figurer** ;
-   - pour chaque critère d'acceptation, le fichier qui le couvre ;
+   - pour chaque critère d'acceptation et chaque point de DoD, le fichier qui le couvre et le test qui le vérifiera
+     (`front/tests/<epic>/<us>.spec.js`, toujours « créé » dans le tableau), et les tests `@ecriture` qui seront lancés ;
    - les changements de schéma (la base vivante sera modifiée par `ALTER`) ;
    - les questions ouvertes (écran ou état manquant dans la maquette, écart avec le code de référence).
    **N'écris rien (code, base, branche) avant le feu vert.** « go » ne vaut pas validation d'un plan non présenté.
@@ -46,11 +49,15 @@ d'affichage n'a pas d'API). **N'en charge aucun qui ne soit pas dans le plan val
 5. **Implémenter**, uniquement cette US, en appelant chaque sous-skill retenu dans l'ordre du plan
    (outil Skill avec son nom, ou lecture de `skills/<nom>/SKILL.md`). Un besoin hors plan apparaît (fichier,
    table, route) : arrête-toi et demande avant de l'ajouter.
-6. **Vérifier** : `verifier-back` si le plan touche `back/` ou `sql/`, `verifier-front` s'il touche `front/`.
-7. **Compte rendu** : fichiers créés / modifiés ; sous-skills utilisés ; tableau critère → couvert / non couvert /
-   non vérifié ; écarts avec la maquette et avec le code de référence ; tokens ajoutés ; modifications de la base ;
-   résultats des vérifications ; **commit proposé** (fichiers + message, en attente de mon accord) ;
-   prochaine US (ordre de `docs/ordre-us.md`).
+6. **Tester**, toujours, une fois l'implémentation faite, avec `implementer-tests` : un test par point de DoD (spécifique et commune) et par critère
+   d'acceptation. Un critère ou un point de DoD qui échoue n'est pas terminé : corrige le code de l'US (dans le
+   plan validé, sinon demande), jamais le test.
+7. **Vérifier** : `verifier-back` si le plan touche `back/` ou `sql/`, `verifier-front` s'il touche `front/`, et
+   toujours `verifier-tests` (tests de l'US, puis toute la suite pour la non-régression).
+8. **Compte rendu** : fichiers créés / modifiés ; sous-skills utilisés ; tableau critère et point de DoD → test →
+   réussi / échoué / ignoré / non lancé ; écarts avec la maquette et avec le code de référence ; tokens ajoutés ;
+   modifications de la base ; résultats des vérifications ; **commit proposé** (fichiers + message, en attente de
+   mon accord) ; prochaine US (ordre de `docs/ordre-us.md`).
 
 ## Contraintes
 
