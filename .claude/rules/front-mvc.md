@@ -35,8 +35,8 @@ Ordre fixe du fichier : imports → commentaire de page → `let M` → `let C` 
 
 - `let <Nom>View = { html: function (data), dom: function (data, actions) }` puis `export { <Nom>View }`.
   `html` renvoie `genericRenderer(template, valeurs)` ; `dom` renvoie `htmlToFragment(...)`.
-- Les valeurs sont mises en forme **avant** le template (`formaterNote`, …, `lib/format.js`). `{{cle}}` est échappé.
-- Pas de boucle ni de condition dans un template : liste = un template par élément (`ligne-genre.html`) puis
+- Les valeurs sont mises en forme **avant** le template (`formaterPrix`, `lib/format.js`). `{{cle}}` est échappé.
+- Pas de boucle ni de condition dans un template : liste = un template par élément (`ui/lignes-panier/ligne.html`) puis
   `slot.replaceWith(...elements)` ; état vide = `vide.html` ; état (option choisie, bouton désactivé) = JS après `htmlToFragment`.
 - Un composant imbriqué prend la place d'un `<slot name="...">`.
 - Le composant ne décide de rien : ni `fetch`, ni import de `data/`, ni référence à `M` / `C` / `V`.

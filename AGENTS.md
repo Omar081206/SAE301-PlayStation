@@ -74,7 +74,8 @@ front/
 | Back-office | `/api/admin/login`, `logout`, `session`, `tableau-de-bord`, `commandes`, `commande`, `commande(s)/statut`, `produits`, `produit/...`, `categories`, `categorie/...`, `parametre/seuil` |
 
 La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non connecté ou non autorisé,
-**422** saisie invalide (et identifiants faux), **404** introuvable, **409** conflit (stock, doublon). **Jamais 401.**
+**422** saisie invalide (et identifiants faux), **404** introuvable, **409** conflit (stock, doublon),
+**400** paramètre d'adresse manquant ou invalide (`?slug=`, `?tri=`). **Jamais 401.**
 
 ## Règles générales
 
