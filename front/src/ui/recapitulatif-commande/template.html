@@ -7,6 +7,8 @@
   </section>
 
   <section class="flex flex-col gap-3.5 rounded-xl p-7 shadow-panneau-sm md:shadow-panneau lg:gap-4 lg:self-start lg:rounded-2xl lg:p-8" aria-label="Total de la commande">
+    <slot name="code"></slot>
+    <slot name="reduction"></slot>
     <p class="flex justify-between font-bold">
       <span>Total TTC</span>
       <span>{{total}}</span>

@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Core\Request;
 use App\Core\Response;
+use App\Model\CodePromoModel;
 use App\Model\PanierModel;
 
 /**
@@ -18,6 +19,10 @@ use App\Model\PanierModel;
  * Les quantités sont aussi confrontées au stock réel de chaque variante : une
  * quantité trop grande est ramenée au stock, une variante épuisée est retirée,
  * et chaque correction est signalée dans « ajustements ».
+ *
+ * Un code promo peut accompagner le panier : il est vérifié ici, et sa
+ * réduction (un pourcentage du sous-total) est calculée ici aussi. Les mêmes
+ * règles servent à l'enregistrement de la commande (CommandeController).
  */
 final class PanierController
 {
@@ -27,25 +32,71 @@ final class PanierController
     /** Nombre maximal de lignes acceptées dans une requête. */
     private const LIGNES_MAX = 50;
 
+    /** Message d'un code promo inconnu ou supprimé, celui de la maquette. */
+    public const CODE_INVALIDE = 'Ce code promo n’existe pas ou n’est plus valide.';
+
     /** Le modèle qui interroge la base, fourni à la construction. */
     private PanierModel $paniers;
 
-    public function __construct(PanierModel $paniers)
+    /** Le modèle des codes promo, fourni à la construction. */
+    private CodePromoModel $codes;
+
+    public function __construct(PanierModel $paniers, CodePromoModel $codes)
     {
         $this->paniers = $paniers;
+        $this->codes   = $codes;
     }
 
     /**
-     * POST /api/panier, corps JSON { lignes: [ { variantId, quantite } ] }.
+     * Le code promo saisi, vérifié en base : null si aucun code n'est saisi.
+     * Répond 422 (et termine) si le code n'existe pas. Partagé avec
+     * CommandeController.
+     *
+     * @return array{id: int, code: string, pourcentage: int}|null
+     */
+    public static function codeValide(CodePromoModel $codes, mixed $saisie): ?array
+    {
+        $texte = mb_strtoupper(trim(is_string($saisie) ? $saisie : ''));
+
+        if ($texte === '') {
+            return null;
+        }
+
+        $code = $codes->trouverParCode($texte);
+
+        if ($code === null) {
+            Response::erreur(self::CODE_INVALIDE, 422);
+        }
+
+        return $code;
+    }
+
+    /**
+     * Montant de la réduction : le pourcentage du sous-total, arrondi au
+     * centime (59,99 € à 10 % : 6,00 €). Partagé avec CommandeController.
+     */
+    public static function remise(float $sousTotal, int $pourcentage): float
+    {
+        return round($sousTotal * $pourcentage / 100, 2);
+    }
+
+    /**
+     * POST /api/panier, corps JSON { lignes: [ { variantId, quantite } ], code }.
+     * code : code promo saisi, facultatif.
      *
      * Répond avec les lignes reconnues, complétées par la base, leur
      * sous-total, leur quantité maximale (stock disponible, plafonné), le
      * total, le nombre d'articles et les ajustements faits pour respecter le
      * stock. Une variante inconnue (produit retiré de la vente) est ignorée.
+     *
+     * Avec un code : sousTotal (avant réduction), remise, codePromo
+     * { code, pourcentage }, et total après réduction. Sans code : remise 0,
+     * codePromo null, total égal à sousTotal. Code inconnu : 422.
      */
     public function index(Request $requete): void
     {
         $lignes = $requete->corps()['lignes'] ?? null;
+        $code   = self::codeValide($this->codes, $requete->corps()['code'] ?? null);
 
         if (!is_array($lignes) || count($lignes) > self::LIGNES_MAX) {
             Response::erreur('Panier invalide', 422);
@@ -112,9 +163,15 @@ final class PanierController
             ];
         }
 
+        $sousTotal = round($total, 2);
+        $remise    = $code === null ? 0.0 : self::remise($sousTotal, $code['pourcentage']);
+
         Response::json([
             'lignes'      => $detail,
-            'total'       => round($total, 2),
+            'sousTotal'   => $sousTotal,
+            'remise'      => $remise,
+            'codePromo'   => $code === null ? null : ['code' => $code['code'], 'pourcentage' => $code['pourcentage']],
+            'total'       => round($sousTotal - $remise, 2),
             'nombre'      => $nombre,
             'ajustements' => $ajustements,
         ]);

@@ -47,8 +47,13 @@ final class CommandeModel
      * @param array<int, array{variantId: int, nom: string, options: ?string,
      *                         prix: float, quantite: int}> $lignes
      *        Lignes validées par le contrôleur, prix lus en base.
+     * @param float $total Montant payé : somme des lignes, moins la remise.
+     * @param array{id: int, code: string, pourcentage: int}|null $promo
+     *        Code promo vérifié par le contrôleur, ou null ; son texte et sa
+     *        réduction sont recopiés dans la commande.
+     * @param float $remise Montant déduit grâce au code (0 sans code).
      */
-    public function creer(int $utilisateurId, array $lignes, float $total): ?string
+    public function creer(int $utilisateurId, array $lignes, float $total, ?array $promo = null, float $remise = 0.0): ?string
     {
         $this->pdo->beginTransaction();
 
@@ -80,10 +85,15 @@ final class CommandeModel
             }
 
             $requetePreparee = $this->pdo->prepare(
-                'INSERT INTO commande (utilisateur_id, total) VALUES (:utilisateur, :total)'
+                'INSERT INTO commande (utilisateur_id, total, code_promo_id, code_promo, pourcentage_promo, remise)
+                 VALUES (:utilisateur, :total, :code_id, :code, :pourcentage, :remise)'
             );
-            $requetePreparee->bindValue(':utilisateur', $utilisateurId, PDO::PARAM_INT);
-            $requetePreparee->bindValue(':total',       (string) $total, PDO::PARAM_STR);
+            $requetePreparee->bindValue(':utilisateur', $utilisateurId,   PDO::PARAM_INT);
+            $requetePreparee->bindValue(':total',       (string) $total,  PDO::PARAM_STR);
+            $requetePreparee->bindValue(':code_id',     $promo['id'] ?? null,          $promo === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+            $requetePreparee->bindValue(':code',        $promo['code'] ?? null,        $promo === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+            $requetePreparee->bindValue(':pourcentage', $promo['pourcentage'] ?? null, $promo === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+            $requetePreparee->bindValue(':remise',      (string) $remise, PDO::PARAM_STR);
             $requetePreparee->execute();
 
             $id = (int) $this->pdo->lastInsertId();
@@ -272,7 +282,7 @@ final class CommandeModel
     public function trouver(string $numero, int $utilisateurId): ?array
     {
         $requetePreparee = $this->pdo->prepare(
-            'SELECT id, numero, statut, total, cree_le
+            'SELECT id, numero, statut, total, code_promo, pourcentage_promo, remise, cree_le
                FROM commande
               WHERE numero = :numero AND utilisateur_id = :utilisateur'
         );
@@ -287,11 +297,14 @@ final class CommandeModel
         }
 
         return [
-            'numero'  => $commande['numero'],
-            'statut'  => $commande['statut'],
-            'total'   => (float) $commande['total'],
-            'cree_le' => $commande['cree_le'],
-            'lignes'  => $this->lignes((int) $commande['id']),
+            'numero'            => $commande['numero'],
+            'statut'            => $commande['statut'],
+            'total'             => (float) $commande['total'],
+            'code_promo'        => $commande['code_promo'],
+            'pourcentage_promo' => $commande['pourcentage_promo'] === null ? null : (int) $commande['pourcentage_promo'],
+            'remise'            => (float) $commande['remise'],
+            'cree_le'           => $commande['cree_le'],
+            'lignes'            => $this->lignes((int) $commande['id']),
         ];
     }
 

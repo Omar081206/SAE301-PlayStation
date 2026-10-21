@@ -64,6 +64,33 @@ final class CodePromoModel
     }
 
     /**
+     * Un code promo par son texte (la collation ne distingue pas la casse),
+     * ou null s'il n'existe pas.
+     *
+     * @return array{id: int, code: string, pourcentage: int}|null
+     */
+    public function trouverParCode(string $code): ?array
+    {
+        $requetePreparee = $this->pdo->prepare(
+            'SELECT id, code, pourcentage FROM code_promo WHERE code = :code'
+        );
+        $requetePreparee->bindValue(':code', $code, PDO::PARAM_STR);
+        $requetePreparee->execute();
+
+        $ligne = $requetePreparee->fetch();
+
+        if ($ligne === false) {
+            return null;
+        }
+
+        return [
+            'id'          => (int) $ligne['id'],
+            'code'        => $ligne['code'],
+            'pourcentage' => (int) $ligne['pourcentage'],
+        ];
+    }
+
+    /**
      * Vrai si le code promo existe.
      */
     public function existe(int $id): bool

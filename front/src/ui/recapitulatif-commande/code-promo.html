@@ -1,0 +1,10 @@
+<form class="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-x-2.5 gap-y-2">
+  <label class="flex flex-col gap-2 text-sm">
+    Code promo
+    <input name="code" type="text" maxlength="20" autocomplete="off" autocapitalize="characters" placeholder="Ex. : PS10" value="{{code}}" class="rounded-lg border border-champ bg-page px-3 py-2 text-base leading-6 read-only:bg-tuile-claire aria-invalid:border-2 aria-invalid:border-erreur">
+  </label>
+  <button type="submit" data-action="appliquer" class="anneau-lien rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien enabled:hover:bg-secondaire-survol">Appliquer</button>
+  <button type="button" data-action="retirer" class="anneau-lien rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien enabled:hover:bg-secondaire-survol">Retirer</button>
+  <span data-role="erreur" class="col-span-2 text-xs text-erreur"><span aria-hidden="true">▲</span> {{erreur}}</span>
+</form>
+<slot name="succes"></slot>

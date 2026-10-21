@@ -426,10 +426,13 @@ INSERT INTO code_promo (code, pourcentage) VALUES
 -- numero : PS-AAAAMMJJ-NNNN, construit à partir de l'identifiant juste après
 -- l'insertion (NULL le temps de la transaction, d'où une colonne NULL : une
 -- clé UNIQUE accepte plusieurs NULL). statut suit le retrait en magasin.
--- total : somme des lignes, figée au moment de la commande.
+-- total : montant payé (somme des lignes, moins la remise), figé au moment
+-- de la commande.
 -- code_promo_id, remise : code utilisé et montant déduit, figé lui aussi.
 -- Le code supprimé, code_promo_id passe à NULL (ON DELETE SET NULL) : la
 -- commande garde sa remise, mais ne compte plus dans les statistiques du code.
+-- code_promo, pourcentage_promo : texte et réduction du code, recopiés comme
+-- le nom et le prix des lignes, pour l'affichage (« Code PS10 (−10 %) »).
 -- ---------------------------------------------------------------------------
 CREATE TABLE commande (
     id             INT UNSIGNED  NOT NULL AUTO_INCREMENT,
@@ -438,6 +441,8 @@ CREATE TABLE commande (
     statut         ENUM('en_cours', 'disponible', 'retiree', 'annulee') NOT NULL DEFAULT 'en_cours',
     total          DECIMAL(10,2) NOT NULL,
     code_promo_id  SMALLINT UNSIGNED NULL,
+    code_promo     VARCHAR(20)   NULL,
+    pourcentage_promo TINYINT UNSIGNED NULL,
     remise         DECIMAL(10,2) NOT NULL DEFAULT 0,
     cree_le        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

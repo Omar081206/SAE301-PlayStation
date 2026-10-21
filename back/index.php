@@ -80,8 +80,8 @@ try {
     $controleurs = [
         ProduitController::class   => new ProduitController(new ProduitModel($pdo), new CategorieModel($pdo), new ParametreModel($pdo)),
         CategorieController::class => new CategorieController(new CategorieModel($pdo)),
-        PanierController::class    => new PanierController(new PanierModel($pdo)),
-        CommandeController::class  => new CommandeController(new PanierModel($pdo), new CommandeModel($pdo), new UtilisateurModel($pdo)),
+        PanierController::class    => new PanierController(new PanierModel($pdo), new CodePromoModel($pdo)),
+        CommandeController::class  => new CommandeController(new PanierModel($pdo), new CommandeModel($pdo), new UtilisateurModel($pdo), new CodePromoModel($pdo)),
         AuthController::class      => new AuthController(new UtilisateurModel($pdo)),
         CompteController::class    => new CompteController(new UtilisateurModel($pdo), new CommandeModel($pdo)),
         AdminController::class     => new AdminController(new UtilisateurModel($pdo), new TableauDeBordModel($pdo)),

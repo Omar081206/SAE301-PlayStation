@@ -3,16 +3,19 @@ import { getRequest, postRequest } from "../lib/api-request.js";
 let CommandeData = {};
 
 /**
- * Validation de la commande : POST /api/commande, corps JSON { lignes }
- * (les lignes du panier { variantId, quantite }, sans prix).
- * 403 si personne n'est connecté, 422 si le panier est vide ou invalide.
+ * Validation de la commande : POST /api/commande, corps JSON { lignes, code }
+ * (les lignes du panier { variantId, quantite }, sans prix ; code : code promo
+ * saisi, ou null). 403 si personne n'est connecté, 422 si le panier est vide
+ * ou invalide, ou si le code n'existe plus.
  *
- * { commande: { numero, statut, total, cree_le,
+ * { commande: { numero, statut, total, code_promo, pourcentage_promo, remise, cree_le,
  *               lignes: [ { variantId, nom, options, prix_unitaire, quantite, sous_total } ] } }
  * options : les options choisies, en texte (« Coloris : Noir »), ou null.
+ * total : montant payé, remise déduite ; code_promo, pourcentage_promo : null
+ * sans code.
  */
-CommandeData.save = async function (lignes) {
-  return postRequest("commande", { lignes });
+CommandeData.save = async function (lignes, code = null) {
+  return postRequest("commande", { lignes, code });
 };
 
 /**

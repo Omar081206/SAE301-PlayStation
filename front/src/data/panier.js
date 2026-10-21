@@ -184,17 +184,20 @@ PanierData.nombreArticles = function () {
 };
 
 /**
- * Le détail du panier : POST /api/panier, corps JSON { lignes }.
+ * Le détail du panier : POST /api/panier, corps JSON { lignes, code }.
+ * code : code promo saisi, ou null ; 422 s'il n'existe pas.
  *
  * { lignes: [ { variantId, quantite, quantiteMax, nom, slug, options, prix, image,
  *               image_alt, sousTotal } ],
- *   total, nombre, ajustements: [ { variantId, nom, demandee, accordee } ] }
+ *   sousTotal, remise, codePromo: { code, pourcentage } | null, total,
+ *   nombre, ajustements: [ { variantId, nom, demandee, accordee } ] }
  * Les quantités sont ramenées au stock disponible (quantiteMax) et chaque
  * correction figure dans ajustements ; une variante épuisée est retirée
  * (accordee : 0). Les variantes inconnues (produit retiré) sont absentes.
+ * total : après la remise du code (égal à sousTotal sans code).
  */
-PanierData.fetchDetail = async function (lignes) {
-  return postRequest("panier", { lignes });
+PanierData.fetchDetail = async function (lignes, code = null) {
+  return postRequest("panier", { lignes, code });
 };
 
 export { PanierData };

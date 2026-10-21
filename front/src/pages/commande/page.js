@@ -14,13 +14,20 @@ import template from "./template.html?raw";
  * Réservée au client connecté : sinon, redirection vers la connexion, qui
  * ramène ici ensuite. La validation est enregistrée par le serveur, qui relit
  * les prix ; le panier est alors vidé et la confirmation affichée.
+ *
+ * Un code promo peut être appliqué : le serveur le vérifie et calcule la
+ * remise, à l'affichage puis à nouveau à la validation. Le code n'est gardé
+ * que le temps de la page (rien dans le stockage du navigateur).
  */
 
 // Adresse de la connexion, avec le retour vers cette page une fois connecté.
 const CONNEXION = "/connexion?retour=/commande";
 
 let M = {
-  panier: null, // détail du panier renvoyé par l'API : { lignes, total, nombre, ajustements }
+  panier: null, // détail du panier renvoyé par l'API : { lignes, sousTotal, remise, codePromo, total, nombre, ajustements }
+  code: null, // code promo accepté par le serveur, ou null
+  saisieCode: "", // dernier code saisi, pour le garder dans le champ
+  erreurCode: null, // refus du code par le serveur, affiché sous le champ
   envoiEnCours: false, // vrai entre le clic sur « Confirmer » et la réponse
   message: null, // { type, texte }, ou null
   avertissements: [], // un message par quantité ajustée au stock
@@ -40,11 +47,12 @@ C.texteAjustement = function (ajustement) {
 };
 
 /**
- * Demande au serveur le détail du panier enregistré.
+ * Demande au serveur le détail du panier enregistré, avec le code promo
+ * accepté s'il y en a un.
  */
 C.charger = async function () {
   try {
-    M.panier = await PanierData.fetchDetail(PanierData.lire());
+    M.panier = await PanierData.fetchDetail(PanierData.lire(), M.code);
     M.avertissements = M.panier.ajustements.map((ajustement) => ({
       type: "avertissement",
       texte: C.texteAjustement(ajustement),
@@ -56,10 +64,48 @@ C.charger = async function () {
       PanierData.aligner(M.panier);
     }
   } catch (erreur) {
+    // 422 avec un code : il a été supprimé entre-temps. On le retire, on
+    // l'explique sous le champ, et on recharge sans lui.
+    if (erreur.statut === 422 && M.code !== null) {
+      M.saisieCode = M.code;
+      M.code = null;
+      M.erreurCode = erreur.message;
+      return C.charger();
+    }
+
     M.panier = null;
     M.avertissements = [];
     M.message = { type: "erreur", texte: `Impossible de charger votre panier : ${erreur.message}` };
   }
+};
+
+C.handler_appliquer = async function (code) {
+  M.saisieCode = code;
+
+  if (code === "") {
+    M.erreurCode = "Saisissez un code promo.";
+    V.rafraichir();
+    return;
+  }
+
+  try {
+    M.panier = await PanierData.fetchDetail(PanierData.lire(), code);
+    M.code = code;
+    M.erreurCode = null;
+  } catch (erreur) {
+    // 422 : code inconnu ; le récapitulatif reste celui sans code.
+    M.erreurCode = erreur.message;
+  }
+
+  V.rafraichir();
+};
+
+C.handler_retirer = async function () {
+  M.code = null;
+  M.saisieCode = "";
+  M.erreurCode = null;
+  await C.charger();
+  V.rafraichir();
 };
 
 C.handler_confirmer = async function () {
@@ -71,7 +117,7 @@ C.handler_confirmer = async function () {
   V.rafraichir();
 
   try {
-    let reponse = await CommandeData.save(PanierData.lire());
+    let reponse = await CommandeData.save(PanierData.lire(), M.code);
     M.envoiEnCours = false;
     PanierData.enregistrer([]);
     naviguer(`/commande/${reponse.commande.numero}`);
@@ -81,6 +127,18 @@ C.handler_confirmer = async function () {
     // Session expirée entre l'affichage et le clic : retour à la connexion.
     if (erreur.statut === 403) {
       naviguer(CONNEXION);
+      return;
+    }
+
+    // Code promo supprimé depuis son application : rien n'est enregistré. Le
+    // récapitulatif est rechargé sans le code, et le refus s'affiche sous le
+    // champ.
+    if (erreur.statut === 422 && M.code !== null) {
+      M.saisieCode = M.code;
+      M.code = null;
+      M.erreurCode = erreur.message;
+      await C.charger();
+      V.rafraichir();
       return;
     }
 
@@ -101,6 +159,9 @@ C.handler_confirmer = async function () {
 C.init = async function () {
   M.message = null;
   M.envoiEnCours = false;
+  M.code = null;
+  M.saisieCode = "";
+  M.erreurCode = null;
 
   // Le serveur dit si quelqu'un est connecté. S'il ne répond pas, on affiche
   // la page : l'erreur apparaîtra au chargement du panier.
@@ -156,8 +217,8 @@ V.createPageFragment = function () {
   } else {
     slotRecapitulatif.replaceWith(
       RecapitulatifCommandeView.dom(
-        { panier: M.panier, envoiEnCours: M.envoiEnCours },
-        { surConfirmation: C.handler_confirmer }
+        { panier: M.panier, saisieCode: M.saisieCode, erreurCode: M.erreurCode, envoiEnCours: M.envoiEnCours },
+        { surConfirmation: C.handler_confirmer, surApplication: C.handler_appliquer, surRetrait: C.handler_retirer }
       )
     );
   }
