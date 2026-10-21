@@ -19,11 +19,20 @@ use App\Model\ProduitModel;
  * L'état du stock (« en stock », « bientôt épuisé », « épuisé ») est calculé
  * ici, à chaque requête, à partir du stock réel et du seuil de la table
  * parametre. Les quantités elles-mêmes ne sont jamais envoyées au navigateur.
+ *
+ * Promotion automatique (PRO-c) : le produit au plus grand stock (voir
+ * ProduitModel::EN_PROMOTION) est vendu −20 %. prix est alors le prix réduit,
+ * prix_initial le prix d'origine et promotion le pourcentage ; pour les autres
+ * produits, prix_initial et promotion valent null. Le calcul est partagé avec
+ * PanierController et CommandeController (prixPromotion).
  */
 final class ProduitController
 {
     /** Seuil « bientôt épuisé » utilisé si le paramètre est absent de la base. */
     private const SEUIL_PAR_DEFAUT = 3;
+
+    /** Réduction de la promotion automatique, en pourcentage. */
+    public const PROMOTION = 20;
 
     /** Le modèle qui interroge la base, fourni à la construction. */
     private ProduitModel $produits;
@@ -64,6 +73,30 @@ final class ProduitController
     }
 
     /**
+     * Prix réduit par la promotion automatique, arrondi au centime (74,99 € :
+     * 59,99 €). Partagé avec PanierController et CommandeController.
+     */
+    public static function prixPromotion(float $prix): float
+    {
+        return round($prix * (100 - self::PROMOTION) / 100, 2);
+    }
+
+    /**
+     * Prix d'un produit ou d'une variante : prix (payé), prix_initial et
+     * promotion, selon que le produit est en promotion ou non.
+     *
+     * @return array{prix: float, prix_initial: ?float, promotion: ?int}
+     */
+    private function prix(float $prix, bool $enPromotion): array
+    {
+        if (!$enPromotion) {
+            return ['prix' => $prix, 'prix_initial' => null, 'promotion' => null];
+        }
+
+        return ['prix' => self::prixPromotion($prix), 'prix_initial' => $prix, 'promotion' => self::PROMOTION];
+    }
+
+    /**
      * GET /api/produits?categorie=… : les produits, avec leur nombre.
      *
      * Sans le paramètre categorie, tout le catalogue ; avec, les produits de
@@ -85,10 +118,12 @@ final class ProduitController
         $produits = $this->produits->lister($slug);
         $seuil    = $this->seuil();
 
-        // L'état remplace la quantité, qui reste côté serveur.
+        // L'état remplace la quantité, qui reste côté serveur. Le prix tient
+        // compte de la promotion automatique.
         foreach ($produits as $position => $produit) {
+            $produits[$position] = $this->prix($produit['prix'], $produit['en_promotion']) + $produit;
             $produits[$position]['etat_stock'] = $this->etatStock($produit['stock'], $seuil);
-            unset($produits[$position]['stock']);
+            unset($produits[$position]['stock'], $produits[$position]['en_promotion']);
         }
 
         Response::json([
@@ -119,10 +154,15 @@ final class ProduitController
         // première en stock) pour le badge principal. Les quantités restent ici.
         $seuil = $this->seuil();
 
+        // La promotion vaut pour toutes les variantes du produit.
         foreach ($produit['variantes'] as $position => $variante) {
+            $produit['variantes'][$position] = $this->prix($variante['prix'], $produit['en_promotion']) + $variante;
             $produit['variantes'][$position]['etat_stock'] = $this->etatStock($variante['stock'], $seuil);
             unset($produit['variantes'][$position]['stock']);
         }
+
+        $produit = $this->prix($produit['prix'], $produit['en_promotion']) + $produit;
+        unset($produit['en_promotion']);
 
         foreach ($produit['variantes'] as $variante) {
             if ($variante['id'] === $produit['variante_id']) {

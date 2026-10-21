@@ -5,5 +5,9 @@
     <p data-role="options" class="text-texte-attenue">{{options}}</p>
     <p class="text-texte-attenue">Qté {{quantite}}</p>
   </div>
-  <p class="shrink-0 font-bold">{{sousTotal}}</p>
+  <!-- Produit en promotion : le montant d'origine barré au-dessus (data-role « initial », retiré sinon). -->
+  <div class="shrink-0 text-right">
+    <s data-role="initial" class="block text-xs font-normal text-texte-barre lg:text-sm"><span class="sr-only">Prix d’origine : </span>{{sousTotalInitial}}</s>
+    <p class="font-bold">{{sousTotal}}</p>
+  </div>
 </li>

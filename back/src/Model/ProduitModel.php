@@ -14,6 +14,17 @@ use PDO;
  */
 final class ProduitModel
 {
+    /**
+     * Le produit en promotion automatique (PRO-c) : celui dont le stock, somme
+     * des stocks de ses variantes, est le plus élevé ; à égalité, le plus
+     * ancien. Sous-requête partagée avec PanierModel : « produit.id = » suivi de
+     * cette constante vaut 1 pour lui, 0 pour les autres.
+     */
+    public const EN_PROMOTION = '(SELECT stocks.produit_id FROM variante AS stocks
+                                  GROUP BY stocks.produit_id
+                                  ORDER BY SUM(stocks.stock) DESC, stocks.produit_id
+                                     LIMIT 1)';
+
     /** Connexion à la base, fournie à la construction. */
     private PDO $pdo;
 
@@ -31,7 +42,8 @@ final class ProduitModel
      * « Ajouter au panier » ; stock est le sien, et l'image est sa première
      * image pour le catalogue (affichage « partout » ou « catalogue » : une
      * jaquette carrée pour un jeu), celle du produit si elle n'en a pas en
-     * propre, ou null si le produit n'en a pas encore.
+     * propre, ou null si le produit n'en a pas encore. en_promotion : vrai pour
+     * le produit en promotion automatique (voir EN_PROMOTION).
      *
      * @param string|null $categorie Slug de la catégorie à afficher, ou null
      *                               pour tout le catalogue.
@@ -51,7 +63,8 @@ final class ProduitModel
                        (SELECT MIN(toutes.prix) FROM variante AS toutes
                          WHERE toutes.produit_id = produit.id) AS prix,
                        COALESCE(image_variante.fichier, image_produit.fichier) AS image,
-                       COALESCE(image_variante.alt, image_produit.alt)         AS image_alt
+                       COALESCE(image_variante.alt, image_produit.alt)         AS image_alt,
+                       produit.id = ' . self::EN_PROMOTION . ' AS en_promotion
                   FROM produit
             INNER JOIN categorie ON categorie.id = produit.categorie_id
             INNER JOIN variante AS defaut
@@ -100,6 +113,7 @@ final class ProduitModel
                 'stock'       => (int) $ligne['stock'],
                 'image'       => $ligne['image'],
                 'image_alt'   => $ligne['image_alt'],
+                'en_promotion' => (bool) $ligne['en_promotion'],
             ];
         }
 
@@ -113,7 +127,8 @@ final class ProduitModel
      *
      * Chaque variante donne son prix, son stock, ses valeurs (une par option)
      * et ses images : les siennes si elle en a (un coloris), sinon celles du
-     * produit. Comme dans le catalogue, le prix est le plus bas des variantes.
+     * produit. Comme dans le catalogue, le prix est le plus bas des variantes,
+     * et en_promotion est vrai pour le produit en promotion automatique.
      *
      * @return array<string, mixed>|null
      */
@@ -130,7 +145,8 @@ final class ProduitModel
                       WHERE candidate.produit_id = produit.id
                    ORDER BY candidate.stock = 0, candidate.id
                       LIMIT 1) AS variante_id,
-                    MIN(variante.prix) AS prix
+                    MIN(variante.prix) AS prix,
+                    produit.id = ' . self::EN_PROMOTION . ' AS en_promotion
                FROM produit
          INNER JOIN categorie ON categorie.id = produit.categorie_id
          INNER JOIN variante  ON variante.produit_id = produit.id
@@ -236,6 +252,7 @@ final class ProduitModel
             'categorie_slug' => $ligne['categorie_slug'],
             'variante_id'    => (int) $ligne['variante_id'],
             'prix'           => (float) $ligne['prix'],
+            'en_promotion'   => (bool) $ligne['en_promotion'],
             'images'         => $imagesProduit,
             'options'        => array_values($options),
             'variantes'      => $variantes,

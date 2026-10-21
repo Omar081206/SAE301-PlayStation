@@ -472,6 +472,8 @@ CREATE TABLE commande (
 -- Le nom, les options choisies (texte figé, « Coloris : Noir ») et le prix
 -- unitaire sont recopiés au moment de la commande : un changement de prix, de
 -- nom ou d'options ultérieur ne modifie pas une commande passée. variante_id passe à NULL si la variante est supprimée.
+-- prix_initial : prix d'origine quand le produit était en promotion automatique
+-- (prix_unitaire est alors le prix réduit), NULL sinon ; figé lui aussi.
 -- ---------------------------------------------------------------------------
 CREATE TABLE ligne_commande (
     id            INT UNSIGNED      NOT NULL AUTO_INCREMENT,
@@ -480,6 +482,7 @@ CREATE TABLE ligne_commande (
     nom           VARCHAR(120)      NOT NULL,
     options       VARCHAR(255)      NULL,
     prix_unitaire DECIMAL(8,2)      NOT NULL,
+    prix_initial  DECIMAL(8,2)      NULL,
     quantite      SMALLINT UNSIGNED NOT NULL,
 
     PRIMARY KEY (id),

@@ -45,8 +45,9 @@ final class CommandeModel
      * la seconde trouve un stock à 0.
      *
      * @param array<int, array{variantId: int, nom: string, options: ?string,
-     *                         prix: float, quantite: int}> $lignes
-     *        Lignes validées par le contrôleur, prix lus en base.
+     *                         prix: float, prixInitial: ?float, quantite: int}> $lignes
+     *        Lignes validées par le contrôleur, prix lus en base ; prixInitial :
+     *        prix d'origine d'un produit en promotion, null sinon.
      * @param float $total Montant payé : somme des lignes, moins la remise.
      * @param array{id: int, code: string, pourcentage: int}|null $promo
      *        Code promo vérifié par le contrôleur, ou null ; son texte et sa
@@ -109,8 +110,8 @@ final class CommandeModel
             $requeteNumero->execute();
 
             $requeteLigne = $this->pdo->prepare(
-                'INSERT INTO ligne_commande (commande_id, variante_id, nom, options, prix_unitaire, quantite)
-                 VALUES (:commande, :variante, :nom, :options, :prix, :quantite)'
+                'INSERT INTO ligne_commande (commande_id, variante_id, nom, options, prix_unitaire, prix_initial, quantite)
+                 VALUES (:commande, :variante, :nom, :options, :prix, :initial, :quantite)'
             );
 
             foreach ($lignes as $ligne) {
@@ -119,6 +120,11 @@ final class CommandeModel
                 $requeteLigne->bindValue(':nom',      $ligne['nom'],             PDO::PARAM_STR);
                 $requeteLigne->bindValue(':options',  $ligne['options'],         $ligne['options'] === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
                 $requeteLigne->bindValue(':prix',     (string) $ligne['prix'],   PDO::PARAM_STR);
+                $requeteLigne->bindValue(
+                    ':initial',
+                    $ligne['prixInitial'] === null ? null : (string) $ligne['prixInitial'],
+                    $ligne['prixInitial'] === null ? PDO::PARAM_NULL : PDO::PARAM_STR
+                );
                 $requeteLigne->bindValue(':quantite', $ligne['quantite'],        PDO::PARAM_INT);
                 $requeteLigne->execute();
 
@@ -408,14 +414,15 @@ final class CommandeModel
     /**
      * Les lignes d'une commande, prix figés à la commande. variantId : la
      * variante commandée (pour la commander à nouveau), null si elle a été
-     * supprimée depuis.
+     * supprimée depuis. prix_initial et sous_total_initial : prix d'origine
+     * d'un produit acheté en promotion automatique, null sinon.
      *
      * @return array<int, array<string, mixed>>
      */
     private function lignes(int $commandeId): array
     {
         $requeteLignes = $this->pdo->prepare(
-            'SELECT variante_id, nom, options, prix_unitaire, quantite
+            'SELECT variante_id, nom, options, prix_unitaire, prix_initial, quantite
                FROM ligne_commande
               WHERE commande_id = :id
            ORDER BY id'
@@ -435,6 +442,10 @@ final class CommandeModel
                 'prix_unitaire' => (float) $ligne['prix_unitaire'],
                 'quantite'      => (int) $ligne['quantite'],
                 'sous_total'    => round((float) $ligne['prix_unitaire'] * (int) $ligne['quantite'], 2),
+                'prix_initial'  => $ligne['prix_initial'] === null ? null : (float) $ligne['prix_initial'],
+                'sous_total_initial' => $ligne['prix_initial'] === null
+                    ? null
+                    : round((float) $ligne['prix_initial'] * (int) $ligne['quantite'], 2),
             ];
         }
 

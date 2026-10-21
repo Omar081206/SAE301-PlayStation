@@ -11,7 +11,12 @@
       <div class="flex flex-col gap-3.5 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:gap-6 lg:self-start lg:rounded-2xl lg:p-8 lg:shadow-panneau">
         <p><slot name="badge"></slot></p>
         <h1 class="text-produit-sm font-light md:text-produit-md lg:text-produit-lg">{{nom}}</h1>
-        <p class="text-prix-sm font-light md:text-prix-md lg:text-prix-lg">{{prix}}</p>
+        <!-- Produit en promotion : prix réduit, prix d'origine barré et badge
+             (slot « promotion », retiré sinon). -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <p class="text-prix-sm font-light md:text-prix-md lg:text-prix-lg">{{prix}}</p>
+          <slot name="promotion"></slot>
+        </div>
 
         <!-- Un groupe de choix par option du produit (Coloris…). -->
         <slot name="options"></slot>

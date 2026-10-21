@@ -30,6 +30,8 @@ final class PanierModel
      * L'image est la première image « catalogue » (ou « partout ») de la
      * variante (un coloris) s'il en a une, sinon celle du produit. options : les valeurs de la variante, en
      * texte (« Coloris : Noir »), ou null pour un produit sans option.
+     * en_promotion : vrai si le produit est en promotion automatique
+     * (ProduitModel::EN_PROMOTION) ; prix reste le prix d'origine.
      *
      * @param  array<int, int> $ids Identifiants de variantes, déjà validés.
      * @return array<int, array<string, mixed>>
@@ -57,7 +59,8 @@ final class PanierModel
                     produit.nom,
                     produit.slug,
                     COALESCE(image_coloris.fichier, image_produit.fichier) AS image,
-                    COALESCE(image_coloris.alt, image_produit.alt)         AS image_alt
+                    COALESCE(image_coloris.alt, image_produit.alt)         AS image_alt,
+                    produit.id = " . ProduitModel::EN_PROMOTION . " AS en_promotion
                FROM variante
          INNER JOIN produit ON produit.id = variante.produit_id
           LEFT JOIN image AS image_coloris
@@ -93,6 +96,7 @@ final class PanierModel
                 'stock'     => (int) $ligne['stock'],
                 'image'     => $ligne['image'],
                 'image_alt' => $ligne['image_alt'],
+                'en_promotion' => (bool) $ligne['en_promotion'],
             ];
         }
 

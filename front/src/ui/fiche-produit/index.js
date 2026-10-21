@@ -1,7 +1,9 @@
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { formaterPrix } from "../../lib/format.js";
+import { BadgePromoView } from "../badge-promo/index.js";
 import { BadgeStockView } from "../badge-stock/index.js";
 import template from "./template.html?raw";
+import templatePromotion from "./promotion.html?raw";
 import templateOption from "./option.html?raw";
 import templateValeur from "./valeur.html?raw";
 
@@ -10,12 +12,13 @@ import templateValeur from "./valeur.html?raw";
 const MENTIONS = { epuise: "Épuisé", inexistante: "Indisponible" };
 
 // Fiche d'un produit, tel que le renvoie l'API :
-// { id, nom, slug, description, categorie, categorie_slug, prix, etat_stock,
-//   images, options: [ { id, nom, valeurs: [ { id, valeur } ] } ],
-//   variantes: [ { id, prix, etat_stock, valeurs, images } ] }
+// { id, nom, slug, description, categorie, categorie_slug, prix, prix_initial,
+//   promotion, etat_stock, images, options: [ { id, nom, valeurs: [ { id, valeur } ] } ],
+//   variantes: [ { id, prix, prix_initial, promotion, etat_stock, valeurs, images } ] }
 // avec la variante qui correspond aux options choisies (null si cette
 // combinaison n'existe pas). Le prix, le badge de stock et le bouton sont
-// ceux de cette variante ; la galerie (slot « galerie ») est placée par la
+// ceux de cette variante ; en promotion (prix_initial non null), le prix
+// d'origine est barré à côté, avec le badge « −20 % ». La galerie (slot « galerie ») est placée par la
 // page. Un groupe de choix par option prend place dans le slot « options » :
 // une valeur épuisée ou sans variante est barrée, signalée et ne peut pas
 // être choisie.
@@ -52,6 +55,16 @@ let FicheProduitView = {
     fragment
       .querySelector('slot[name="badge"]')
       .replaceWith(variante === null ? "" : BadgeStockView.dom(variante.etat_stock));
+
+    // Le prix affiché est celui de la variante choisie, ou du produit.
+    let prix = variante ?? data.produit;
+    if (prix.prix_initial === null) {
+      fragment.querySelector('slot[name="promotion"]').remove();
+    } else {
+      let promotion = htmlToFragment(genericRenderer(templatePromotion, { prixInitial: formaterPrix(prix.prix_initial) }));
+      promotion.querySelector('slot[name="badge"]').replaceWith(BadgePromoView.dom(prix.promotion));
+      fragment.querySelector('slot[name="promotion"]').replaceWith(promotion);
+    }
 
     let groupes = data.produit.options.map((option) => {
       let choisie = option.valeurs.find((valeur) => valeur.id === data.choix[option.id]);

@@ -2,6 +2,10 @@
 front/node_modules/
 front/dist/
 
+# Résultats des tests Playwright : se régénèrent à chaque lancement
+front/test-results/
+front/playwright-report/
+
 # Fichiers d'environnement des éditeurs et systèmes
 .DS_Store
 Thumbs.db
