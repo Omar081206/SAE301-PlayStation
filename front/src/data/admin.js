@@ -22,18 +22,10 @@ AdminData.logout = async function () {
 };
 
 /**
- * Administrateur connecté : GET /api/admin/session
- * { connecte, email, prenom } (à null si personne n'est connecté)
- */
-AdminData.fetchSession = async function () {
-  return getRequest("admin/session");
-};
-
-/**
  * Indicateurs du tableau de bord : GET /api/admin/tableau-de-bord
  * 403 sans connexion administrateur.
  *
- * { produits, commandes, commandesEnCours, variantesEpuisees }
+ * { produits, commandes }
  */
 AdminData.fetchTableauDeBord = async function () {
   return getRequest("admin/tableau-de-bord");

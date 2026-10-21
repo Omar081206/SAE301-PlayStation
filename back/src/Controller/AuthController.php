@@ -136,13 +136,11 @@ final class AuthController
             Response::json(self::deconnecte());
         }
 
-        // Une session ouverte avant l'arrivée des prénoms n'en a pas : le
-        // header affiche alors « Mon compte ».
         Response::json([
             'connecte' => true,
             'email'    => $_SESSION['utilisateur'],
-            'prenom'   => $_SESSION['prenom'] ?? null,
-            'nom'      => $_SESSION['nom'] ?? null,
+            'prenom'   => $_SESSION['prenom'],
+            'nom'      => $_SESSION['nom'],
             'role'     => $_SESSION['role'],
         ]);
     }

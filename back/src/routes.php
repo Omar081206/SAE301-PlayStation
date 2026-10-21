@@ -41,7 +41,6 @@ return [
     'POST /api/compte/profil' => [CompteController::class, 'profil'],
     'POST /api/admin/login'           => [AdminController::class, 'login'],
     'POST /api/admin/logout'          => [AdminController::class, 'logout'],
-    'GET  /api/admin/session'         => [AdminController::class, 'session'],
     'GET  /api/admin/tableau-de-bord' => [AdminController::class, 'tableauDeBord'],
     'GET  /api/admin/commandes'        => [AdminCommandeController::class, 'index'],
     'GET  /api/admin/commande'         => [AdminCommandeController::class, 'detail'],

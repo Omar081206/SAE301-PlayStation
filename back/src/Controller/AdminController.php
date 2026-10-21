@@ -69,22 +69,6 @@ final class AdminController
     }
 
     /**
-     * GET /api/admin/session : l'administrateur connecté, s'il y en a un.
-     */
-    public function session(): void
-    {
-        if (!isset($_SESSION['admin'])) {
-            Response::json(['connecte' => false, 'email' => null, 'prenom' => null]);
-        }
-
-        Response::json([
-            'connecte' => true,
-            'email'    => $_SESSION['admin']['email'],
-            'prenom'   => $_SESSION['admin']['prenom'] ?? null,
-        ]);
-    }
-
-    /**
      * GET /api/admin/tableau-de-bord : les indicateurs de la page d'accueil.
      */
     public function tableauDeBord(): void

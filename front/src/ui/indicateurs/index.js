@@ -7,14 +7,12 @@ import templateIndicateur from "./indicateur.html?raw";
 // <slot name="indicateurs">.
 let IndicateursView = {
   /**
-   * @param {{produits: number, commandes: number, commandesEnCours: number,
-   *          variantesEpuisees: number}} tableau
+   * @param {{produits: number, commandes: number}} tableau
    */
   dom: function (tableau) {
     let fragment = htmlToFragment(template);
 
-    // Les deux indicateurs de la maquette. L'API en fournit d'autres
-    // (commandes en cours, variantes épuisées), réservés aux statistiques.
+    // Les deux indicateurs de la maquette.
     let indicateurs = [
       { libelle: "Produits", valeur: tableau.produits },
       { libelle: "Commandes", valeur: tableau.commandes },
