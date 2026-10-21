@@ -19,6 +19,8 @@ let M = {
   panier: null, // dernière réponse de l'API : { lignes, total, nombre, ajustements }
   message: null, // { type, texte }, ou null
   avertissements: [], // un message par quantité ajustée au stock
+  notification: null, // bulle « plus de stock » : { type, texte }, ou null
+  auMaximum: null, // variante montée au stock disponible par « + », ou null
 };
 
 let C = {};
@@ -60,20 +62,52 @@ C.charger = async function () {
   }
 };
 
+/**
+ * Bulle « plus de stock » de la ligne montée au stock disponible par « + » :
+ * elle reste tant que la ligne y est, et disparaît dès qu'on la diminue ou
+ * qu'on la supprime.
+ */
+C.suivreMaximum = function () {
+  let ligne = M.panier?.lignes.find((element) => element.variantId === M.auMaximum);
+
+  if (ligne === undefined || ligne.quantite < ligne.quantiteMax) {
+    M.auMaximum = null;
+    M.notification = null;
+    return;
+  }
+
+  M.notification = {
+    type: "avertissement",
+    texte: `Il n’y a plus de stock pour « ${ligne.nom} » : vous avez tout le stock disponible dans votre panier.`,
+  };
+};
+
 C.handler_changerQuantite = async function (variantId, quantite) {
+  let avant = M.panier.lignes.find((ligne) => ligne.variantId === variantId);
   PanierData.modifier(variantId, quantite);
   await C.charger();
+
+  // « + » qui atteint le stock disponible : le bouton se grise, la bulle dit pourquoi.
+  let apres = M.panier?.lignes.find((ligne) => ligne.variantId === variantId);
+  if (avant !== undefined && quantite > avant.quantite && apres !== undefined && apres.quantite >= apres.quantiteMax) {
+    M.auMaximum = variantId;
+  }
+  C.suivreMaximum();
+
   V.rafraichir();
 };
 
 C.handler_supprimer = async function (variantId) {
   PanierData.supprimer(variantId);
   await C.charger();
+  C.suivreMaximum();
   V.rafraichir();
 };
 
 C.init = async function () {
   M.message = null;
+  M.notification = null;
+  M.auMaximum = null;
   await C.charger();
   return V.init();
 };
@@ -108,6 +142,7 @@ V.createPageFragment = function () {
   pageFragment
     .querySelector('slot[name="message"]')
     .replaceWith(MessageView.dom(M.message), ...M.avertissements.map((avertissement) => MessageView.dom(avertissement)));
+  pageFragment.querySelector('slot[name="notification"]').replaceWith(MessageView.dom(M.notification));
 
   let slotLignes = pageFragment.querySelector('slot[name="lignes"]');
   let slotResume = pageFragment.querySelector('slot[name="resume"]');

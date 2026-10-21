@@ -157,9 +157,16 @@ C.handler_ajouter = async function (variantId, nom) {
 
   try {
     // Le serveur vérifie le stock avant d'accepter l'ajout.
-    let ajustement = await PanierData.ajouter(variantId);
+    let { ajustement, maximum } = await PanierData.ajouter(variantId);
 
-    if (ajustement === null) {
+    if (ajustement === null && maximum) {
+      // Dernier exemplaire disponible : on prévient tout de suite, plutôt
+      // qu'au clic suivant, qui serait refusé.
+      C.notifier({
+        type: "avertissement",
+        texte: `« ${nom} » a été ajouté au panier : il n’y en a plus en stock, vous avez tout le stock disponible.`,
+      });
+    } else if (ajustement === null) {
       C.notifier({ type: "succes", texte: `« ${nom} » a été ajouté au panier.` });
     } else if (ajustement.accordee === 0) {
       C.notifier({ type: "avertissement", texte: `« ${nom} » est épuisé : il n’a pas pu être ajouté au panier.` });

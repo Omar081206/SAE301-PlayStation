@@ -61,9 +61,10 @@ PanierData.enregistrer = function (lignes) {
  * plus sur la ligne existante.
  *
  * Le serveur vérifie d'abord le stock (POST /api/panier) : on enregistre ce
- * qu'il accorde. Renvoie l'ajustement de cette variante
- * ({ variantId, nom, demandee, accordee }, accordee à 0 si elle est épuisée),
- * ou null si l'unité a bien été ajoutée.
+ * qu'il accorde. Renvoie { ajustement, maximum } : ajustement est celui de
+ * cette variante ({ variantId, nom, demandee, accordee }, accordee à 0 si
+ * elle est épuisée), ou null si l'unité a bien été ajoutée ; maximum dit si
+ * le panier contient désormais tout le stock disponible (quantiteMax).
  */
 PanierData.ajouter = async function (variantId) {
   let lignes = PanierData.lire();
@@ -73,7 +74,7 @@ PanierData.ajouter = async function (variantId) {
     lignes.push({ variantId, quantite: 1 });
   } else if (ligne.quantite >= QUANTITE_MAX) {
     // Plafond du panier atteint : rien à demander au serveur.
-    return { variantId, demandee: ligne.quantite + 1, accordee: ligne.quantite };
+    return { ajustement: { variantId, demandee: ligne.quantite + 1, accordee: ligne.quantite }, maximum: true };
   } else {
     ligne.quantite += 1;
   }
@@ -81,7 +82,11 @@ PanierData.ajouter = async function (variantId) {
   let detail = await PanierData.fetchDetail(lignes);
   PanierData.aligner(detail);
 
-  return detail.ajustements.find((ajustement) => ajustement.variantId === variantId) ?? null;
+  let accordee = detail.lignes.find((element) => element.variantId === variantId);
+  return {
+    ajustement: detail.ajustements.find((ajustement) => ajustement.variantId === variantId) ?? null,
+    maximum: accordee !== undefined && accordee.quantite >= accordee.quantiteMax,
+  };
 };
 
 /**
