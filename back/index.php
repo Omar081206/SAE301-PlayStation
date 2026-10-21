@@ -17,6 +17,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
 use App\Controller\AdminCategorieController;
+use App\Controller\AdminCodePromoController;
 use App\Controller\AdminCommandeController;
 use App\Controller\AdminController;
 use App\Controller\AdminProduitController;
@@ -29,6 +30,7 @@ use App\Controller\PanierController;
 use App\Controller\ProduitController;
 use App\Model\AdminProduitModel;
 use App\Model\CategorieModel;
+use App\Model\CodePromoModel;
 use App\Model\CommandeModel;
 use App\Model\PanierModel;
 use App\Model\ParametreModel;
@@ -87,6 +89,7 @@ try {
         AdminCategorieController::class => new AdminCategorieController(new CategorieModel($pdo)),
         AdminProduitController::class   => new AdminProduitController(new AdminProduitModel($pdo), new CategorieModel($pdo), new ParametreModel($pdo)),
         AdminStatistiqueController::class => new AdminStatistiqueController(new StatistiqueModel($pdo), new ParametreModel($pdo)),
+        AdminCodePromoController::class   => new AdminCodePromoController(new CodePromoModel($pdo)),
     ];
 
     $routes = require __DIR__ . '/src/routes.php';

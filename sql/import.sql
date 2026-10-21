@@ -29,6 +29,7 @@ DROP TABLE IF EXISTS mouvement_stock;
 DROP TABLE IF EXISTS parametre;
 DROP TABLE IF EXISTS ligne_commande;
 DROP TABLE IF EXISTS commande;
+DROP TABLE IF EXISTS code_promo;
 DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS image;
 DROP TABLE IF EXISTS variante_valeur;
@@ -396,12 +397,39 @@ INSERT INTO utilisateur (email, prenom, nom, mot_de_passe, role) VALUES
     ('admin@playstation.test',  'Admin',  'PlayStation', '$2y$12$1puRSW6uY8T6pxGogeWEw.H9ufh93afp.iNCoMHWoKjYw8jIC5CNy', 'admin');
 
 -- ---------------------------------------------------------------------------
+-- Codes promotionnels
+--
+-- Un code (en majuscules, unique) donne une réduction en pourcentage sur le
+-- total d'une commande. Les commandes qui l'ont utilisé gardent leur remise
+-- s'il est supprimé (voir commande.code_promo_id).
+-- ---------------------------------------------------------------------------
+CREATE TABLE code_promo (
+    id          SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    code        VARCHAR(20)       NOT NULL,
+    pourcentage TINYINT UNSIGNED  NOT NULL,
+    cree_le     DATETIME          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_code_promo_code (code)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
+INSERT INTO code_promo (code, pourcentage) VALUES
+    ('PS10',      10),
+    ('RENTREE26', 15),
+    ('ETE25',     20);
+
+-- ---------------------------------------------------------------------------
 -- Commandes
 --
 -- numero : PS-AAAAMMJJ-NNNN, construit à partir de l'identifiant juste après
 -- l'insertion (NULL le temps de la transaction, d'où une colonne NULL : une
 -- clé UNIQUE accepte plusieurs NULL). statut suit le retrait en magasin.
 -- total : somme des lignes, figée au moment de la commande.
+-- code_promo_id, remise : code utilisé et montant déduit, figé lui aussi.
+-- Le code supprimé, code_promo_id passe à NULL (ON DELETE SET NULL) : la
+-- commande garde sa remise, mais ne compte plus dans les statistiques du code.
 -- ---------------------------------------------------------------------------
 CREATE TABLE commande (
     id             INT UNSIGNED  NOT NULL AUTO_INCREMENT,
@@ -409,6 +437,8 @@ CREATE TABLE commande (
     utilisateur_id INT UNSIGNED  NOT NULL,
     statut         ENUM('en_cours', 'disponible', 'retiree', 'annulee') NOT NULL DEFAULT 'en_cours',
     total          DECIMAL(10,2) NOT NULL,
+    code_promo_id  SMALLINT UNSIGNED NULL,
+    remise         DECIMAL(10,2) NOT NULL DEFAULT 0,
     cree_le        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id),
@@ -416,10 +446,16 @@ CREATE TABLE commande (
     KEY idx_commande_utilisateur (utilisateur_id),
     KEY idx_commande_statut (statut),
     KEY idx_commande_date (cree_le),
+    KEY idx_commande_code_promo (code_promo_id),
 
     CONSTRAINT fk_commande_utilisateur
         FOREIGN KEY (utilisateur_id) REFERENCES utilisateur (id)
         ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_commande_code_promo
+        FOREIGN KEY (code_promo_id) REFERENCES code_promo (id)
+        ON DELETE SET NULL
         ON UPDATE CASCADE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
