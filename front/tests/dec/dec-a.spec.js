@@ -14,19 +14,46 @@ function lienCategorie(page, nom) {
   return page.getByRole("navigation", { name: "Catégories" }).getByRole("link").filter({ hasText: nom });
 }
 
+/**
+ * La liste que la page va demander à l'API (GET /api/produits, tout le
+ * catalogue ou une catégorie), à attendre avant le geste qui la déclenche.
+ * La page est comparée à ses propres données : les tests @ecriture lancés en
+ * même temps créent et suppriment des produits.
+ *
+ * @param {import("@playwright/test").Page} page
+ * @param {string | null} [categorie]  slug, ou null pour tout le catalogue
+ * @returns {Promise<Array<Object>>} les produits reçus par la page
+ */
+async function produitsDemandes(page, categorie = null) {
+  let reponse = await page.waitForResponse((element) => {
+    let adresse = new URL(element.url());
+    return adresse.pathname.endsWith("/api/produits") && adresse.searchParams.get("categorie") === categorie;
+  });
+  return (await reponse.json()).produits;
+}
+
 test.describe("DEC-a · DoD spécifique", () => {
   test("DoD : filtrage fonctionnel (en JavaScript ou par rechargement de la page) @lecture", async ({ page }) => {
-    let { categories, total } = await lire(page, "categories");
+    let { categories } = await lire(page, "categories");
     let categorie = categories[0];
 
+    let catalogue = produitsDemandes(page);
     await page.goto("");
-    await expect(page.getByRole("article")).toHaveCount(total);
+    let tous = await catalogue;
+    await expect(page.getByRole("article")).toHaveCount(tous.length);
 
+    // Seulement les produits de la catégorie, tous affichés.
+    let filtre = produitsDemandes(page, categorie.slug);
     await lienCategorie(page, categorie.nom).click();
-    await expect(page.getByRole("article"), `produits de ${categorie.nom}`).toHaveCount(categorie.nombre);
+    let filtres = await filtre;
+    expect(filtres.length, `produits de ${categorie.nom}`).toBeGreaterThan(0);
+    expect(filtres.length, "moins de produits que le catalogue").toBeLessThan(tous.length);
+    expect(filtres.every((produit) => produit.categorie_slug === categorie.slug), "aucun produit d'une autre catégorie").toBe(true);
+    await expect(page.getByRole("article"), `produits de ${categorie.nom}`).toHaveCount(filtres.length);
 
+    let retour = produitsDemandes(page);
     await lienCategorie(page, "Tous les produits").click();
-    await expect(page.getByRole("article"), "filtre réinitialisé").toHaveCount(total);
+    await expect(page.getByRole("article"), "filtre réinitialisé").toHaveCount((await retour).length);
   });
 
   test("DoD : URLs propres (/categorie/nom-categorie) @lecture", async ({ page }) => {
@@ -38,8 +65,11 @@ test.describe("DEC-a · DoD spécifique", () => {
     await expect(page).toHaveURL(new RegExp(`/categorie/${categorie.slug}$`));
 
     // L'adresse ouverte directement donne le même filtre.
+    let filtre = produitsDemandes(page, categorie.slug);
     await page.goto(`categorie/${categorie.slug}`);
-    await expect(page.getByRole("article")).toHaveCount(categorie.nombre);
+    let filtres = await filtre;
+    expect(filtres.every((produit) => produit.categorie_slug === categorie.slug), "aucun produit d'une autre catégorie").toBe(true);
+    await expect(page.getByRole("article")).toHaveCount(filtres.length);
   });
 
   test("DoD : fil d'Ariane ou indication visuelle de la catégorie active @lecture", async ({ page }) => {
