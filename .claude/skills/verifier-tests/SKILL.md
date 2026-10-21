@@ -21,8 +21,11 @@ Depuis `front/` :
 4. **Lire chaque échec** : message, capture et trace (`npx playwright show-trace test-results/<dossier>/trace.zip`,
    ou `npm run test:rapport`). Le classer : bug de l'application (DoD ou critère non respecté), erreur du test,
    instabilité (réseau, validateur W3C injoignable). Relancer une seule fois un test instable pour le confirmer.
-5. **W3C** : le HTML et le CSS sont validés dans le premier navigateur seulement (même code partout), un envoi
-   toutes les 3 s au plus. Un 429 persistant se signale comme « validateur injoignable », jamais comme valide.
+5. **W3C** : le HTML et le CSS sont validés dans le premier navigateur seulement (même code partout), une page
+   par US, un envoi toutes les 6 s au plus, résultats gardés en cache (`node_modules/.cache/w3c`). Quand
+   validator.w3.org refuse le serveur (protection Cloudflare, 429), le HTML passe par validator.nu, instance du même
+   Nu Html Checker : le rapport le note (annotation « validateur HTML »), et le compte rendu le dit. Si toutes les
+   instances refusent, le test échoue (« validateurs injoignables ») : le dire, jamais le présenter comme valide.
 6. **Navigateurs** : Chromium et Firefox par défaut. WebKit (`E2E_NAVIGATEURS=chromium,firefox,webkit`) ne démarre
    pas sur le serveur de l'IUT (bibliothèques système absentes) : le test « testé sur 3 navigateurs » le note
    « non vérifié ». Le dire dans le compte rendu, ne jamais le présenter comme vérifié.

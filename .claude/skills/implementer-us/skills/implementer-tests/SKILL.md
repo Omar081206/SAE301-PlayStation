@@ -37,7 +37,7 @@ Chaque titre finit par une étiquette :
 | `donnees.js` | `creerProduitTest`, `modifierProduitTest`, `supprimerProduitTest`, `nettoyerClientsTest`, `commander` |
 | `dod-commune.js` | `testerDodCommune`, `ouvrir` (session, panier, chemin calculé, geste `avant`) |
 | `serveur.js` | `requeteBase` (SQL : seulement ce qu'aucune route n'expose, et le nettoyage), `git` |
-| `w3c.js` | `erreursHtml`, `erreursCss` : validateurs du W3C par `fetch` (Cloudflare refuse `page.request`), envois espacés et mis en cache |
+| `w3c.js` | `erreursHtml`, `erreursCss` : validateurs du W3C par `fetch` (Cloudflare refuse `page.request`), envois espacés et mis en cache ; HTML sur validator.nu (même Nu Html Checker) quand validator.w3.org refuse le serveur |
 
 Un besoin que ces outils ne couvrent pas : ajoute la fonction à l'outil concerné (JSDoc, même forme), pas dans le
 fichier de l'US, et signale-le dans le compte rendu.
