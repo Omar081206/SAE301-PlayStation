@@ -1,0 +1,16 @@
+<div class="flex flex-col gap-3.5 px-5.25 pt-5.25 pb-10 lg:gap-6 lg:px-10 lg:pt-8 lg:pb-12">
+  <div class="flex flex-col items-start gap-2.5 lg:flex-row lg:items-center lg:justify-between">
+    <h1 class="text-intertitre-sm font-bold lg:text-intertitre-lg">Statistiques</h1>
+    <button type="button" data-action="exporter" class="anneau-lien rounded-full bg-secondaire px-4 py-3 text-sm leading-3.5 font-bold text-lien enabled:hover:bg-secondaire-survol">Exporter (CSV)</button>
+  </div>
+
+  <slot name="message"></slot>
+  <slot name="commandes"></slot>
+
+  <div class="grid gap-3.5 lg:grid-cols-[minmax(0,1fr)_22.5rem] lg:items-start lg:gap-4">
+    <slot name="stocks"></slot>
+    <slot name="revenus"></slot>
+  </div>
+
+  <slot name="ventes"></slot>
+</div>
