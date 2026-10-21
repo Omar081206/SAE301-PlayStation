@@ -8,6 +8,9 @@ import { GalerieProduitView } from "../../ui/galerie-produit/index.js";
 import { MessageView } from "../../ui/message/index.js";
 import template from "./template.html?raw";
 
+// Durée d'affichage de la bulle d'ajout au panier, en millisecondes.
+const DUREE_NOTIFICATION = 4000;
+
 /**
  * Page « Produit » : la fiche d'un produit, désigné par son slug dans l'URL
  * (/produit/manette-sans-fil-dualsense).
@@ -31,6 +34,8 @@ let M = {
   modification: null, // variante du panier dont on modifie les options, ou null
   imageActive: 0, // position, dans les images de la variante, de l'image affichée
   message: null, // { type, texte }, ou null
+  notification: null, // bulle d'ajout au panier : { type, texte }, ou null
+  minuteur: null, // délai d'effacement de la bulle, ou null
 };
 
 let C = {};
@@ -128,6 +133,22 @@ C.handler_changerImage = async function (position) {
   V.rafraichir();
 };
 
+/**
+ * Affiche la bulle d'ajout au panier, puis l'efface au bout de
+ * DUREE_NOTIFICATION. Un nouvel ajout relance le délai.
+ */
+C.notifier = function (notification) {
+  M.notification = notification;
+  clearTimeout(M.minuteur);
+  M.minuteur = setTimeout(() => {
+    M.notification = null;
+    M.minuteur = null;
+    // La page a pu être quittée entre-temps : on ne reconstruit qu'une page
+    // encore affichée (sinon la fiche changerait le titre d'une autre page).
+    if (V.racine.isConnected) V.rafraichir();
+  }, DUREE_NOTIFICATION);
+};
+
 C.handler_ajouter = async function (variantId, nom) {
   if (M.modification !== null) {
     await C.mettreAJour(variantId, nom);
@@ -139,17 +160,17 @@ C.handler_ajouter = async function (variantId, nom) {
     let ajustement = await PanierData.ajouter(variantId);
 
     if (ajustement === null) {
-      M.message = { type: "succes", texte: `« ${nom} » a été ajouté au panier.` };
+      C.notifier({ type: "succes", texte: `« ${nom} » a été ajouté au panier.` });
     } else if (ajustement.accordee === 0) {
-      M.message = { type: "avertissement", texte: `« ${nom} » est épuisé : il n’a pas pu être ajouté au panier.` };
+      C.notifier({ type: "avertissement", texte: `« ${nom} » est épuisé : il n’a pas pu être ajouté au panier.` });
     } else {
-      M.message = {
+      C.notifier({
         type: "avertissement",
         texte: `Vous avez déjà le maximum disponible de « ${nom} » dans votre panier.`,
-      };
+      });
     }
   } catch (erreur) {
-    M.message = { type: "erreur", texte: `Impossible d’ajouter « ${nom} » au panier : ${erreur.message}` };
+    C.notifier({ type: "erreur", texte: `Impossible d’ajouter « ${nom} » au panier : ${erreur.message}` });
   }
 
   V.rafraichir();
@@ -186,6 +207,10 @@ C.mettreAJour = async function (variantId, nom) {
 
 C.init = async function (slug, variante) {
   M.message = null;
+  // Une bulle restée d'une visite précédente ne doit pas réapparaître.
+  clearTimeout(M.minuteur);
+  M.notification = null;
+  M.minuteur = null;
   await C.charger(slug, variante);
   return V.init();
 };
@@ -235,6 +260,7 @@ V.createPageFragment = function () {
   let pageFragment = htmlToFragment(template);
 
   pageFragment.querySelector('slot[name="message"]').replaceWith(MessageView.dom(M.message));
+  pageFragment.querySelector('slot[name="notification"]').replaceWith(MessageView.dom(M.notification));
 
   let slotFiche = pageFragment.querySelector('slot[name="fiche"]');
   if (M.produit === null) {

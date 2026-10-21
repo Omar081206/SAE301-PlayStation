@@ -1,4 +1,9 @@
 <div class="px-7 py-7 lg:px-20 lg:py-8">
   <slot name="message"></slot>
   <slot name="fiche"></slot>
+
+  <!-- Bulle d'ajout au panier : en bas à gauche de l'écran, visible même après défilement. -->
+  <div class="fixed right-3.5 bottom-3.5 left-3.5 z-30 md:right-auto md:max-w-sm *:mb-0 *:shadow-panneau">
+    <slot name="notification"></slot>
+  </div>
 </div>
