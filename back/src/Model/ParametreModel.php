@@ -24,25 +24,12 @@ final class ParametreModel
 
     /**
      * La valeur d'un paramètre, ou null s'il n'existe pas.
-     *
-     * Une base importée avant la création de la table parametre n'a aucun
-     * paramètre : null aussi, et le contrôleur applique sa valeur par défaut,
-     * plutôt que de rendre tout le catalogue indisponible.
      */
     public function lire(string $cle): ?string
     {
-        try {
-            $requetePreparee = $this->pdo->prepare('SELECT valeur FROM parametre WHERE cle = :cle');
-            $requetePreparee->bindValue(':cle', $cle, PDO::PARAM_STR);
-            $requetePreparee->execute();
-        } catch (\PDOException $e) {
-            // 42S02 : table absente. Toute autre erreur reste une vraie panne.
-            if ($e->getCode() !== '42S02') {
-                throw $e;
-            }
-
-            return null;
-        }
+        $requetePreparee = $this->pdo->prepare('SELECT valeur FROM parametre WHERE cle = :cle');
+        $requetePreparee->bindValue(':cle', $cle, PDO::PARAM_STR);
+        $requetePreparee->execute();
 
         $valeur = $requetePreparee->fetchColumn();
 

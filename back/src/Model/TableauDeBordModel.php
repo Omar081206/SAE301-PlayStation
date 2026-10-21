@@ -23,27 +23,22 @@ final class TableauDeBordModel
     }
 
     /**
-     * Nombre de produits, de commandes, de commandes en cours et de variantes
-     * épuisées.
+     * Nombre de produits et de commandes.
      *
      * @return array<string, int>
      */
     public function indicateurs(): array
     {
         $ligne = $this->pdo->query(
-            "SELECT (SELECT COUNT(*) FROM produit)                          AS produits,
-                    (SELECT COUNT(*) FROM commande)                         AS commandes,
-                    (SELECT COUNT(*) FROM commande WHERE statut = 'en_cours') AS commandes_en_cours,
-                    (SELECT COUNT(*) FROM variante WHERE stock = 0)         AS variantes_epuisees"
+            'SELECT (SELECT COUNT(*) FROM produit)  AS produits,
+                    (SELECT COUNT(*) FROM commande) AS commandes'
         )->fetch();
 
         // MySQL renvoie les nombres sous forme de chaînes : on les convertit
         // pour que le JSON contienne bien des nombres.
         return [
-            'produits'          => (int) $ligne['produits'],
-            'commandes'         => (int) $ligne['commandes'],
-            'commandesEnCours'  => (int) $ligne['commandes_en_cours'],
-            'variantesEpuisees' => (int) $ligne['variantes_epuisees'],
+            'produits'  => (int) $ligne['produits'],
+            'commandes' => (int) $ligne['commandes'],
         ];
     }
 }

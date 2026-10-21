@@ -10,8 +10,6 @@
 -- « Coloris » : une variante « Blanc » et une « Noir »), et une image
 -- principale (ordre 1) ;
 -- les produits photographiés sous plusieurs angles ont une galerie.
--- Les tables film et genre du starter ne sont plus créées : leurs DROP restent
--- pour les retirer d'une base importée avant le back-office.
 --
 -- L'import est rejouable : les tables sont supprimées avant d'être recréées.
 -- ATTENTION : une table existante de même nom serait supprimée elle aussi.
@@ -38,8 +36,6 @@ DROP TABLE IF EXISTS option_produit;
 DROP TABLE IF EXISTS variante;
 DROP TABLE IF EXISTS produit;
 DROP TABLE IF EXISTS categorie;
-DROP TABLE IF EXISTS film;
-DROP TABLE IF EXISTS genre;
 
 -- ---------------------------------------------------------------------------
 -- Catégories

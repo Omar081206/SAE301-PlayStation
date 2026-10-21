@@ -16,7 +16,7 @@ const ROUTES_ADMIN = [
 ]
   .map(([, methode, chemin]) => ({ methode, chemin }))
   // Connexion, déconnexion et état de session sont ouverts à tous.
-  .filter(({ chemin }) => !["admin/login", "admin/logout", "admin/session"].includes(chemin));
+  .filter(({ chemin }) => !["admin/login", "admin/logout"].includes(chemin));
 
 test.describe("GOF-b · DoD spécifique", () => {
   test("DoD : compte administrateur de test en base de données @lecture", async ({ page }) => {
