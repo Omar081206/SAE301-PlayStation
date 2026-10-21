@@ -11,7 +11,7 @@ import templateVide from "./vide.html?raw";
 let LignesPanierView = {
   /**
    * @param {Array<{variantId: number, nom: string, slug: string, quantite: number,
-   *                quantiteMax: number, sousTotal: number, image: string,
+   *                quantiteMax: number, sousTotal: number, sousTotalInitial: number|null, image: string,
    *                image_alt: string}>} lignes  quantiteMax : stock disponible, plafonné.
    * @param {{surQuantite: (variantId: number, quantite: number) => void,
    *          surSuppression: (variantId: number) => void}} actions
@@ -32,10 +32,16 @@ let LignesPanierView = {
           options: ligne.options ?? "",
           quantite: ligne.quantite,
           sousTotal: formaterPrix(ligne.sousTotal),
+          sousTotalInitial: ligne.sousTotalInitial === null ? "" : formaterPrix(ligne.sousTotalInitial),
           image: import.meta.env.BASE_URL + "images/produits/" + ligne.image,
           alt: ligne.image_alt,
         })
       );
+
+      // Produit hors promotion : pas de montant barré.
+      if (ligne.sousTotalInitial === null) {
+        element.querySelectorAll('[data-role="initial"]').forEach((barre) => barre.remove());
+      }
 
       // Produit sans option : rien à afficher ni à modifier.
       if (ligne.options === null) {

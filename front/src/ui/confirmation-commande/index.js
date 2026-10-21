@@ -14,7 +14,9 @@ let ConfirmationCommandeView = {
   /**
    * @param {{numero: string, statut: string, total: number, code_promo: string|null,
    *          pourcentage_promo: number|null, remise: number,
-   *          lignes: Array<{nom: string, options: string|null, quantite: number, sous_total: number}>}} commande
+   *          lignes: Array<{nom: string, options: string|null, quantite: number, sous_total: number,
+   *          sous_total_initial: number|null}>}} commande
+   *   sous_total_initial : montant d'origine d'un produit acheté en promotion, barré ; null sinon.
    */
   dom: function (commande) {
     let fragment = htmlToFragment(
@@ -24,15 +26,21 @@ let ConfirmationCommandeView = {
       })
     );
 
-    let lignes = commande.lignes.map((ligne) =>
-      htmlToFragment(
+    let lignes = commande.lignes.map((ligne) => {
+      let element = htmlToFragment(
         genericRenderer(templateLigne, {
           nom: ligne.nom,
           details: ligne.options === null ? `Qté ${ligne.quantite}` : `${ligne.options} · Qté ${ligne.quantite}`,
           sousTotal: formaterPrix(ligne.sous_total),
+          sousTotalInitial: ligne.sous_total_initial === null ? "" : formaterPrix(ligne.sous_total_initial),
         })
-      )
-    );
+      );
+      // Hors promotion : pas de montant barré.
+      if (ligne.sous_total_initial === null) {
+        element.querySelector('[data-role="initial"]').remove();
+      }
+      return element;
+    });
     fragment.querySelector('slot[name="lignes"]').replaceWith(...lignes);
     fragment.querySelector('slot[name="statut"]').replaceWith(BadgeStatutView.dom(commande.statut));
 

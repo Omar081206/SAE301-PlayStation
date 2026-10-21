@@ -89,6 +89,10 @@ final class PanierController
      * total, le nombre d'articles et les ajustements faits pour respecter le
      * stock. Une variante inconnue (produit retiré de la vente) est ignorée.
      *
+     * Ligne d'un produit en promotion automatique (ProduitController) : prix
+     * et sousTotal réduits, prixInitial et sousTotalInitial d'origine ; null
+     * pour les autres lignes.
+     *
      * Avec un code : sousTotal (avant réduction), remise, codePromo
      * { code, pourcentage }, et total après réduction. Sans code : remise 0,
      * codePromo null, total égal à sousTotal. Code inconnu : 422.
@@ -146,20 +150,29 @@ final class PanierController
                 continue;
             }
 
-            $sousTotal = round($variantes[$id]['prix'] * $accordee, 2);
+            // Produit en promotion automatique : le prix réduit, et le prix
+            // d'origine pour l'afficher barré.
+            $initial   = $variantes[$id]['prix'];
+            $enPromo   = $variantes[$id]['en_promotion'];
+            $prix      = $enPromo ? ProduitController::prixPromotion($initial) : $initial;
+            $sousTotal = round($prix * $accordee, 2);
             $total    += $sousTotal;
             $nombre   += $accordee;
 
             // Le stock exact ne part pas tel quel : seulement la quantité
             // maximale qu'on peut commander pour cette ligne.
             $ligne = $variantes[$id];
-            unset($ligne['stock']);
+            unset($ligne['stock'], $ligne['en_promotion']);
 
-            $detail[] = $ligne + [
-                'variantId'   => $id,
-                'quantite'    => $accordee,
-                'quantiteMax' => min($stock, self::QUANTITE_MAX),
-                'sousTotal'   => $sousTotal,
+            $detail[] = [
+                'prix'             => $prix,
+                'prixInitial'      => $enPromo ? $initial : null,
+            ] + $ligne + [
+                'variantId'        => $id,
+                'quantite'         => $accordee,
+                'quantiteMax'      => min($stock, self::QUANTITE_MAX),
+                'sousTotal'        => $sousTotal,
+                'sousTotalInitial' => $enPromo ? round($initial * $accordee, 2) : null,
             ];
         }
 

@@ -23,7 +23,9 @@ use App\Model\UtilisateurModel;
  *
  * Un code promo est revérifié au moment de la commande (il a pu être supprimé
  * depuis l'affichage du récapitulatif) et sa remise recalculée, avec les
- * règles du panier (PanierController).
+ * règles du panier (PanierController). Le prix d'un produit en promotion
+ * automatique est le prix réduit (ProduitController) ; son prix d'origine est
+ * figé avec lui (prix_initial), pour l'afficher barré.
  *
  * Non connecté : 403, et non 401 (voir AuthController : un 401 se confond
  * avec l'authentification HTTP d'Apache sur mmi.unilim.fr).
@@ -121,14 +123,17 @@ final class CommandeController
                 Response::erreur('Le stock a changé depuis l’affichage de votre commande : vérifiez les quantités.', 409);
             }
 
-            $total += round($variantes[$id]['prix'] * $quantite, 2);
+            $enPromo = $variantes[$id]['en_promotion'];
+            $prix    = $enPromo ? ProduitController::prixPromotion($variantes[$id]['prix']) : $variantes[$id]['prix'];
+            $total  += round($prix * $quantite, 2);
 
             $aEnregistrer[] = [
-                'variantId' => $id,
-                'nom'       => $variantes[$id]['nom'],
-                'options'   => $variantes[$id]['options'],
-                'prix'      => $variantes[$id]['prix'],
-                'quantite'  => $quantite,
+                'variantId'   => $id,
+                'nom'         => $variantes[$id]['nom'],
+                'options'     => $variantes[$id]['options'],
+                'prix'        => $prix,
+                'prixInitial' => $enPromo ? $variantes[$id]['prix'] : null,
+                'quantite'    => $quantite,
             ];
         }
 

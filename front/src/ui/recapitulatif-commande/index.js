@@ -69,7 +69,7 @@ function domCode(data, actions) {
 // (ou son retrait), et c'est le serveur qui le vérifie et renvoie la remise.
 let RecapitulatifCommandeView = {
   /**
-   * @param {{panier: {lignes: Array<{nom: string, quantite: number, sousTotal: number,
+   * @param {{panier: {lignes: Array<{nom: string, quantite: number, sousTotal: number, sousTotalInitial: number|null,
    *          image: string, image_alt: string}>, sousTotal: number, remise: number,
    *          codePromo: {code: string, pourcentage: number}|null, total: number, nombre: number},
    *          saisieCode: string, erreurCode: string|null, envoiEnCours: boolean}} data
@@ -89,14 +89,18 @@ let RecapitulatifCommandeView = {
           options: ligne.options ?? "",
           quantite: ligne.quantite,
           sousTotal: formaterPrix(ligne.sousTotal),
+          sousTotalInitial: ligne.sousTotalInitial === null ? "" : formaterPrix(ligne.sousTotalInitial),
           image: import.meta.env.BASE_URL + "images/produits/" + ligne.image,
           alt: ligne.image_alt,
         })
       );
       // État réglé en JS : un template n'a pas de condition. Produit sans
-      // option : pas de ligne vide.
+      // option : pas de ligne vide ; hors promotion : pas de montant barré.
       if (ligne.options === null) {
         element.querySelector('[data-role="options"]').remove();
+      }
+      if (ligne.sousTotalInitial === null) {
+        element.querySelector('[data-role="initial"]').remove();
       }
       return element;
     });

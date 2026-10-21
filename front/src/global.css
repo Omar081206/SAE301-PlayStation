@@ -11,6 +11,7 @@
   --clr-noir-06: #0000000f;
   --clr-noir-12: #0000001f;
   --clr-noir-32: #00000052;
+  --clr-noir-64: #000000a3;
   --clr-noir-72: #000000b8;
   --clr-bleu-ps: #0068bd;
   --clr-bleu-logo: #0070d1;
@@ -44,6 +45,7 @@
   --color-texte: var(--clr-noir);
   --color-texte-inverse: var(--clr-blanc);
   --color-texte-attenue: var(--clr-noir-72);
+  --color-texte-barre: var(--clr-noir-64);
   --color-texte-nav: var(--clr-gris-nav);
   --color-lien: var(--clr-bleu-ps);
   --color-logo: var(--clr-bleu-logo);
