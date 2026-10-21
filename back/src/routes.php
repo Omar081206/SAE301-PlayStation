@@ -6,6 +6,7 @@ use App\Controller\AdminCategorieController;
 use App\Controller\AdminCommandeController;
 use App\Controller\AdminController;
 use App\Controller\AdminProduitController;
+use App\Controller\AdminStatistiqueController;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
 use App\Controller\CommandeController;
@@ -59,4 +60,5 @@ return [
     'POST /api/admin/categorie/creer'     => [AdminCategorieController::class, 'creer'],
     'POST /api/admin/categorie/modifier'  => [AdminCategorieController::class, 'modifier'],
     'POST /api/admin/categorie/supprimer' => [AdminCategorieController::class, 'supprimer'],
+    'GET  /api/admin/statistiques'        => [AdminStatistiqueController::class, 'index'],
 ];

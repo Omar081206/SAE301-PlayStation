@@ -20,6 +20,7 @@ use App\Controller\AdminCategorieController;
 use App\Controller\AdminCommandeController;
 use App\Controller\AdminController;
 use App\Controller\AdminProduitController;
+use App\Controller\AdminStatistiqueController;
 use App\Controller\AuthController;
 use App\Controller\CategorieController;
 use App\Controller\CommandeController;
@@ -32,6 +33,7 @@ use App\Model\CommandeModel;
 use App\Model\PanierModel;
 use App\Model\ParametreModel;
 use App\Model\ProduitModel;
+use App\Model\StatistiqueModel;
 use App\Model\TableauDeBordModel;
 use App\Model\UtilisateurModel;
 
@@ -84,6 +86,7 @@ try {
         AdminCommandeController::class => new AdminCommandeController(new CommandeModel($pdo)),
         AdminCategorieController::class => new AdminCategorieController(new CategorieModel($pdo)),
         AdminProduitController::class   => new AdminProduitController(new AdminProduitModel($pdo), new CategorieModel($pdo), new ParametreModel($pdo)),
+        AdminStatistiqueController::class => new AdminStatistiqueController(new StatistiqueModel($pdo), new ParametreModel($pdo)),
     ];
 
     $routes = require __DIR__ . '/src/routes.php';

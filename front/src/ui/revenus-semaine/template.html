@@ -1,0 +1,10 @@
+<section class="flex flex-col gap-2.5 rounded-xl border border-trait bg-page p-3.5 lg:p-6">
+  <h2 class="text-prix-sm font-bold">{{titre}}</h2>
+  <dl class="flex flex-col gap-2.5 text-sm">
+    <slot name="jours"></slot>
+    <div class="flex justify-between border-t border-trait pt-2.5 pb-2 font-bold">
+      <dt>Total</dt>
+      <dd>{{total}}</dd>
+    </div>
+  </dl>
+</section>

@@ -1,0 +1,9 @@
+<!-- En dessous de md, la barre passe sous le nom ; à partir de md, tout tient sur une ligne. -->
+<li class="grid grid-cols-[minmax(0,1fr)_auto_7.5rem] items-center gap-x-2.5 gap-y-1.5 py-1 text-sm md:grid-cols-[9.375rem_minmax(0,1fr)_auto_7.5rem]">
+  <span class="col-start-1 row-start-1 font-medium">{{libelle}}</span>
+  <span aria-hidden="true" class="col-span-3 row-start-2 flex h-2.5 overflow-hidden rounded-sm bg-tuile-claire md:col-span-1 md:col-start-2 md:row-start-1">
+    <span class="h-full min-w-px rounded-sm {{couleur}}" style="width: {{largeur}}%"></span>
+  </span>
+  <span class="col-start-2 row-start-1 text-right font-semibold md:col-start-3">{{stock}}</span>
+  <span class="col-start-3 row-start-1 md:col-start-4"><slot name="alerte"></slot></span>
+</li>
