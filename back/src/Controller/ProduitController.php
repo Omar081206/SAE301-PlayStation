@@ -14,7 +14,7 @@ use App\Model\ProduitModel;
  * Catalogue de la boutique : la liste des produits, filtrée ou non par
  * catégorie, et la fiche de chacun.
  *
- * Le catalogue tient sur une page (15 produits) : ni tri ni pagination.
+ * Le catalogue tient sur une seule page : ni tri ni pagination.
  *
  * L'état du stock (« en stock », « bientôt épuisé », « épuisé ») est calculé
  * ici, à chaque requête, à partir du stock réel et du seuil de la table

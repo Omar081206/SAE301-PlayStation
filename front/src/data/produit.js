@@ -7,10 +7,13 @@ let ProduitData = {};
  *
  * categorie (slug) est facultatif : sans lui, tout le catalogue.
  *
- * { produits: [ { id, nom, slug, categorie, prix, image, image_alt } ], total,
+ * { produits: [ { id, nom, slug, categorie, categorie_slug, variante_id, prix,
+ *                 prix_initial, promotion, image, image_alt, etat_stock } ], total,
  *   categorie: { nom, slug } ou null }
- * image est le nom du fichier de l'image principale (dans public/images/produits/),
- * ou null si le produit n'en a pas.
+ * variante_id : la variante par défaut (la première en stock). prix_initial et
+ * promotion : prix d'origine et pourcentage du produit en promotion
+ * automatique, null pour les autres. image : nom du fichier de l'image
+ * principale, ou null si le produit n'en a pas.
  */
 ProduitData.fetchTous = async function (categorie) {
   let uri = "produits";
@@ -25,8 +28,11 @@ ProduitData.fetchTous = async function (categorie) {
 /**
  * La fiche d'un produit : GET /api/produit?slug=…
  *
- * { produit: { id, nom, slug, description, categorie, categorie_slug, prix,
- *              images: [ { fichier, alt } ] } }
+ * { produit: { id, nom, slug, description, categorie, categorie_slug, variante_id,
+ *              prix, prix_initial, promotion, etat_stock, images: [ { fichier, alt } ],
+ *              options: [ { id, nom, valeurs: [ { id, valeur } ] } ],
+ *              variantes: [ { id, prix, prix_initial, promotion, etat_stock,
+ *                             valeurs: [id…], images: [ { fichier, alt } ] } ] } }
  * Les images sont dans l'ordre de la galerie : la première est l'image principale.
  */
 ProduitData.fetchOne = async function (slug) {

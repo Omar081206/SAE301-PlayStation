@@ -168,7 +168,8 @@ CREATE TABLE variante_valeur (
 -- ---------------------------------------------------------------------------
 -- Images
 --
--- fichier : nom du fichier dans front/public/images/produits/.
+-- fichier : nom du fichier dans front/public/images/produits/, ou dans
+-- uploads/produits/ pour une image téléversée (« u-… », voir le .htaccess).
 -- variante_id : NULL pour les images du produit (sa variante par défaut) ;
 -- sinon, l'image montre cette variante-là (un coloris) et ne sert qu'à elle.
 -- L'image d'ordre 1 est l'image principale. affichage : où l'image sert. Les
@@ -386,7 +387,7 @@ CREATE TABLE utilisateur (
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
--- Comptes de test (voir README) : client@playstation.test / client1234 et
+-- Comptes de test : client@playstation.test / client1234 et
 -- admin@playstation.test / admin1234.
 INSERT INTO utilisateur (email, prenom, nom, mot_de_passe, role) VALUES
     ('client@playstation.test', 'Nathan', 'Drake',       '$2y$12$lJPa0JrD2Rw0ET8.r/Xp2umTobri5omSesmplBIX4zUn8xO8oFT2K', 'client'),
