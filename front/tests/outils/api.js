@@ -23,6 +23,11 @@ export const COMPTES = {
 // Préfixe de tout ce que les tests créent : on le retrouve et on le supprime.
 export const PREFIXE = "e2e";
 
+// Identité des clients créés par les tests : lettres seulement (le serveur
+// refuse les chiffres dans un nom). Le back-office les affiche « Test
+// Automatique » : un test qui parcourt les commandes peut écarter les leurs.
+export const CLIENT_TEST = { prenom: "Test", nom: "Automatique" };
+
 // Adresses des clients créés par les tests de ce worker, en attente de
 // nettoyage. Chaque test ne supprime que les siens : les autres workers
 // travaillent en même temps avec leurs propres clients.
@@ -82,9 +87,7 @@ export async function connecterAdmin(page) {
  */
 export async function creerClient(page) {
   let compte = {
-    // Lettres seulement : le serveur refuse les chiffres dans un nom.
-    prenom: "Test",
-    nom: "Automatique",
+    ...CLIENT_TEST,
     email: `${PREFIXE}-${Date.now()}-${Math.floor(Math.random() * 1000)}@playstation.test`,
     mdp: "motdepasse-e2e",
   };

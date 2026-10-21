@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { formaterPrix } from "../../src/lib/format.js";
-import { connecterAdmin, creerClient, envoyer, lire, preparerPanier } from "../outils/api.js";
+import { PREFIXE, connecterAdmin, creerClient, envoyer, lire, preparerPanier } from "../outils/api.js";
 import { commander, creerProduitTest, nettoyerClientsTest, supprimerProduitTest } from "../outils/donnees.js";
 import { testerDodCommune } from "../outils/dod-commune.js";
 import { chacunSonTour, requeteBase } from "../outils/serveur.js";
@@ -131,9 +131,11 @@ test.describe("PRO-c · critères d'acceptation", () => {
     await expect(page.getByRole("complementary")).toContainText(formaterPrix(2 * promo));
 
     // Un code promo s'applique au total déjà réduit (vérification seule : rien n'est écrit).
+    // Un code réel : ceux des tests de PRO-b (E2E…) peuvent être supprimés pendant le test.
     let { codes } = await lire(page, "admin/codes-promo");
-    let { corps } = await envoyer(page, "panier", { lignes: [{ variantId: variante.id, quantite: 2 }], code: codes[0].code });
-    let remise = Math.round(2 * promo * codes[0].pourcentage) / 100;
+    let code = codes.find((element) => !element.code.startsWith(PREFIXE.toUpperCase()));
+    let { corps } = await envoyer(page, "panier", { lignes: [{ variantId: variante.id, quantite: 2 }], code: code.code });
+    let remise = Math.round(2 * promo * code.pourcentage) / 100;
     expect(corps).toEqual(expect.objectContaining({ sousTotal: 2 * promo, remise, total: Math.round((2 * promo - remise) * 100) / 100 }));
 
     // Récapitulatif, puis commande : prix figés, barré sur la confirmation.

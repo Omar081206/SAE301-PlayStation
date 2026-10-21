@@ -24,7 +24,8 @@ export async function creerProduitTest(page, variantes) {
   let { categories } = await lire(page, "admin/categories");
   let { statut, corps } = await envoyer(page, "admin/produit/enregistrer", {
     id: null,
-    nom: `${PREFIXE} produit ${Date.now()}`,
+    // Un suffixe au hasard : deux navigateurs peuvent créer un produit dans la même milliseconde.
+    nom: `${PREFIXE} produit ${Date.now()}${Math.floor(Math.random() * 1000)}`,
     categorie_id: categories[0].id,
     description: "Produit créé par les tests automatisés, supprimé à la fin du test.",
     options: [
