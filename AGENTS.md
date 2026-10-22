@@ -71,7 +71,7 @@ front/
 | Catalogue | `GET /api/produits`, `GET /api/produit?slug=`, `GET /api/categories` |
 | Panier, commande | `POST /api/panier`, `POST /api/commande`, `GET /api/commande?numero=` |
 | Compte client | `POST /api/login`, `/api/logout`, `/api/inscription`, `GET /api/session`, `GET /api/compte`, `GET /api/compte/commandes`, `POST /api/compte/profil` |
-| Back-office | `/api/admin/login`, `logout`, `session`, `tableau-de-bord`, `commandes`, `commande`, `commande(s)/statut`, `produits`, `produit/...`, `categories`, `categorie/...`, `parametre/seuil` |
+| Back-office | `/api/admin/login`, `logout`, `tableau-de-bord`, `commandes`, `commande`, `commande(s)/statut`, `produits`, `produit/...`, `categories`, `categorie/...`, `parametre/seuil` |
 
 La liste exacte est dans `back/src/routes.php`. Codes d'erreur : **403** non connecté ou non autorisé,
 **422** saisie invalide (et identifiants faux), **404** introuvable, **409** conflit (stock, doublon),
