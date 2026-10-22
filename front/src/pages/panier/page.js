@@ -1,5 +1,6 @@
 import { PanierData } from "../../data/panier.js";
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
+import { ConfirmationPanierView } from "../../ui/confirmation-panier/index.js";
 import { LignesPanierView } from "../../ui/lignes-panier/index.js";
 import { MessageView } from "../../ui/message/index.js";
 import { ResumePanierView } from "../../ui/resume-panier/index.js";
@@ -21,6 +22,7 @@ let M = {
   avertissements: [], // un message par quantité ajustée au stock
   notification: null, // bulle « plus de stock » : { type, texte }, ou null
   auMaximum: null, // variante montée au stock disponible par « + », ou null
+  confirmationVider: false, // vrai pendant la confirmation « Vider le panier »
 };
 
 let C = {};
@@ -104,8 +106,31 @@ C.handler_supprimer = async function (variantId) {
   V.rafraichir();
 };
 
+C.handler_vider = async function () {
+  M.confirmationVider = true;
+  V.rafraichir();
+};
+
+C.handler_confirmerVider = async function () {
+  M.confirmationVider = false;
+  PanierData.vider();
+  await C.charger();
+  C.suivreMaximum();
+  // Après le chargement, qui remet le message à zéro.
+  if (M.message === null) {
+    M.message = { type: "succes", texte: "Votre panier est vidé." };
+  }
+  V.rafraichir();
+};
+
+C.handler_annulerVider = async function () {
+  M.confirmationVider = false;
+  V.rafraichir();
+};
+
 C.init = async function () {
   M.message = null;
+  M.confirmationVider = false;
   M.notification = null;
   M.auMaximum = null;
   await C.charger();
@@ -123,12 +148,15 @@ V.init = function () {
 };
 
 // Même principe que la page Catalogue : toute la page se reconstruit à partir
-// du modèle, après chaque changement de quantité ou suppression.
+// du modèle, après chaque changement de quantité ou suppression. La fenêtre
+// « Vider le panier », reconstruite avec la page, est rouverte.
 V.rafraichir = function () {
   let fragment = V.createPageFragment();
   let nouvelleRacine = fragment.firstElementChild;
   V.racine.replaceWith(fragment);
   V.racine = nouvelleRacine;
+
+  V.racine.querySelector("dialog")?.showModal();
 };
 
 V.createPageFragment = function () {
@@ -146,10 +174,12 @@ V.createPageFragment = function () {
 
   let slotLignes = pageFragment.querySelector('slot[name="lignes"]');
   let slotResume = pageFragment.querySelector('slot[name="resume"]');
+  let slotModale = pageFragment.querySelector('slot[name="modale"]');
 
   if (M.panier === null) {
     slotLignes.remove();
     slotResume.remove();
+    slotModale.remove();
     return pageFragment;
   }
 
@@ -157,8 +187,20 @@ V.createPageFragment = function () {
     LignesPanierView.dom(M.panier.lignes, {
       surQuantite: C.handler_changerQuantite,
       surSuppression: C.handler_supprimer,
+      surVider: C.handler_vider,
     })
   );
+
+  if (M.confirmationVider) {
+    slotModale.replaceWith(
+      ConfirmationPanierView.dom(
+        { nombre: M.panier.nombre },
+        { surConfirmation: C.handler_confirmerVider, surRetour: C.handler_annulerVider }
+      )
+    );
+  } else {
+    slotModale.remove();
+  }
 
   // Panier vide : rien à résumer.
   if (M.panier.lignes.length === 0) {
