@@ -49,14 +49,19 @@ final class PanierController
 
     /**
      * Le code promo saisi, vérifié en base : null si aucun code n'est saisi.
-     * Répond 422 (et termine) si le code n'existe pas. Partagé avec
-     * CommandeController.
+     * Répond 422 (et termine) si le code n'existe pas, ou s'il n'est pas du
+     * texte : un code mal formé n'est pas ignoré en silence, la commande
+     * passerait sans la réduction attendue. Partagé avec CommandeController.
      *
      * @return array{id: int, code: string, pourcentage: int}|null
      */
     public static function codeValide(CodePromoModel $codes, mixed $saisie): ?array
     {
-        $texte = mb_strtoupper(trim(is_string($saisie) ? $saisie : ''));
+        if ($saisie !== null && !is_string($saisie)) {
+            Response::erreur(self::CODE_INVALIDE, 422);
+        }
+
+        $texte = mb_strtoupper(trim($saisie ?? ''));
 
         if ($texte === '') {
             return null;

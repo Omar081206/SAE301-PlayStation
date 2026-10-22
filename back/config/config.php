@@ -30,6 +30,7 @@ return [
     ],
 
     // En développement, les erreurs sont détaillées dans la réponse JSON.
-    // À passer à false en production.
-    'debug' => true,
+    // À passer à false en production. Le site en ligne est servi depuis ce
+    // dossier : false, pour qu'une erreur 500 n'affiche ni requête ni fichier.
+    'debug' => false,
 ];

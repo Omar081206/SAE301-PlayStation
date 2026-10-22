@@ -28,13 +28,22 @@ class ErreurApi extends Error {
  * Lève une ErreurApi si le serveur répond par une erreur.
  */
 let request = async function (uri, options) {
-  const response = await fetch(API_URL + uri, options);
+  let response = null;
+  try {
+    response = await fetch(API_URL + uri, options);
+  } catch (e) {
+    // Réseau coupé ou serveur injoignable : le navigateur n'a reçu aucune
+    // réponse (statut 0), et son message (« Failed to fetch ») est en anglais.
+    throw new ErreurApi("Serveur injoignable, vérifiez votre connexion.", 0);
+  }
 
   let data = null;
   try {
     data = await response.json();
   } catch (e) {
-    throw new ErreurApi("Réponse illisible du serveur.", response.status);
+    // Une page d'erreur au lieu du JSON : panne du serveur (5xx) le plus souvent.
+    let message = response.status >= 500 ? "Erreur du serveur, réessayez dans un instant." : "Réponse illisible du serveur.";
+    throw new ErreurApi(message, response.status);
   }
 
   if (!response.ok) {

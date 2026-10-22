@@ -142,9 +142,13 @@ V.createPageFragment = function () {
   let pageFragment = htmlToFragment(template);
 
   // Le titre est celui de la catégorie affichée, s'il y en a une.
+  // Si les produits n'ont pas pu être chargés, le menu, chargé à part, connaît
+  // encore son nom : le titre reste celui de la catégorie cochée.
   let titre = "Tous les produits";
   if (M.catalogue !== null && M.catalogue.categorie !== null) {
     titre = M.catalogue.categorie.nom;
+  } else if (M.catalogue === null && M.categories !== null) {
+    titre = M.categories.categories.find((categorie) => categorie.slug === M.slug)?.nom ?? titre;
   }
   pageFragment.querySelector('slot[name="bandeau"]').replaceWith(BandeauView.dom(titre));
 
