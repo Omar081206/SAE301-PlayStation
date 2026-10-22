@@ -1,4 +1,4 @@
-import { expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // Appels directs à l'API, depuis la page : page.request partage les cookies du
 // navigateur, donc une connexion faite ici vaut pour les pages ouvertes ensuite.
@@ -98,13 +98,23 @@ export async function creerClient(page) {
 }
 
 /**
- * Lit le panier du localStorage de la page (clé « panier »).
+ * Clé du panier dans le localStorage : le chemin du projet suivi de
+ * « panier », comme dans data/panier.js.
+ *
+ * @returns {string}
+ */
+function clePanier() {
+  return new URL(test.info().project.use.baseURL).pathname + "panier";
+}
+
+/**
+ * Lit le panier du localStorage de la page (voir clePanier).
  *
  * @param {import("@playwright/test").Page} page
  * @returns {Promise<Array<Object>>}
  */
 export async function lirePanier(page) {
-  return page.evaluate(() => JSON.parse(localStorage.getItem("panier") ?? "[]"));
+  return page.evaluate((cle) => JSON.parse(localStorage.getItem(cle) ?? "[]"), clePanier());
 }
 
 /**
@@ -114,5 +124,5 @@ export async function lirePanier(page) {
  * @param {Array<Object>} lignes
  */
 export async function preparerPanier(page, lignes) {
-  await page.addInitScript((valeur) => localStorage.setItem("panier", valeur), JSON.stringify(lignes));
+  await page.addInitScript(([cle, valeur]) => localStorage.setItem(cle, valeur), [clePanier(), JSON.stringify(lignes)]);
 }
