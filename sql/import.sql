@@ -6,9 +6,9 @@
 -- la colonne de gauche, puis importez ce fichier depuis l'onglet « Importer ».
 --
 -- Boutique : 15 produits en 4 catégories (3 manettes, 4 produits ailleurs). Chaque produit a une variante par
--- défaut, qui porte son prix et son stock (six produits ont une option
--- « Coloris » : une variante « Blanc » et une « Noir »), et une image
--- principale (ordre 1) ;
+-- défaut, qui porte son prix et son stock, et une option à deux valeurs
+-- (« Coloris », « Pack », « Garantie » ou « Édition ») : une variante par
+-- valeur. Chaque produit a une image principale (ordre 1) ;
 -- les produits photographiés sous plusieurs angles ont une galerie.
 --
 -- L'import est rejouable : les tables sont supprimées avant d'être recréées.
@@ -255,7 +255,16 @@ INSERT INTO variante (id, produit_id, prix, stock) VALUES
     (18,  6,  239.99,  4),
     (19,  7,   84.99,  6),
     (20,  9,  149.99,  8),
-    (21, 10,  219.99,  0);
+    (21, 10,  219.99,  0),
+    (22,  1,  599.99,  5),
+    (23,  2,  549.99,  3),
+    (24,  3,  849.99,  0),
+    (25, 11,   49.99,  5),
+    (26, 12,   39.99,  5),
+    (27, 13,   99.99,  4),
+    (28, 14,   89.99,  4),
+    (29, 15,   99.99,  4),
+    (30, 16,   69.99,  4);
 
 -- Option « Coloris » des six produits proposés en blanc et en noir. La
 -- variante « Blanc » est celle des images du produit.
@@ -267,13 +276,37 @@ INSERT INTO option_produit (id, produit_id, nom, ordre) VALUES
     (5,  9, 'Coloris', 1),
     (6, 10, 'Coloris', 1);
 
+-- Les autres produits ont une option sans image propre : le pack des consoles
+-- (avec un jeu), la garantie des accessoires, l'édition des jeux. La valeur
+-- par défaut (« Console seule », « Standard ») est la variante d'origine ; la
+-- PS5 Pro reste épuisée dans les deux packs.
+INSERT INTO option_produit (id, produit_id, nom, ordre) VALUES
+    ( 7,  1, 'Pack',     1),
+    ( 8,  2, 'Pack',     1),
+    ( 9,  3, 'Pack',     1),
+    (10, 11, 'Garantie', 1),
+    (11, 12, 'Garantie', 1),
+    (12, 13, 'Édition',  1),
+    (13, 14, 'Édition',  1),
+    (14, 15, 'Édition',  1),
+    (15, 16, 'Édition',  1);
+
 INSERT INTO valeur_option (id, option_id, valeur, ordre) VALUES
     ( 1, 1, 'Blanc', 1), ( 2, 1, 'Noir', 2),
     ( 3, 2, 'Blanc', 1), ( 4, 2, 'Noir', 2),
     ( 5, 3, 'Blanc', 1), ( 6, 3, 'Noir', 2),
     ( 7, 4, 'Blanc', 1), ( 8, 4, 'Noir', 2),
     ( 9, 5, 'Blanc', 1), (10, 5, 'Noir', 2),
-    (11, 6, 'Blanc', 1), (12, 6, 'Noir', 2);
+    (11, 6, 'Blanc', 1), (12, 6, 'Noir', 2),
+    (13,  7, 'Console seule', 1), (14,  7, 'Avec Astro Bot', 2),
+    (15,  8, 'Console seule', 1), (16,  8, 'Avec Astro Bot', 2),
+    (17,  9, 'Console seule', 1), (18,  9, 'Avec Astro Bot', 2),
+    (19, 10, 'Standard', 1), (20, 10, 'Étendue 2 ans', 2),
+    (21, 11, 'Standard', 1), (22, 11, 'Étendue 2 ans', 2),
+    (23, 12, 'Standard', 1), (24, 12, 'Deluxe', 2),
+    (25, 13, 'Standard', 1), (26, 13, 'Deluxe', 2),
+    (27, 14, 'Standard', 1), (28, 14, 'Deluxe', 2),
+    (29, 15, 'Standard', 1), (30, 15, 'Deluxe', 2);
 
 INSERT INTO variante_valeur (variante_id, valeur_id) VALUES
     ( 4,  1), (16,  2),
@@ -281,7 +314,16 @@ INSERT INTO variante_valeur (variante_id, valeur_id) VALUES
     ( 6,  5), (18,  6),
     ( 7,  7), (19,  8),
     ( 8,  9), (20, 10),
-    ( 9, 11), (21, 12);
+    ( 9, 11), (21, 12),
+    ( 1, 13), (22, 14),
+    ( 2, 15), (23, 16),
+    ( 3, 17), (24, 18),
+    (10, 19), (25, 20),
+    (11, 21), (26, 22),
+    (12, 23), (27, 24),
+    (13, 25), (28, 26),
+    (14, 27), (29, 28),
+    (15, 29), (30, 30);
 
 INSERT INTO image (produit_id, fichier, alt, ordre) VALUES
     ( 1, 'console-ps5.webp',                              'Console PS5 blanche, posée à la verticale',             1),
