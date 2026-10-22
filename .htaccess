@@ -10,6 +10,24 @@
 # Pas de listing de dossier si un index est absent.
 Options -Indexes
 
+# Durée de cache des fichiers servis (sans le module, rien ne change).
+# Les scripts et feuilles de style du build ont un nom qui change à chaque
+# build (index-Ds36RVST.js) : le navigateur peut les garder un an sans
+# redemander. Images et polices changent rarement : un mois. La page d'entrée
+# est toujours revalidée, pour qu'un nouveau build soit pris tout de suite.
+# Les réponses de l'API (back/index.php) ne sont pas concernées.
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(webp|jpe?g|png|svg|avif|woff2|ttf)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
 RewriteEngine On
 
 # 1. Toute requête /api/... est confiée au back (l'API JSON).

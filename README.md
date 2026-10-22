@@ -231,6 +231,16 @@ npm run test:ecriture   # tests qui créent puis suppriment leurs données (pré
 npm run test:rapport    # rapport du dernier lancement
 ```
 
+## Performances
+
+Audit Lighthouse du site déployé : 99 en performance, 100 en accessibilité,
+bonnes pratiques et SEO. Les polices SST sont servies en WOFF2, les images
+produits en miniatures WebP (320 et 640 px), et le `.htaccess` fixe la durée
+de cache des fichiers (un an pour les scripts et feuilles de style du build,
+un mois pour les images et les polices).
+
+![Audit Lighthouse : Performance 99, Accessibility 100, Best Practices 100, SEO 100](docs/lighthouse.png)
+
 ## Si ça ne marche pas
 
 | Symptôme | Cause probable |

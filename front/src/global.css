@@ -67,14 +67,15 @@
 }
 
 /*
-  Police SST de PlayStation, servie depuis front/public/fonts/. SST n'a pas de
+  Police SST de PlayStation, servie depuis front/public/fonts/ en WOFF2 (quatre
+  fois plus léger que les TTF d'origine). SST n'a pas de
   semi-gras : font-semibold (600) prend le Medium, plus proche du rendu de
   playstation.com que le Bold. « swap » affiche le texte en Inter (ou police du
   système) le temps du chargement.
 */
 @font-face {
   font-family: "SST";
-  src: url("/fonts/sst-light.ttf") format("truetype");
+  src: url("/fonts/sst-light.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -82,7 +83,7 @@
 
 @font-face {
   font-family: "SST";
-  src: url("/fonts/sst-roman.ttf") format("truetype");
+  src: url("/fonts/sst-roman.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -90,7 +91,7 @@
 
 @font-face {
   font-family: "SST";
-  src: url("/fonts/sst-medium.ttf") format("truetype");
+  src: url("/fonts/sst-medium.woff2") format("woff2");
   font-weight: 500 600;
   font-style: normal;
   font-display: swap;
@@ -98,7 +99,7 @@
 
 @font-face {
   font-family: "SST";
-  src: url("/fonts/sst-bold.ttf") format("truetype");
+  src: url("/fonts/sst-bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
