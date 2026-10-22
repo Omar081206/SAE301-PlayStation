@@ -21,7 +21,9 @@ use App\Model\ParametreModel;
  *
  * Les images téléversées sont vérifiées, réduites à 1200 px au plus et
  * converties en WebP, puis rangées dans uploads/produits/ sous un nom en
- * « u-… » (voir la règle 1 bis du .htaccess).
+ * « u-… » (voir la règle 1 bis du .htaccess). Chacune a deux miniatures à
+ * côté d'elle (« u-…-320.webp », « u-…-640.webp ») pour les cartes et les
+ * vignettes : la base ne garde que le nom de l'original.
  */
 final class AdminProduitController
 {
@@ -43,6 +45,9 @@ final class AdminProduitController
     /** Image : poids accepté avant traitement, et plus grand côté après. */
     private const IMAGE_OCTETS_MAX = 6 * 1024 * 1024;
     private const IMAGE_COTE_MAX   = 1200;
+
+    /** Plus grand côté des miniatures, aussi suffixe de leur nom (voir front/src/lib/image.js). */
+    private const MINIATURES = [320, 640];
 
     /** Seuil « Bientôt épuisé » : bornes et nom du paramètre. */
     private const SEUIL_MAX = 99;
@@ -357,14 +362,52 @@ final class AdminProduitController
     }
 
     /**
-     * Efface le fichier d'une image téléversée (« u-… ») ; les images
-     * déposées à la main dans front/public ne sont jamais effacées.
+     * Efface le fichier d'une image téléversée (« u-… ») et ses miniatures ;
+     * les images déposées à la main dans front/public ne sont jamais effacées.
      */
     private function effacerFichier(string $fichier): void
     {
-        if (preg_match('/^u-[A-Za-z0-9._-]+$/', $fichier) === 1 && is_file($this->dossierImages() . '/' . $fichier)) {
-            unlink($this->dossierImages() . '/' . $fichier);
+        if (preg_match('/^u-[A-Za-z0-9._-]+$/', $fichier) !== 1) {
+            return;
         }
+
+        $fichiers = [$fichier];
+        foreach (self::MINIATURES as $cote) {
+            $fichiers[] = $this->nomMiniature($fichier, $cote);
+        }
+
+        foreach ($fichiers as $nom) {
+            if (is_file($this->dossierImages() . '/' . $nom)) {
+                unlink($this->dossierImages() . '/' . $nom);
+            }
+        }
+    }
+
+    /**
+     * Nom de la miniature d'une image : « u-ps5-1a2b3c4d.webp » donne
+     * « u-ps5-1a2b3c4d-320.webp ».
+     */
+    private function nomMiniature(string $fichier, int $cote): string
+    {
+        return preg_replace('/\.[a-z]+$/', '', $fichier) . "-{$cote}.webp";
+    }
+
+    /**
+     * Copie de l'image source dont le plus grand côté ne dépasse pas
+     * $coteMax (jamais agrandie), transparence comprise.
+     */
+    private function reduire(\GdImage $source, int $largeurSource, int $hauteurSource, int $coteMax): \GdImage
+    {
+        $echelle = min(1, $coteMax / max($largeurSource, $hauteurSource));
+        $largeur = max(1, (int) round($largeurSource * $echelle));
+        $hauteur = max(1, (int) round($hauteurSource * $echelle));
+
+        $image = imagecreatetruecolor($largeur, $hauteur);
+        imagealphablending($image, false);
+        imagesavealpha($image, true);
+        imagecopyresampled($image, $source, 0, 0, 0, 0, $largeur, $hauteur, $largeurSource, $hauteurSource);
+
+        return $image;
     }
 
     /**
@@ -400,24 +443,24 @@ final class AdminProduitController
             Response::erreur('Image illisible.', 422);
         }
 
-        // Redimensionnement : le plus grand côté à 1200 px au plus.
-        $echelle = min(1, self::IMAGE_COTE_MAX / max($infos[0], $infos[1]));
-        $largeur = max(1, (int) round($infos[0] * $echelle));
-        $hauteur = max(1, (int) round($infos[1] * $echelle));
-
-        $image = imagecreatetruecolor($largeur, $hauteur);
-        imagealphablending($image, false);
-        imagesavealpha($image, true);
-        imagecopyresampled($image, $source, 0, 0, 0, 0, $largeur, $hauteur, $infos[0], $infos[1]);
-
         $dossier = $this->dossierImages();
         if (!is_dir($dossier) && !mkdir($dossier, 0775, true)) {
             Response::erreur("Le dossier des images n'a pas pu être créé.", 500);
         }
 
-        $fichier = 'u-' . $produit['slug'] . '-' . bin2hex(random_bytes(4)) . '.webp';
-        if (!imagewebp($image, $dossier . '/' . $fichier, 82)) {
-            Response::erreur("L'image n'a pas pu être enregistrée.", 500);
+        // L'original (1200 px au plus), puis ses miniatures, toutes tirées de
+        // la source pour ne pas cumuler les pertes de compression.
+        $fichier  = 'u-' . $produit['slug'] . '-' . bin2hex(random_bytes(4)) . '.webp';
+        $versions = [$fichier => self::IMAGE_COTE_MAX];
+        foreach (self::MINIATURES as $cote) {
+            $versions[$this->nomMiniature($fichier, $cote)] = $cote;
+        }
+
+        foreach ($versions as $nom => $cote) {
+            if (!imagewebp($this->reduire($source, $infos[0], $infos[1], $cote), $dossier . '/' . $nom, 82)) {
+                $this->effacerFichier($fichier);
+                Response::erreur("L'image n'a pas pu être enregistrée.", 500);
+            }
         }
 
         $vue = count($produit['images']) + 1;

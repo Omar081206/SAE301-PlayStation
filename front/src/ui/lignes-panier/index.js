@@ -1,5 +1,6 @@
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { formaterPrix } from "../../lib/format.js";
+import { secoursOriginal, urlMiniature } from "../../lib/image.js";
 import template from "./template.html?raw";
 import templateLigne from "./ligne.html?raw";
 import templateVide from "./vide.html?raw";
@@ -33,10 +34,12 @@ let LignesPanierView = {
           quantite: ligne.quantite,
           sousTotal: formaterPrix(ligne.sousTotal),
           sousTotalInitial: ligne.sousTotalInitial === null ? "" : formaterPrix(ligne.sousTotalInitial),
-          image: import.meta.env.BASE_URL + "images/produits/" + ligne.image,
+          image: urlMiniature(ligne.image, 320),
           alt: ligne.image_alt,
         })
       );
+
+      secoursOriginal(element.querySelector("img"), ligne.image);
 
       // Produit hors promotion : pas de montant barré.
       if (ligne.sousTotalInitial === null) {
