@@ -241,6 +241,9 @@ un mois pour les images et les polices).
 
 ![Audit Lighthouse : Performance 99, Accessibility 100, Best Practices 100, SEO 100](docs/lighthouse.png)
 
+Rapports Lighthouse complets : [mobile](docs/audit-mobile.html) et
+[desktop](docs/audit-desktop.html) (à ouvrir dans un navigateur).
+
 ## Si ça ne marche pas
 
 | Symptôme | Cause probable |

@@ -55,14 +55,11 @@ router.addRoute("/admin/codes-promo", AdminCodesPromoPage);
 // En dernier : toute adresse qui ne correspond à aucune route.
 router.addRoute("*", The404Page);
 
-// L'état de connexion est demandé une fois, avant le premier affichage : le
-// header en a besoin dès le départ. Sans réponse du serveur, l'application
-// démarre comme si personne n'était connecté.
-try {
-  await AuthData.fetchSession();
-} catch (erreur) {
-  // Le header affichera « Connexion ».
-}
+// L'état de connexion est demandé une fois, en même temps que la première
+// page : seul le header s'en sert, et il se met à jour à l'arrivée de la
+// réponse (AuthData.surChangement, voir layouts/root). Sans réponse du
+// serveur, le header garde « Connexion ».
+AuthData.fetchSession().catch(() => {});
 
 // Démarrer le routeur
 router.start();

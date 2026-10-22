@@ -111,8 +111,9 @@ C.init = async function (slug) {
   M.notification = null;
   M.minuteur = null;
   M.slug = slug;
-  await C.charger(slug);
-  await C.chargerCategories();
+  // Les deux demandes sont indépendantes : elles partent ensemble, la page
+  // s'affiche dès que la plus lente a répondu.
+  await Promise.all([C.charger(slug), C.chargerCategories()]);
   return V.init();
 };
 
