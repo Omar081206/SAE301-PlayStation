@@ -1,54 +1,142 @@
-# SAE301-Starter
+# SAE301 — PlayStation Click & Collect
 
-Catalogue de films : une API PHP en trois couches (routage / contrôleur /
-modèle) au-dessus de MySQL, et un front en JavaScript organisé en layouts,
-pages et composants, avec un routeur côté client.
+Boutique click & collect PlayStation (consoles, manettes, jeux, accessoires) :
+le client réserve en ligne et retire sa commande en magasin. Projet individuel,
+BUT2 MMI.
 
-- préférences de tri et de pagination mémorisées dans des cookies ;
-- connexion par session, page Administration réservée au rôle `admin` ;
-- thème clair / sombre en `localStorage`.
+Site en ligne : <https://mmi.unilim.fr/~hadj-zekri1/SAE301/>
+
+Le dépôt part du starter « catalogue de films » : son architecture et ses
+conventions sont gardées, seul le domaine a changé (film → produit). Une API
+PHP en trois couches (routage / contrôleur / modèle) au-dessus de MySQL, et un
+front en JavaScript vanilla (Vite + Tailwind CSS 4) organisé en layouts, pages
+et composants, avec un routeur côté client.
+
+## Fonctionnalités
+
+| Epic | US | Ce que ça fait |
+|---|---|---|
+| Découvrir l'offre | DEC-b, DEC-a, DEC-c | catalogue, filtre par catégorie (`/categorie/consoles`), fiche produit avec galerie |
+| Commander en click & collect | CMD-b, CMD-c, CMD-a | panier, inscription / connexion, validation de la commande avec un numéro de retrait |
+| Garantir la disponibilité | STK-b, STK-c, STK-a | état du stock affiché, quantités bornées au stock, stock décrémenté à la commande et recrédité à l'annulation |
+| Gérer l'offre | GOF-b, GOF-c, GOF-a | back-office : connexion admin, catégories, produits (images, options, variantes, seuil de stock) |
+| Traiter et piloter l'activité | PIL-b, PIL-a | commandes et changement de statut, statistiques |
+| Suivre mes achats | SUI-b, SUI-c, SUI-a | espace personnel, historique des commandes, commander à nouveau |
+| Personnaliser son produit | OPT-c, OPT-b, OPT-a | choix des options (coloris…), variantes avec leur propre prix et stock, options rappelées dans le panier |
+| Promotions (bonus) | PRO-b, PRO-a, PRO-c | gestion des codes promo, code saisi au panier, promotions automatiques |
+
+Les 23 US sont réalisées. Les user stories détaillées sont dans
+[`docs/user-stories.md`](docs/user-stories.md), les maquettes dans
+[`docs/maquettes.md`](docs/maquettes.md).
+
+## Graphe des dépendances entre user stories
+
+Source : planche FigJam du projet,
+<https://www.figma.com/board/degJIK32MAEBn88tAUN3sC/graphe>.
+
+![Graphe des dépendances entre user stories, regroupées par epic et numérotées dans l'ordre de réalisation](docs/graphe-us.png)
+
+Lecture du graphe :
+
+- une flèche va d'une US vers celle qui en dépend : la seconde ne peut pas
+  être terminée sans la première ;
+- le numéro devant chaque US donne l'ordre de réalisation ;
+- la flèche pointillée signifie « si le temps le permet » (epic Promotions) ;
+- les deux US en rouge (STK-a et PIL-b) sont livrées ensemble : la flèche à
+  double sens indique que chacune a besoin de l'autre.
+
+Les mêmes US placées sur les écrans qu'elles concernent :
+
+![Parcours client (découvrir, commander, suivre) et parcours admin (back-office), avec les US de chaque écran](docs/parcours.png)
+
+## Ordre de réalisation retenu
+
+| N° | US | N° | US | N° | US |
+|---|---|---|---|---|---|
+| 1 | DEC-b Catalogue | 9 | GOF-b Back-office | 17 | OPT-a Options panier |
+| 2 | DEC-a Catégories | 10 | STK-a Mise à jour auto des stocks | 18 | GOF-c Catégories admin |
+| 3 | DEC-c Détail produit | 11 | PIL-b Gestion commandes | 19 | GOF-a Produits admin |
+| 4 | CMD-b Panier | 12 | SUI-b Espace personnel | 20 | PIL-a Statistiques |
+| 5 | CMD-c Authentification | 13 | SUI-c Historique | 21 | PRO-b Gestion des codes |
+| 6 | CMD-a Validation commande | 14 | SUI-a Commander à nouveau | 22 | PRO-a Codes promo |
+| 7 | STK-b Affichage stocks | 15 | OPT-c Choix options | 23 | PRO-c Promotions auto |
+| 8 | STK-c Contraintes stock | 16 | OPT-b Variantes et stock | | |
+
+### Justification
+
+- **Le cœur d'abord : catalogue, panier, commande.** Sans produits à
+  afficher, rien d'autre ne se teste. CMD-a est le pivot du projet : 7 US en
+  dépendent (stock, back-office des commandes, historique, statistiques…).
+- **Le stock juste après la commande.** On sécurise l'achat (pas de vente
+  au-delà du stock) avant d'ouvrir l'espace client.
+- **GOF-b avancé en 9.** Sans back-office, impossible d'annuler une commande,
+  donc de tester le recrédit du stock prévu par STK-a.
+- **STK-a et PIL-b livrées ensemble.** Le changement de statut d'une commande
+  (PIL-b) déclenche la mise à jour du stock (STK-a) : chacune a besoin de
+  l'autre pour être terminée.
+- **Les variantes prévues dès DEC-b.** Chaque produit a une variante par
+  défaut dès le départ, qui porte le prix et le stock. L'epic Options peut donc
+  venir après STK et SUI sans réécrire le panier ni la commande.
+- **GOF-c et GOF-a après les options.** L'administration des produits gère
+  directement les options et les variantes, au lieu d'être refaite ensuite.
+- **Ligne de coupure si le temps manque** : d'abord les Promotions (bonus),
+  puis PIL-a, puis GOF-a et GOF-c. Les promotions n'ont été commencées qu'une
+  fois les 20 premières US terminées.
+
+### Écarts avec l'ordre prévu
+
+L'historique git suit cet ordre à trois exceptions près, sans conséquence sur
+les dépendances :
+
+- DEC-c a été fusionnée avant DEC-a : la fiche produit ne dépend que du
+  catalogue ;
+- STK-a a été fusionnée avant GOF-b, l'annulation (et donc le recrédit) étant
+  ensuite testée avec le back-office ;
+- GOF-c a été faite juste après GOF-b, avant PIL-b, la gestion des catégories
+  étant indépendante des commandes.
 
 ## Arborescence
 
 ```
-.htaccess            /api/... vers le back, tout le reste vers front/dist/
-sql/import.sql       tables film et genre, à importer dans votre base
-back/                API PHP, ne renvoie que du JSON
-├── index.php        point d'entrée : assemble les dépendances, délègue
-├── config/          identifiants de la base, chemin du projet
-└── src/             Core/ (Request, Response, Router, Database),
-                     Controller/, Model/, routes.php
-front/               sources du front (Vite + Tailwind)
-├── index.html       page unique de l'application
-├── vite.config.js   chemin du projet, proxy de développement
+.htaccess              /api/... vers le back, images téléversées vers uploads/, le reste vers front/dist/
+sql/import.sql         schéma complet et données de départ
+uploads/produits/      images téléversées depuis le back-office (non versionnées)
+docs/                  user stories, maquettes, graphe des dépendances
+back/                  API PHP 8, ne renvoie que du JSON
+├── index.php          point d'entrée : assemble modèles et contrôleurs, délègue au routeur
+├── config/            identifiants de la base, chemin du projet, debug
+└── src/               Core/ (Request, Response, Router, Database),
+                       Controller/, Model/, routes.php
+front/                 sources du front (Vite + Tailwind CSS 4)
+├── index.html         page unique de l'application
+├── vite.config.js     chemin du projet, proxy de développement
 ├── src/
-│   ├── main.js      déclaration des routes et des layouts
-│   ├── global.css   Tailwind, thème sombre
-│   ├── layouts/     structures de page (en-tête + slot de la page)
-│   ├── pages/       une page par route : page.js + template.html
-│   ├── ui/          composants réutilisables : index.js + template.html
-│   ├── data/        appels à l'API, un module par ressource
-│   └── lib/         routeur, rendu des templates, requêtes, utilitaires
-└── dist/            résultat de npm run build (non versionné)
+│   ├── main.js        déclaration des layouts et des routes
+│   ├── global.css     Tailwind : couleurs, typographie, utilitaires
+│   ├── layouts/       site client (header + page + footer) et back-office
+│   ├── pages/         une page par route : page.js + template.html
+│   ├── ui/            composants réutilisables : index.js + template.html
+│   ├── data/          appels à l'API (un module par ressource), panier
+│   └── lib/           routeur, rendu des templates, requêtes, formats
+├── tests/             tests Playwright, un dossier par epic, un fichier par US
+└── dist/              résultat de npm run build (non versionné)
 ```
 
 ## Installation
 
-1. Importez `sql/import.sql` dans votre base depuis phpMyAdmin (il crée les
-   tables `film` et `genre` ; une table existante de même nom serait
-   remplacée).
+1. Importez `sql/import.sql` dans votre base depuis phpMyAdmin. Il crée toutes
+   les tables et les données de départ ; **une table existante de même nom
+   est remplacée**, avec ses données.
 2. Dans `back/config/config.php`, renseignez les identifiants de la base et
-   le chemin du projet (`/~votre_login/Base/`).
+   le chemin du projet (`/~votre_login/SAE301/`).
 3. Dans `front/vite.config.js`, donnez à `BASE` **exactement** le même chemin.
-4. Dans `front/`, installez les dépendances :
+4. Donnez au serveur web le droit d'écrire dans `uploads/produits/` (images
+   téléversées depuis le back-office).
+5. Dans `front/`, installez les dépendances :
 
 ```bash
 npm install
 ```
-
-Le chemin du projet apparaît donc à deux endroits, et seulement là :
-`config.php` pour le back (chemin des cookies), `vite.config.js` pour le front
-(adresses des fichiers et des pages).
 
 ## Développer
 
@@ -56,20 +144,10 @@ Le chemin du projet apparaît donc à deux endroits, et seulement là :
 npm run dev
 ```
 
-Le front est servi par Vite à `http://localhost:5173/~votre_login/Base/`, avec
-rechargement à chaque modification. Les requêtes `/~votre_login/Base/api/...`
-sont relayées par Vite vers l'API déployée sur `mmi.unilim.fr` : le back doit
-donc être en place sur le serveur (voir Déployer).
-
-Ce relais (le proxy de `vite.config.js`) fait croire au navigateur que front
-et API sont sur le même site, sous le même chemin qu'en production. Les
-cookies posés par l'API (préférences, session) sont donc acceptés et renvoyés
-normalement. Sans lui, le front sur `localhost` appellerait directement
-`mmi.unilim.fr` : deux sites différents, et le navigateur refuserait d'envoyer
-les cookies.
-
-Utilisez Chrome ou Firefox : les cookies de l'API sont `Secure`, et Safari
-peut les refuser sur `http://localhost`.
+Le front est servi par Vite à `http://localhost:5173/~votre_login/SAE301/`.
+Les requêtes `/api/...` et les images téléversées sont relayées par Vite vers
+le serveur `mmi.unilim.fr` : le back doit donc être en place sur le serveur.
+Utilisez Chrome ou Firefox (cookies `Secure`).
 
 ## Déployer
 
@@ -77,92 +155,81 @@ peut les refuser sur `http://localhost`.
 npm run build
 ```
 
-Le front compilé est produit dans `front/dist/`. Déposez ensuite dans votre
-espace web, dans le dossier `Base/` : `.htaccess`, `back/` et `front/dist/`
-(en gardant ce chemin). Inutile de déposer `front/node_modules/`.
+Le front compilé est produit dans `front/dist/`. Le `.htaccess` sert ses
+fichiers et répond par `front/dist/index.html` à toute autre adresse
+(`/panier`, `/admin`…) : c'est le routeur du front qui affiche la bonne page,
+ou la page 404.
 
-L'application est alors à `https://mmi.unilim.fr/~votre_login/Base/`. Le
-`.htaccess` sert les fichiers de `front/dist/`, et répond par
-`front/dist/index.html` à toute autre adresse (`/admin`…) : c'est le routeur
-du front qui affiche la bonne page, ou la page 404.
+## Architecture
 
-## Architecture du front
+Le parcours d'une requête :
 
-### Routeur (`lib/router.js`)
+1. le navigateur charge la page unique ; `main.js` lit la session, puis le
+   routeur choisit le layout (`/` ou `/admin`) et la page de l'adresse ;
+2. la page appelle un module de `data/`, qui appelle l'API par
+   `lib/api-request.js` (seul endroit où l'on appelle `fetch`) ;
+3. `/api/...` arrive dans `back/index.php` → `routes.php` → contrôleur
+   (validation, droits) → modèle (requêtes SQL préparées) → réponse JSON ;
+4. la page range la réponse dans son état `M`, puis `V` reconstruit toute la
+   page ; les composants de `ui/` reçoivent leurs données et signalent les
+   actions de l'utilisateur.
 
-Déclaré dans `main.js`, sur le modèle de `react-router` :
+Choix du domaine :
 
-```js
-router.addLayout("/", RootLayout);
-router.addRoute("/", CataloguePage);
-router.addRoute("/admin", AdminPage);
-router.addRoute("/films/:id", FilmPage);   // params.id dans la page
-router.addRoute("*", The404Page);          // toujours en dernier
-```
-
-- Un lien interne porte `data-link` et un chemin de route, sans le chemin du
-  projet : `<a href="/admin" data-link>`. Le routeur intercepte le clic,
-  change l'adresse sans recharger, et complète lui-même le `href` avec le
-  chemin du projet (comme `basename` dans `react-router`).
-- Le lien de la page affichée reçoit `aria-current="page"`, que Tailwind
-  cible avec `aria-[current=page]:…`.
-- Une page renvoie une chaîne HTML (page statique) ou un fragment, ou une
-  promesse de l'un des deux (page qui charge des données).
-- Le layout est choisi par le plus long préfixe d'adresse. La page prend la
-  place de son `<slot>` sans nom.
-
-### Composants (`ui/`)
-
-Un dossier par composant : le HTML et les classes Tailwind dans
-`template.html`, le JavaScript dans `index.js`. Le composant expose
-`html(data)` (chaîne) et/ou `dom(data, actions)` (fragment).
-
-- `{{cle}}` dans un template est remplacé par la valeur correspondante,
-  **échappée** : un placeholder ne produit jamais que du texte. Pour insérer
-  un autre composant, on utilise un `<slot name="…">`, que le JavaScript
-  remplace (`slot.replaceWith(Composant.dom(…))`).
-- Un template n'a ni boucle ni condition : une liste se construit avec un
-  template par élément (`ui/statistiques/ligne-genre.html`), et un état
-  (option choisie, bouton désactivé) se règle en JavaScript après
-  `htmlToFragment`.
-- Un composant ne décide de rien : il reçoit ses données, et signale les
-  actions de l'utilisateur par les fonctions de `actions`
-  (`surTri`, `surPage`…), comme les props `onChange` de React.
-- Tailwind ne génère que les classes écrites en entier dans le code :
-  `"text-red-700"`, jamais `"text-" + couleur`.
-
-### Pages (`pages/`)
-
-Une page dynamique suit le découpage Modèle / Contrôleur / Vue :
-
-- `M` contient l'état de la page (réponse de l'API, message affiché…) ;
-- `C` contient les traitements : chargement des données, réactions aux
-  actions de l'utilisateur ;
-- `V` construit la page à partir de `M`. Après chaque changement, toute la
-  page est reconstruite et remplace l'ancienne (`V.rafraichir()`) :
-  l'affichage se déduit de l'état, on ne le retouche pas morceau par morceau.
+- **Catalogue** : `categorie` → `produit` → `variante` (prix, stock). Les
+  options (Coloris : Noir…) sont génériques : `option_produit`,
+  `valeur_option`, `variante_valeur`. Le stock n'est jamais envoyé au
+  navigateur, seulement un état : `en_stock`, `bientot_epuise` ou `epuise`.
+- **Panier** : uniquement dans le `localStorage`, sans prix
+  (`{ variantId, quantite }`). Le serveur recalcule prix et totaux, et ramène
+  les quantités au stock disponible.
+- **Commande** : nom, options et prix unitaire figés dans chaque ligne. Le
+  stock est vérifié et décrémenté dans la même transaction, et journalisé.
+  Statuts : `en_cours` → `disponible` → `retiree`, ou `annulee`.
+- **Comptes** : rôles `client` et `admin`, avec deux sessions séparées : se
+  déconnecter de la boutique ne ferme pas le back-office.
 
 ## L'API
 
-| Route | Effet |
+| Domaine | Routes |
 |---|---|
-| `GET /api/films?page=2&tri=note&parPage=24` | une page du catalogue |
-| `POST /api/login` | connexion, corps JSON `{"login": …, "mdp": …}` |
-| `POST /api/logout` | déconnexion |
-| `GET /api/admin/stats` | statistiques, réservées au rôle `admin` |
+| Catalogue | `GET /api/produits`, `GET /api/produit?slug=`, `GET /api/categories` |
+| Panier, commande | `POST /api/panier`, `POST /api/commande`, `GET /api/commande?numero=` |
+| Compte client | `POST /api/login`, `POST /api/logout`, `POST /api/inscription`, `GET /api/session`, `GET /api/compte`, `GET /api/compte/commandes`, `POST /api/compte/profil` |
+| Back-office | `POST /api/admin/login`, `POST /api/admin/logout`, `GET /api/admin/tableau-de-bord`, commandes, produits, catégories, statistiques, codes promo, seuil de stock |
 
-Tris acceptés : `titre`, `annee`, `note`. Valeurs de `parPage` : `12`, `24`,
-`48`. `tri` et `parPage` sont facultatifs : sans eux, le serveur applique les
-préférences mémorisées dans les cookies. La réponse rappelle les réglages
-appliqués (`tri`, `parPage`, `page`, `pagesTotal`, `total`) : le front n'a
-jamais besoin de lire les cookies, qui sont en `HttpOnly`.
+La liste exacte est dans `back/src/routes.php`. Les écritures sont en
+`POST /api/<ressource>/<action>` ; aucun paramètre dans le chemin.
 
-## Comptes
+| Code | Signification |
+|---|---|
+| 403 | non connecté, ou pas les droits |
+| 422 | saisie invalide, identifiants faux |
+| 404 | ressource introuvable |
+| 409 | conflit : stock insuffisant, doublon |
+| 400 | paramètre d'adresse manquant ou invalide |
 
-| Login | Mot de passe | Rôle |
+L'API ne répond jamais 401 : l'espace web est derrière l'authentification
+HTTP d'Apache, et un 401 ferait redemander les identifiants de l'IUT.
+
+## Comptes de démonstration
+
+| E-mail | Mot de passe | Rôle |
 |---|---|---|
-| `alice` | `azerty` | `user` |
-| `admin` | `motdepasse` | `admin` |
+| `client@playstation.test` | `client1234` | `client` (boutique) |
+| `admin@playstation.test` | `admin1234` | `admin` (back-office, `/admin`) |
+
+## Tests
+
+Tests Playwright de bout en bout, dans `front/tests/<epic>/<us>.spec.js` : un
+test par point de la Definition of Done (spécifique et commune) et par critère
+d'acceptation. Ils valident aussi le HTML et le CSS au validateur W3C.
+
+```bash
+npm test                # tests en lecture seule, Chromium et Firefox
+npm run test:ecriture   # tests qui créent puis suppriment leurs données (préfixe e2e)
+npm run test:rapport    # rapport du dernier lancement
+```
 
 ## Si ça ne marche pas
 
@@ -171,5 +238,6 @@ jamais besoin de lire les cookies, qui sont en `HttpOnly`.
 | Un listing de dossiers, ou une erreur 404 sur la racine | le `.htaccess` n'a pas été déposé, ou `front/dist/` est absent (lancer `npm run build`) |
 | Page blanche, fichiers `assets/…` en 404 | `BASE` de `vite.config.js` ne correspond pas au dossier de dépôt |
 | « Impossible de charger le catalogue » | identifiants de `config.php`, ou tables non importées |
-| Les réglages ne sont jamais retenus, la connexion ne tient pas | `chemin` de `config.php` ne correspond pas au dossier de dépôt |
+| La connexion ne tient pas | `chemin` de `config.php` ne correspond pas au dossier de dépôt |
+| L'envoi d'une image échoue dans le back-office | `uploads/produits/` n'est pas accessible en écriture |
 | En développement, l'API répond 404 | le back n'est pas déployé sur le serveur, ou `BASE` est faux |
