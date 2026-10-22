@@ -186,6 +186,13 @@ PanierData.supprimer = function (variantId) {
 };
 
 /**
+ * Vide le panier : toutes les lignes sont retirées.
+ */
+PanierData.vider = function () {
+  PanierData.enregistrer([]);
+};
+
+/**
  * Nombre d'articles (somme des quantités), pour le compteur du header.
  */
 PanierData.nombreArticles = function () {

@@ -1,3 +1,10 @@
-<ul class="border-t border-trait lg:border-t-0">
-  <slot name="lignes"></slot>
-</ul>
+<div>
+  <!-- En haut de la liste : visible dès l'ouverture, même avec beaucoup d'articles. -->
+  <div class="flex justify-end pb-2.5">
+    <button type="button" data-action="vider" class="text-sm font-bold text-lien underline enabled:hover:text-lien-survol">Vider le panier</button>
+  </div>
+
+  <ul class="border-t border-trait lg:border-t-0">
+    <slot name="lignes"></slot>
+  </ul>
+</div>

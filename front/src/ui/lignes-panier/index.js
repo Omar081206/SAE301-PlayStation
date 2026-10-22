@@ -7,14 +7,14 @@ import templateVide from "./vide.html?raw";
 // Lignes du panier, telles que les renvoie l'API (prix et sous-totaux calculés
 // par le serveur). Un template par élément répété : chaque ligne prend place
 // dans le <slot name="lignes">. Le composant ne modifie pas le panier : il
-// signale la quantité demandée ou la suppression, et la page décide.
+// signale la quantité demandée, la suppression ou le vidage, et la page décide.
 let LignesPanierView = {
   /**
    * @param {Array<{variantId: number, nom: string, slug: string, quantite: number,
    *                quantiteMax: number, sousTotal: number, sousTotalInitial: number|null, image: string,
    *                image_alt: string}>} lignes  quantiteMax : stock disponible, plafonné.
    * @param {{surQuantite: (variantId: number, quantite: number) => void,
-   *          surSuppression: (variantId: number) => void}} actions
+   *          surSuppression: (variantId: number) => void, surVider: () => void}} actions
    */
   dom: function (lignes, actions) {
     if (lignes.length === 0) {
@@ -65,6 +65,7 @@ let LignesPanierView = {
       return element;
     });
     fragment.querySelector('slot[name="lignes"]').replaceWith(...elements);
+    fragment.querySelector('[data-action="vider"]').addEventListener("click", () => actions.surVider());
 
     return fragment;
   },
