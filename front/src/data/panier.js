@@ -1,10 +1,14 @@
 import { postRequest } from "../lib/api-request.js";
 
-// Le panier vit dans le navigateur (localStorage, clé « panier ») : une liste
-// de lignes { variantId, quantite }, sans prix. Les prix et les totaux viennent
-// toujours du serveur (voir fetchDetail). Chaque accès au stockage est protégé
-// par try/catch : sans stockage, le panier est simplement vide.
-const CLE = "panier";
+// Le panier vit dans le navigateur (localStorage) : une liste de lignes
+// { variantId, quantite }, sans prix. Les prix et les totaux viennent toujours
+// du serveur (voir fetchDetail). Chaque accès au stockage est protégé par
+// try/catch : sans stockage, le panier est simplement vide.
+//
+// Le localStorage est partagé par tout le domaine (mmi.unilim.fr) : la clé
+// porte le chemin du projet (« /~hadj-zekri1/SAE301/panier »), comme le cookie
+// de session, pour ne pas lire ni écraser le panier d'un autre site du serveur.
+const CLE = import.meta.env.BASE_URL + "panier";
 const QUANTITE_MAX = 99;
 
 let PanierData = {};
