@@ -4,6 +4,7 @@ import { htmlToFragment } from "../../lib/utils.js";
 import { ConfirmationProduitView } from "../../ui/confirmation-produit/index.js";
 import { FormulaireProduitView } from "../../ui/formulaire-produit/index.js";
 import { ImagesProduitView } from "../../ui/images-produit/index.js";
+import { MessageView } from "../../ui/message/index.js";
 import { OptionsProduitView } from "../../ui/options-produit/index.js";
 import template from "./template.html?raw";
 
@@ -117,7 +118,7 @@ C.charger = async function (id) {
     }
     M.message = {
       type: "erreur",
-      texte: erreur.statut === 404 ? "Ce produit n'existe pas (ou plus)." : erreur.message,
+      texte: erreur.statut === 404 ? "Ce produit n'existe pas (ou plus)." : `Impossible de charger le produit : ${erreur.message}`,
     };
   }
 
@@ -405,13 +406,10 @@ V.createPageFragment = function () {
   let slotModale = pageFragment.querySelector('slot[name="modale"]');
 
   if (M.saisie === null) {
-    // Produit introuvable ou serveur indisponible : le message seul.
-    slotFormulaire.replaceWith(
-      FormulaireProduitView.dom(
-        { titre: "Produit", existant: false, message: M.message, saisie: { nom: "", categorie_id: null, prixBase: "", description: "" }, categories: [] },
-        { surChamp: C.handler_champ, surEnregistrer: C.handler_enregistrer, surSupprimer: C.handler_supprimer }
-      )
-    );
+    // Produit introuvable ou serveur indisponible : le message seul. Un
+    // formulaire vide laisserait croire qu'on peut modifier ou créer un
+    // produit, alors que rien n'a été chargé.
+    slotFormulaire.replaceWith(MessageView.dom(M.message));
     slotModale.remove();
     return pageFragment;
   }

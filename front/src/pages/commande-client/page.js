@@ -43,7 +43,10 @@ C.charger = async function () {
       return false;
     }
     M.messages = [
-      { type: "erreur", texte: erreur.statut === 404 ? "Cette commande est introuvable." : erreur.message },
+      {
+        type: "erreur",
+        texte: erreur.statut === 404 ? "Cette commande est introuvable." : `Impossible de charger la commande : ${erreur.message}`,
+      },
     ];
   }
 

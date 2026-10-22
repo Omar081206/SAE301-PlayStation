@@ -137,8 +137,13 @@ final class CommandeController
             ];
         }
 
+        // Panier vide, ou dont tous les articles ont été retirés de la vente
+        // depuis leur ajout : deux situations, deux messages.
         if ($aEnregistrer === []) {
-            Response::erreur('Votre panier est vide.', 422);
+            Response::erreur(
+                $quantites === [] ? 'Votre panier est vide.' : 'Les articles de votre panier ne sont plus en vente.',
+                422
+            );
         }
 
         // Le total enregistré est le montant payé, remise déduite.
