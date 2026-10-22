@@ -1,5 +1,6 @@
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
 import { formaterPrix } from "../../lib/format.js";
+import { secoursOriginal, urlMiniature } from "../../lib/image.js";
 import { MessageView } from "../message/index.js";
 import template from "./template.html?raw";
 import templateLigne from "./ligne.html?raw";
@@ -90,10 +91,12 @@ let RecapitulatifCommandeView = {
           quantite: ligne.quantite,
           sousTotal: formaterPrix(ligne.sousTotal),
           sousTotalInitial: ligne.sousTotalInitial === null ? "" : formaterPrix(ligne.sousTotalInitial),
-          image: import.meta.env.BASE_URL + "images/produits/" + ligne.image,
+          image: urlMiniature(ligne.image, 320),
           alt: ligne.image_alt,
         })
       );
+      secoursOriginal(element.querySelector("img"), ligne.image);
+
       // État réglé en JS : un template n'a pas de condition. Produit sans
       // option : pas de ligne vide ; hors promotion : pas de montant barré.
       if (ligne.options === null) {

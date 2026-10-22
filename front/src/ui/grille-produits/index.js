@@ -16,7 +16,8 @@ let GrilleProduitsView = {
 
     let nombre = produits.length > 1 ? `${produits.length} produits` : "1 produit";
     let fragment = htmlToFragment(genericRenderer(template, { nombre }));
-    let cartes = produits.map((produit) => CarteProduitView.dom(produit, actions));
+    // Le rang permet à la carte de charger d'abord les images visibles.
+    let cartes = produits.map((produit, rang) => CarteProduitView.dom(produit, actions, rang));
     fragment.querySelector('slot[name="cartes"]').replaceWith(...cartes);
     return fragment;
   },

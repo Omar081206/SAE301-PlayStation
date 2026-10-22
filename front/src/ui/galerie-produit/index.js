@@ -1,4 +1,5 @@
 import { genericRenderer, htmlToFragment } from "../../lib/utils.js";
+import { secoursOriginal, urlImage, urlMiniature } from "../../lib/image.js";
 import template from "./template.html?raw";
 import templateMiniature from "./miniature.html?raw";
 
@@ -16,7 +17,7 @@ let GalerieProduitView = {
     let image = data.images[data.active];
     let fragment = htmlToFragment(
       genericRenderer(template, {
-        image: import.meta.env.BASE_URL + "images/produits/" + image.fichier,
+        image: urlImage(image.fichier),
         alt: image.alt,
       })
     );
@@ -47,11 +48,12 @@ let GalerieProduitView = {
     let miniatures = data.images.map((element, position) => {
       let miniature = htmlToFragment(
         genericRenderer(templateMiniature, {
-          image: import.meta.env.BASE_URL + "images/produits/" + element.fichier,
+          image: urlMiniature(element.fichier, 320),
           numero: position + 1,
         })
       );
       let bouton = miniature.querySelector("button");
+      secoursOriginal(bouton.querySelector("img"), element.fichier);
       if (data.remplir) {
         bouton.querySelector("img").classList.replace("object-contain", "object-cover");
       }
