@@ -23,7 +23,10 @@ test.describe("OPT-c · DoD spécifique", () => {
   }) => {
     let produits = await fiches(page);
     let avecOptions = produits.filter((produit) => produit.options.length > 0);
-    let sansOption = produits.find((produit) => produit.options.length === 0);
+    let sansOption = produits.filter((produit) => produit.options.length === 0);
+
+    // Le sujet demande des options pour chaque produit.
+    expect(sansOption.map((produit) => produit.nom), "produits sans option").toEqual([]);
 
     // Des options différentes selon le produit (Coloris, Édition…).
     let noms = new Set(avecOptions.flatMap((produit) => produit.options.map((option) => option.nom)));
@@ -31,9 +34,6 @@ test.describe("OPT-c · DoD spécifique", () => {
 
     await page.goto(`produit/${avecOptions[0].slug}`);
     await expect(page.getByRole("group", { name: new RegExp(avecOptions[0].options[0].nom) })).toBeVisible();
-
-    await page.goto(`produit/${sansOption.slug}`);
-    await expect(page.getByRole("radio"), "aucun choix sur un produit sans option").toHaveCount(0);
   });
 
   test("DoD : interface dynamique (JavaScript) @lecture", async ({ page }) => {
