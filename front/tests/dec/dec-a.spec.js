@@ -61,8 +61,13 @@ test.describe("DEC-a · DoD spécifique", () => {
     let categorie = categories[0];
 
     await page.goto("");
+    // Le clic charge déjà les produits de la catégorie : on attend cette
+    // réponse, pour que l'attente suivante ne la confonde pas avec celle de
+    // l'adresse ouverte directement.
+    let clic = produitsDemandes(page, categorie.slug);
     await lienCategorie(page, categorie.nom).click();
     await expect(page).toHaveURL(new RegExp(`/categorie/${categorie.slug}$`));
+    await clic;
 
     // L'adresse ouverte directement donne le même filtre.
     let filtre = produitsDemandes(page, categorie.slug);
